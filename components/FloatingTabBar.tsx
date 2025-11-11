@@ -145,13 +145,16 @@ export default function FloatingTabBar({
     const indicatorPadding = 4;
     const indicatorWidth = tabWidth - (indicatorPadding * 2);
     
+    // Calculate the starting position for each tab
+    const startX = containerPadding + indicatorPadding;
+    
     return {
       transform: [
         {
           translateX: interpolate(
             indicatorPosition.value,
             tabs.map((_, i) => i),
-            tabs.map((_, i) => containerPadding + indicatorPadding + (tabWidth * i))
+            tabs.map((_, i) => startX + (tabWidth * i))
           ),
         },
       ],
