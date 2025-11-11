@@ -104,7 +104,7 @@ const cardWidth = (width - 48) / 2;
 export default function CitiesScreen() {
   const theme = useTheme();
   const { isDark } = useThemeMode();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const currentColors = isDark ? darkColors : colors;
 
   const [selectedCity, setSelectedCity] = useState<City>(CITIES[0]);
@@ -145,9 +145,23 @@ export default function CitiesScreen() {
       >
         {/* Header with City Selector */}
         <View style={styles.headerContainer}>
-          <Text style={[styles.title, { color: currentColors.text }]}>
-            {t(selectedCity.nameKey)}
-          </Text>
+          {language === 'mn' ? (
+            <View style={styles.mongolianTitleContainer}>
+              <Text style={[styles.mongolianSmallText, { color: currentColors.textSecondary }]}>
+                Та
+              </Text>
+              <Text style={[styles.mongolianLargeText, { color: currentColors.text }]}>
+                {t(selectedCity.nameKey)}д 位格选城市
+              </Text>
+              <Text style={[styles.mongolianSmallText, { color: currentColors.textSecondary }]}>
+                тавтай морилно уу
+              </Text>
+            </View>
+          ) : (
+            <Text style={[styles.title, { color: currentColors.text }]}>
+              {t(selectedCity.nameKey)}
+            </Text>
+          )}
           <Pressable 
             style={styles.citySelectorButton}
             onPress={() => setShowCitySelectorModal(true)}
@@ -353,6 +367,22 @@ const styles = StyleSheet.create({
     fontSize: 34,
     fontWeight: '700',
     letterSpacing: -1,
+  },
+  mongolianTitleContainer: {
+    flex: 1,
+    alignItems: 'flex-start',
+  },
+  mongolianSmallText: {
+    fontSize: 16,
+    fontWeight: '500',
+    letterSpacing: -0.3,
+    marginBottom: 2,
+  },
+  mongolianLargeText: {
+    fontSize: 28,
+    fontWeight: '700',
+    letterSpacing: -0.8,
+    marginVertical: 2,
   },
   citySelectorButton: {
     padding: 8,
