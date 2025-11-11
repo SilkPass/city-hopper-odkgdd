@@ -182,7 +182,7 @@ export default function HomeScreen() {
         friction: 11,
       }).start();
     }
-  }, [showCitySelector]);
+  }, [showCitySelector, slideAnim]);
 
   const modalTranslateY = slideAnim.interpolate({
     inputRange: [0, 1],
