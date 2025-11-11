@@ -153,7 +153,7 @@ export default function CitiesScreen() {
               <Text style={[styles.mongolianSmallText, { color: currentColors.textSecondary }]}>
                 ТА
               </Text>
-              <View style={styles.mongolianLargeRow}>
+              <View style={styles.mongolianMiddleRow}>
                 <Text style={[styles.mongolianLargeText, { color: currentColors.text }]}>
                   {t(selectedCity.nameKey)}д
                 </Text>
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
     marginBottom: 2,
   },
-  mongolianLargeRow: {
+  mongolianMiddleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 2,
@@ -400,9 +400,10 @@ const styles = StyleSheet.create({
     fontSize: 34,
     fontWeight: '700',
     letterSpacing: -0.8,
+    marginRight: 8,
   },
   arrowIcon: {
-    marginLeft: 8,
+    marginTop: 4,
   },
   citySelectorButton: {
     padding: 8,
