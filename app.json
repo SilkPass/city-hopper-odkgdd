@@ -16,8 +16,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.Seric",
+      "buildNumber": "1",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "This app needs your location to show nearby services and cities.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs your location to show nearby services and cities."
       }
     },
     "android": {
@@ -26,7 +29,8 @@
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.Seric"
+      "package": "com.anonymous.Seric",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/images/final_quest_240x240.png",
@@ -35,14 +39,23 @@
     "plugins": [
       "expo-font",
       "expo-router",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "This app needs your location to show nearby services and cities."
+        }
+      ]
     ],
     "scheme": "seric",
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "router": {}
+      "router": {},
+      "eas": {
+        "projectId": "YOUR_PROJECT_ID_HERE"
+      }
     }
   }
 }
