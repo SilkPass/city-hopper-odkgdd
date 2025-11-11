@@ -78,6 +78,13 @@ export default function FloatingTabBar({
           return i;
         }
       }
+      // Services route matching
+      else if (tab.route === '/(tabs)/services') {
+        if (pathname.includes('/services')) {
+          console.log('Matched services tab, index:', i);
+          return i;
+        }
+      }
       // Profile route matching
       else if (tab.route === '/(tabs)/profile') {
         if (pathname.includes('/profile')) {
@@ -96,19 +103,14 @@ export default function FloatingTabBar({
   // Shared values for animations - create them at the top level, not in a callback
   const indicatorPosition = useSharedValue(activeIndex);
   
-  // Create shared values for each tab - initialize with proper array length
-  // We need to create these outside of useMemo to avoid calling hooks in callbacks
-  const tabPressScale0 = useSharedValue(1);
-  const tabPressScale1 = useSharedValue(1);
-  const tabPressScale2 = useSharedValue(1);
+  // Create shared values for each tab dynamically based on tabs length
+  const tabPressScale = useMemo(() => {
+    return tabs.map(() => useSharedValue(1));
+  }, [tabs.length]);
   
-  const tabPressOpacity0 = useSharedValue(1);
-  const tabPressOpacity1 = useSharedValue(1);
-  const tabPressOpacity2 = useSharedValue(1);
-  
-  // Create arrays from the individual shared values
-  const tabPressScale = useMemo(() => [tabPressScale0, tabPressScale1, tabPressScale2], [tabs]);
-  const tabPressOpacity = useMemo(() => [tabPressOpacity0, tabPressOpacity1, tabPressOpacity2], [tabs]);
+  const tabPressOpacity = useMemo(() => {
+    return tabs.map(() => useSharedValue(1));
+  }, [tabs.length]);
 
   useEffect(() => {
     console.log('Active index changed to:', activeIndex);
