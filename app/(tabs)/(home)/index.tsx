@@ -62,28 +62,20 @@ export default function HomeScreen() {
   const searchInputRef = useRef<TextInput>(null);
   const slideAnim = useRef(new Animated.Value(0)).current;
 
-  const requestLocationPermission = useCallback(async () => {
-    try {
-      console.log('Requesting location permission...');
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      console.log('Permission status:', status);
-      setLocationPermission(status);
-      
-      if (status === 'granted') {
-        getUserLocation();
-      } else {
-        console.log('Location permission denied');
-        setLoading(false);
-        setSelectedCity(CITIES[0]);
-      }
-    } catch (error) {
-      console.error('Error requesting location permission:', error);
-      setLoading(false);
-      setSelectedCity(CITIES[0]);
-    }
-  }, []);
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance;
+  };
 
-  const getUserLocation = async () => {
+  const getUserLocation = useCallback(async () => {
     try {
       console.log('Getting user location...');
       const location = await Location.getCurrentPositionAsync({
@@ -111,20 +103,28 @@ export default function HomeScreen() {
       setLoading(false);
       setSelectedCity(CITIES[0]);
     }
-  };
+  }, []);
 
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-    return distance;
-  };
+  const requestLocationPermission = useCallback(async () => {
+    try {
+      console.log('Requesting location permission...');
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      console.log('Permission status:', status);
+      setLocationPermission(status);
+      
+      if (status === 'granted') {
+        getUserLocation();
+      } else {
+        console.log('Location permission denied');
+        setLoading(false);
+        setSelectedCity(CITIES[0]);
+      }
+    } catch (error) {
+      console.error('Error requesting location permission:', error);
+      setLoading(false);
+      setSelectedCity(CITIES[0]);
+    }
+  }, [getUserLocation]);
 
   const handleCitySelect = (city: City) => {
     setSelectedCity(city);
@@ -182,7 +182,7 @@ export default function HomeScreen() {
         friction: 11,
       }).start();
     }
-  }, [showCitySelector, slideAnim]);
+  }, [showCitySelector]);
 
   const modalTranslateY = slideAnim.interpolate({
     inputRange: [0, 1],
