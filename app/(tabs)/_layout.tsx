@@ -24,6 +24,12 @@ export default function TabLayout() {
       icon: 'building.2.fill',
     },
     {
+      route: '/(tabs)/services',
+      label: 'Services',
+      labelKey: 'services',
+      icon: 'square.grid.2x2.fill',
+    },
+    {
       route: '/(tabs)/profile',
       label: 'Profile',
       labelKey: 'profile',
@@ -53,6 +59,12 @@ export default function TabLayout() {
           name="cities"
           options={{
             title: 'Cities',
+          }}
+        />
+        <Tabs.Screen
+          name="services"
+          options={{
+            title: 'Services',
           }}
         />
         <Tabs.Screen
