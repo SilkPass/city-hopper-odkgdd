@@ -30,6 +30,7 @@ import * as Haptics from 'expo-haptics';
 export interface TabBarItem {
   route: string;
   label: string;
+  labelKey: string;
   icon: string;
 }
 
@@ -233,6 +234,7 @@ export default function FloatingTabBar({
               onPress={handleTabPress}
               pressScale={tabPressScale[index]}
               pressOpacity={tabPressOpacity[index]}
+              t={t}
             />
           );
         })}
@@ -252,6 +254,7 @@ interface TabButtonProps {
   onPress: (route: string, index: number) => void;
   pressScale: Animated.SharedValue<number>;
   pressOpacity: Animated.SharedValue<number>;
+  t: (key: string) => string;
 }
 
 const TabButton = React.memo(({
@@ -264,6 +267,7 @@ const TabButton = React.memo(({
   onPress,
   pressScale,
   pressOpacity,
+  t,
 }: TabButtonProps) => {
   const iconScale = useSharedValue(1);
   const iconRotate = useSharedValue(0);
@@ -371,7 +375,7 @@ const TabButton = React.memo(({
             },
           ]}
         >
-          {tab.label}
+          {t(tab.labelKey)}
         </Animated.Text>
       </Animated.View>
     </Pressable>

@@ -1,70 +1,64 @@
 
 import React from 'react';
-import { Platform } from 'react-native';
-import { Tabs } from 'expo-router';
 import FloatingTabBar, { TabBarItem } from '@/components/FloatingTabBar';
 import { colors, darkColors } from '@/styles/commonStyles';
+import { Tabs } from 'expo-router';
+import { Platform } from 'react-native';
 import { useThemeMode } from '@/contexts/ThemeContext';
 
 export default function TabLayout() {
   const { isDark } = useThemeMode();
   const currentColors = isDark ? darkColors : colors;
 
-  // Define the tabs configuration with correct routes
   const tabs: TabBarItem[] = [
     {
       route: '/(tabs)/(home)',
-      icon: 'house.fill',
       label: 'Home',
+      labelKey: 'home',
+      icon: 'house.fill',
     },
     {
       route: '/(tabs)/cities',
-      icon: 'building.2.fill',
       label: 'Cities',
+      labelKey: 'cities',
+      icon: 'building.2.fill',
     },
     {
       route: '/(tabs)/profile',
-      icon: 'person.fill',
       label: 'Profile',
+      labelKey: 'profile',
+      icon: 'person.fill',
     },
   ];
 
   return (
     <>
       <Tabs
+        tabBar={(props) => <FloatingTabBar tabs={tabs} />}
         screenOptions={{
           headerShown: false,
-          tabBarStyle: { display: 'none' },
-          // iOS-style page transitions
-          animation: Platform.select({
-            ios: 'shift',
-            android: 'fade',
-            default: 'fade',
-          }),
-          // Smooth transitions between tabs
-          animationDuration: 250,
+          tabBarStyle: {
+            backgroundColor: currentColors.background,
+          },
         }}
-        tabBar={() => <FloatingTabBar tabs={tabs} />}
       >
         <Tabs.Screen
           name="(home)"
           options={{
             title: 'Home',
-            headerShown: false,
+            headerShown: Platform.OS === 'ios',
           }}
         />
         <Tabs.Screen
           name="cities"
           options={{
             title: 'Cities',
-            headerShown: false,
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',
-            headerShown: false,
           }}
         />
       </Tabs>

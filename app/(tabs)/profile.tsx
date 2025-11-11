@@ -12,11 +12,17 @@ import { useLanguage } from "@/contexts/LanguageContext";
 export default function ProfileScreen() {
   const theme = useTheme();
   const { isDark } = useThemeMode();
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const currentColors = isDark ? darkColors : colors;
 
   const handleMenuPress = (item: string) => {
     console.log('Menu item pressed:', item);
+  };
+
+  const handleLanguageToggle = () => {
+    const newLanguage = language === 'en' ? 'mn' : 'en';
+    console.log('Switching language to:', newLanguage);
+    setLanguage(newLanguage);
   };
 
   return (
@@ -130,7 +136,7 @@ export default function ProfileScreen() {
             </GlassView>
           </Pressable>
 
-          <Pressable onPress={() => handleMenuPress('Language')}>
+          <Pressable onPress={handleLanguageToggle}>
             <GlassView 
               style={[
                 styles.card,
@@ -145,7 +151,11 @@ export default function ProfileScreen() {
                 <Text style={[styles.menuItemText, { color: currentColors.text }]}>
                   {t('language')}
                 </Text>
-                <IconSymbol name="chevron.right" size={20} color={currentColors.textSecondary} />
+                <View style={[styles.badge, { backgroundColor: currentColors.primary + '15' }]}>
+                  <Text style={[styles.badgeText, { color: currentColors.primary }]}>
+                    {language === 'en' ? 'English' : 'Монгол'}
+                  </Text>
+                </View>
               </View>
             </GlassView>
           </Pressable>

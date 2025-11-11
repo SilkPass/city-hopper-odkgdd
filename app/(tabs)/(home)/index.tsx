@@ -25,6 +25,7 @@ const { width } = Dimensions.get('window');
 
 interface City {
   name: string;
+  nameKey: string;
   latitude: number;
   longitude: number;
 }
@@ -36,11 +37,12 @@ interface WeatherData {
 }
 
 const CITIES: City[] = [
-  { name: "Beijing", latitude: 39.9042, longitude: 116.4074 },
-  { name: "Shanghai", latitude: 31.2304, longitude: 121.4737 },
-  { name: "Hong Kong", latitude: 22.3193, longitude: 114.1694 },
-  { name: "Guangzhou", latitude: 23.1291, longitude: 113.2644 },
-  { name: "Shenzhen", latitude: 22.5431, longitude: 114.0579 },
+  { name: "Beijing", nameKey: "beijing", latitude: 39.9042, longitude: 116.4074 },
+  { name: "Hohhot", nameKey: "hohhot", latitude: 40.8414, longitude: 111.7519 },
+  { name: "Shanghai", nameKey: "shanghai", latitude: 31.2304, longitude: 121.4737 },
+  { name: "Ordos", nameKey: "ordos", latitude: 39.6086, longitude: 109.7810 },
+  { name: "Hong Kong", nameKey: "hongKong", latitude: 22.3193, longitude: 114.1694 },
+  { name: "Macau", nameKey: "macau", latitude: 22.1987, longitude: 113.5439 },
 ];
 
 export default function HomeScreen() {
@@ -205,7 +207,7 @@ export default function HomeScreen() {
         <View style={[styles.container, { backgroundColor: currentColors.background }]}>
           <ActivityIndicator size="large" color={currentColors.primary} />
           <Text style={[styles.loadingText, { color: currentColors.textSecondary }]}>
-            Getting your location...
+            {t('gettingYourLocation')}
           </Text>
         </View>
       </>
@@ -236,14 +238,14 @@ export default function HomeScreen() {
         <View style={styles.headerContainer}>
           <View style={styles.headerLeft}>
             <Text style={[styles.greeting, { color: currentColors.textSecondary }]}>
-              Welcome to
+              {t('welcome')}
             </Text>
             <Pressable 
               style={styles.citySelector}
               onPress={() => setShowCitySelector(true)}
             >
               <Text style={[styles.title, { color: currentColors.text }]}>
-                {selectedCity?.name || 'Your City'}
+                {selectedCity ? t(selectedCity.nameKey) : 'Your City'}
               </Text>
               <IconSymbol 
                 name="chevron.down" 
@@ -284,7 +286,7 @@ export default function HomeScreen() {
             <View style={styles.mapPlaceholder}>
               <IconSymbol name="map.fill" color={currentColors.primary} size={56} />
               <Text style={[styles.mapPlaceholderText, { color: currentColors.textSecondary }]}>
-                Maps are not supported in Natively web preview
+                {t('mapsNotSupported')}
               </Text>
               {selectedCity && (
                 <Text style={[styles.mapPlaceholderSubtext, { color: currentColors.textTertiary }]}>
@@ -307,10 +309,10 @@ export default function HomeScreen() {
                 <IconSymbol name="antenna.radiowaves.left.and.right" color={currentColors.accent} size={32} />
               </View>
               <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
-                eSIM
+                {t('eSIM')}
               </Text>
               <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
-                Stay connected locally
+                {t('stayConnected')}
               </Text>
             </Pressable>
 
@@ -323,10 +325,10 @@ export default function HomeScreen() {
                 <IconSymbol name="creditcard.fill" color={currentColors.secondary} size={32} />
               </View>
               <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
-                Payment
+                {t('payment')}
               </Text>
               <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
-                Secure payment options
+                {t('securePayment')}
               </Text>
             </Pressable>
 
@@ -339,10 +341,10 @@ export default function HomeScreen() {
                 <IconSymbol name="book.fill" color={currentColors.primary} size={32} />
               </View>
               <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
-                Guide
+                {t('guide')}
               </Text>
               <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
-                Explore local attractions
+                {t('exploreLocal')}
               </Text>
             </Pressable>
 
@@ -355,10 +357,10 @@ export default function HomeScreen() {
                 <IconSymbol name="phone.fill" color={currentColors.error} size={32} />
               </View>
               <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
-                Emergency
+                {t('emergency')}
               </Text>
               <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
-                Quick emergency access
+                {t('quickEmergency')}
               </Text>
             </Pressable>
           </View>
@@ -367,7 +369,7 @@ export default function HomeScreen() {
         {/* Quick Actions */}
         <View style={[styles.section, { paddingBottom: Platform.OS === 'android' ? 100 : 20 }]}>
           <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
-            Quick Actions
+            {t('quickActions')}
           </Text>
           
           <Pressable 
@@ -379,10 +381,10 @@ export default function HomeScreen() {
             </View>
             <View style={styles.actionContent}>
               <Text style={[styles.actionTitle, { color: currentColors.text }]}>
-                Weather Forecast
+                {t('weatherForecast')}
               </Text>
               <Text style={[styles.actionSubtitle, { color: currentColors.textSecondary }]}>
-                Check local weather conditions
+                {t('checkLocalWeather')}
               </Text>
             </View>
             <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={20} />
@@ -397,10 +399,10 @@ export default function HomeScreen() {
             </View>
             <View style={styles.actionContent}>
               <Text style={[styles.actionTitle, { color: currentColors.text }]}>
-                Transportation
+                {t('transportation')}
               </Text>
               <Text style={[styles.actionSubtitle, { color: currentColors.textSecondary }]}>
-                Find nearby transit options
+                {t('findNearbyTransit')}
               </Text>
             </View>
             <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={20} />
@@ -415,10 +417,10 @@ export default function HomeScreen() {
             </View>
             <View style={styles.actionContent}>
               <Text style={[styles.actionTitle, { color: currentColors.text }]}>
-                Language Assistant
+                {t('languageAssistant')}
               </Text>
               <Text style={[styles.actionSubtitle, { color: currentColors.textSecondary }]}>
-                Translate and communicate easily
+                {t('translateEasily')}
               </Text>
             </View>
             <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={20} />
@@ -443,7 +445,7 @@ export default function HomeScreen() {
               <IconSymbol name="xmark" color={currentColors.textSecondary} size={24} />
             </Pressable>
             <Text style={[styles.modalTitle, { color: currentColors.text }]}>
-              Select City
+              {t('selectCity')}
             </Text>
             <View style={styles.placeholder} />
           </View>
@@ -472,7 +474,7 @@ export default function HomeScreen() {
                 </View>
                 <View style={styles.citySelectInfo}>
                   <Text style={[styles.citySelectName, { color: currentColors.text }]}>
-                    {city.name}
+                    {t(city.nameKey)}
                   </Text>
                   <Text style={[styles.citySelectCoords, { color: currentColors.textSecondary }]}>
                     {city.latitude.toFixed(2)}°, {city.longitude.toFixed(2)}°

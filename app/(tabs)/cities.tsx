@@ -22,6 +22,7 @@ import {
 
 interface City {
   name: string;
+  nameKey: string;
   imageUrl: string;
   attractions: Attraction[];
 }
@@ -36,6 +37,7 @@ interface Attraction {
 const CITIES: City[] = [
   {
     name: 'Beijing',
+    nameKey: 'beijing',
     imageUrl: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80',
     attractions: [
       { id: '1', name: 'Forbidden City', category: 'Historical Site', description: 'Imperial palace complex' },
@@ -45,29 +47,53 @@ const CITIES: City[] = [
     ],
   },
   {
+    name: 'Hohhot',
+    nameKey: 'hohhot',
+    imageUrl: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=800&q=80',
+    attractions: [
+      { id: '5', name: 'Dazhao Temple', category: 'Cultural Landmark', description: 'Historic Buddhist temple' },
+      { id: '6', name: 'Inner Mongolia Museum', category: 'Cultural Landmark', description: 'Regional history museum' },
+      { id: '7', name: 'Zhaojun Tomb', category: 'Historical Site', description: 'Ancient burial site' },
+    ],
+  },
+  {
     name: 'Shanghai',
+    nameKey: 'shanghai',
     imageUrl: 'https://images.unsplash.com/photo-1474181487882-5abf3f0ba6c2?w=800&q=80',
     attractions: [
-      { id: '5', name: 'The Bund', category: 'Scenic Spot', description: 'Waterfront promenade' },
-      { id: '6', name: 'Yu Garden', category: 'Cultural Landmark', description: 'Classical Chinese garden' },
-      { id: '7', name: 'Oriental Pearl Tower', category: 'Modern Attraction', description: 'Iconic TV tower' },
+      { id: '8', name: 'The Bund', category: 'Scenic Spot', description: 'Waterfront promenade' },
+      { id: '9', name: 'Yu Garden', category: 'Cultural Landmark', description: 'Classical Chinese garden' },
+      { id: '10', name: 'Oriental Pearl Tower', category: 'Modern Attraction', description: 'Iconic TV tower' },
+    ],
+  },
+  {
+    name: 'Ordos',
+    nameKey: 'ordos',
+    imageUrl: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80',
+    attractions: [
+      { id: '11', name: 'Genghis Khan Mausoleum', category: 'Historical Site', description: 'Memorial complex' },
+      { id: '12', name: 'Resonant Sand Gorge', category: 'Scenic Spot', description: 'Desert landscape' },
+      { id: '13', name: 'Ordos Museum', category: 'Cultural Landmark', description: 'Modern architecture museum' },
     ],
   },
   {
     name: 'Hong Kong',
+    nameKey: 'hongKong',
     imageUrl: 'https://images.unsplash.com/photo-1536599018102-9f803c140fc1?w=800&q=80',
     attractions: [
-      { id: '8', name: 'Victoria Harbour', category: 'Scenic Spot', description: 'Natural harbor' },
-      { id: '9', name: 'Victoria Peak', category: 'Scenic Spot', description: 'Mountain peak with views' },
-      { id: '10', name: 'Temple Street', category: 'Cultural Landmark', description: 'Night market' },
+      { id: '14', name: 'Victoria Harbour', category: 'Scenic Spot', description: 'Natural harbor' },
+      { id: '15', name: 'Victoria Peak', category: 'Scenic Spot', description: 'Mountain peak with views' },
+      { id: '16', name: 'Temple Street', category: 'Cultural Landmark', description: 'Night market' },
     ],
   },
   {
-    name: 'Guangzhou',
-    imageUrl: 'https://images.unsplash.com/photo-1570797197190-8e003a00c846?w=800&q=80',
+    name: 'Macau',
+    nameKey: 'macau',
+    imageUrl: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=80',
     attractions: [
-      { id: '11', name: 'Canton Tower', category: 'Modern Attraction', description: 'Observation tower' },
-      { id: '12', name: 'Chen Clan Ancestral Hall', category: 'Cultural Landmark', description: 'Traditional architecture' },
+      { id: '17', name: 'Ruins of St. Paul', category: 'Historical Site', description: 'Historic church facade' },
+      { id: '18', name: 'Senado Square', category: 'Cultural Landmark', description: 'Historic town square' },
+      { id: '19', name: 'A-Ma Temple', category: 'Cultural Landmark', description: 'Ancient Chinese temple' },
     ],
   },
 ];
@@ -120,7 +146,7 @@ export default function CitiesScreen() {
         {/* Header with City Selector */}
         <View style={styles.headerContainer}>
           <Text style={[styles.title, { color: currentColors.text }]}>
-            {selectedCity.name}
+            {t(selectedCity.nameKey)}
           </Text>
           <Pressable 
             style={styles.citySelectorButton}
@@ -151,10 +177,10 @@ export default function CitiesScreen() {
               </View>
               <View style={[styles.cityNameContainer, { backgroundColor: currentColors.backgroundSecondary }]}>
                 <Text style={[styles.cityName, { color: currentColors.text }]}>
-                  {city.name}
+                  {t(city.nameKey)}
                 </Text>
                 <Text style={[styles.attractionCount, { color: currentColors.textSecondary }]}>
-                  {city.attractions.length} attractions
+                  {city.attractions.length} {t('attractions')}
                 </Text>
               </View>
             </Pressable>
@@ -176,7 +202,7 @@ export default function CitiesScreen() {
               <IconSymbol name="xmark" color={currentColors.textSecondary} size={24} />
             </Pressable>
             <Text style={[styles.modalTitle, { color: currentColors.text }]}>
-              Select City
+              {t('selectCity')}
             </Text>
             <View style={styles.placeholder} />
           </View>
@@ -207,10 +233,10 @@ export default function CitiesScreen() {
                 />
                 <View style={styles.citySelectInfo}>
                   <Text style={[styles.citySelectName, { color: currentColors.text }]}>
-                    {city.name}
+                    {t(city.nameKey)}
                   </Text>
                   <Text style={[styles.citySelectAttractions, { color: currentColors.textSecondary }]}>
-                    {city.attractions.length} attractions
+                    {city.attractions.length} {t('attractions')}
                   </Text>
                 </View>
                 {selectedCity.name === city.name && (
@@ -236,7 +262,7 @@ export default function CitiesScreen() {
               <IconSymbol name="chevron.left" color={currentColors.primary} size={28} />
             </Pressable>
             <Text style={[styles.modalTitle, { color: currentColors.text }]}>
-              {selectedCity?.name}
+              {t(selectedCity?.nameKey)}
             </Text>
             <View style={styles.placeholder} />
           </View>
@@ -250,7 +276,7 @@ export default function CitiesScreen() {
               <IconSymbol name="magnifyingglass" color={currentColors.textSecondary} size={20} />
               <TextInput
                 style={[styles.searchInput, { color: currentColors.text }]}
-                placeholder="Search attractions..."
+                placeholder={t('searchAttractions')}
                 placeholderTextColor={currentColors.textSecondary}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -297,7 +323,7 @@ export default function CitiesScreen() {
               <View style={styles.noResults}>
                 <IconSymbol name="magnifyingglass" color={currentColors.textTertiary} size={48} />
                 <Text style={[styles.noResultsText, { color: currentColors.textSecondary }]}>
-                  {searchQuery ? 'No attractions found' : 'No attractions available'}
+                  {searchQuery ? t('noAttractionsFound') : t('noAttractionsAvailable')}
                 </Text>
               </View>
             )}
