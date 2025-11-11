@@ -9,7 +9,7 @@ import {
   Pressable,
 } from 'react-native';
 import { IconSymbol } from '@/components/IconSymbol';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { BlurView } from 'expo-blur';
 import { colors, darkColors } from '@/styles/commonStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -92,10 +92,19 @@ export default function FloatingTabBar({
 
   const activeIndex = getActiveIndex();
 
-  // Shared values for animations
+  // Shared values for animations - create them at the top level, not in a callback
   const indicatorPosition = useSharedValue(activeIndex);
-  const tabPressScale = tabs.map(() => useSharedValue(1));
-  const tabPressOpacity = tabs.map(() => useSharedValue(1));
+  
+  // Create shared values for each tab using useMemo to avoid recreating on every render
+  const tabPressScale = useMemo(() => 
+    tabs.map(() => useSharedValue(1)),
+    [tabs.length]
+  );
+  
+  const tabPressOpacity = useMemo(() => 
+    tabs.map(() => useSharedValue(1)),
+    [tabs.length]
+  );
 
   useEffect(() => {
     console.log('Active index changed to:', activeIndex);
@@ -105,7 +114,7 @@ export default function FloatingTabBar({
       stiffness: 300,
       mass: 0.8,
     });
-  }, [activeIndex]);
+  }, [activeIndex, indicatorPosition]);
 
   const triggerHapticFeedback = () => {
     if (Platform.OS === 'ios') {
@@ -282,7 +291,7 @@ const TabButton = React.memo(({
         stiffness: 300,
       });
     }
-  }, [isActive]);
+  }, [isActive, iconScale, iconRotate]);
 
   const animatedTabStyle = useAnimatedStyle(() => {
     return {
