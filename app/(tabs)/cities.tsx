@@ -1,5 +1,10 @@
 
 import React from 'react';
+import { colors, darkColors } from '@/styles/commonStyles';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@react-navigation/native';
+import { useThemeMode } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   View,
   Text,
@@ -10,9 +15,6 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@react-navigation/native';
-import { colors } from '@/styles/commonStyles';
 
 interface City {
   name: string;
@@ -34,90 +36,53 @@ const CITIES: City[] = [
   },
   {
     name: 'Macao',
-    imageUrl: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=800&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=80',
   },
 ];
 
+const { width } = Dimensions.get('window');
+const cardWidth = (width - 48) / 2;
+
 export default function CitiesScreen() {
   const theme = useTheme();
-  const isDark = theme.dark;
-  const screenWidth = Dimensions.get('window').width;
-  const padding = 20;
-  const gap = 16;
-  const itemWidth = (screenWidth - padding * 2 - gap) / 2;
+  const { isDark } = useThemeMode();
+  const { t } = useLanguage();
+  const currentColors = isDark ? darkColors : colors;
 
   const handleCityPress = (cityName: string) => {
     console.log('City pressed:', cityName);
-    // You can add navigation or other actions here
   };
 
   return (
-    <SafeAreaView
-      style={[
-        styles.container,
-        { backgroundColor: isDark ? '#000000' : colors.background },
-      ]}
-      edges={['top']}
-    >
-      <ScrollView
-        style={styles.scrollView}
+    <SafeAreaView style={[styles.container, { backgroundColor: currentColors.background }]} edges={['top']}>
+      <ScrollView 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text
-            style={[
-              styles.title,
-              { color: isDark ? '#FFFFFF' : colors.text },
-            ]}
-          >
-            Cities
-          </Text>
-        </View>
-
-        {/* Grid Container */}
-        <View style={[styles.gridContainer, { padding }]}>
+        <Text style={[styles.title, { color: currentColors.text }]}>
+          {t('cities')}
+        </Text>
+        
+        <View style={styles.grid}>
           {CITIES.map((city, index) => (
             <Pressable
               key={city.name}
-              style={[
-                styles.cityItem,
-                {
-                  width: itemWidth,
-                  marginRight: index % 2 === 0 ? gap : 0,
-                  marginBottom: gap,
-                },
-              ]}
+              style={[styles.cityCard, { width: cardWidth }]}
               onPress={() => handleCityPress(city.name)}
             >
-              {/* City Image */}
-              <View
-                style={[
-                  styles.imageContainer,
-                  {
-                    width: itemWidth,
-                    height: itemWidth,
-                  },
-                ]}
-              >
+              <View style={styles.imageContainer}>
                 <Image
                   source={{ uri: city.imageUrl }}
                   style={styles.cityImage}
                   resizeMode="cover"
                 />
+                <View style={[styles.overlay, { backgroundColor: currentColors.overlayLight }]} />
               </View>
-
-              {/* City Name */}
-              <Text
-                style={[
-                  styles.cityName,
-                  { color: isDark ? '#FFFFFF' : colors.text },
-                ]}
-                numberOfLines={1}
-              >
-                {city.name}
-              </Text>
+              <View style={[styles.cityNameContainer, { backgroundColor: currentColors.backgroundSecondary }]}>
+                <Text style={[styles.cityName, { color: currentColors.text }]}>
+                  {city.name}
+                </Text>
+              </View>
             </Pressable>
           ))}
         </View>
@@ -130,54 +95,51 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollView: {
-    flex: 1,
-  },
   scrollContent: {
-    paddingBottom: 100, // Space for floating tab bar
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: Platform.OS === 'android' ? 100 : 20,
   },
   title: {
     fontSize: 34,
     fontWeight: '700',
-    letterSpacing: -0.5,
-    ...Platform.select({
-      ios: {
-        fontFamily: 'System',
-      },
-    }),
+    marginBottom: 24,
+    letterSpacing: -1,
   },
-  gridContainer: {
+  grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 16,
   },
-  cityItem: {
-    marginBottom: 8,
-  },
-  imageContainer: {
-    borderRadius: 8,
+  cityCard: {
+    borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#E5E5EA',
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
     elevation: 3,
+  },
+  imageContainer: {
+    width: '100%',
+    aspectRatio: 1,
+    position: 'relative',
   },
   cityImage: {
     width: '100%',
     height: '100%',
   },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  cityNameContainer: {
+    padding: 12,
+  },
   cityName: {
-    fontSize: 15,
-    fontWeight: '500',
-    marginTop: 8,
-    letterSpacing: -0.2,
-    ...Platform.select({
-      ios: {
-        fontFamily: 'System',
-      },
-    }),
+    fontSize: 17,
+    fontWeight: '600',
+    textAlign: 'center',
+    letterSpacing: -0.3,
   },
 });

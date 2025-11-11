@@ -1,7 +1,7 @@
 
 import { StyleSheet, ViewStyle, TextStyle } from 'react-native';
 
-// iOS 26 inspired color palette
+// Crimson as the main color with iOS 26 inspired palette
 export const colors = {
   // Light mode colors
   background: '#F2F2F7',
@@ -9,7 +9,9 @@ export const colors = {
   text: '#000000',
   textSecondary: '#8E8E93',
   textTertiary: '#C7C7CC',
-  primary: '#007AFF',
+  primary: '#DC143C', // Crimson
+  primaryLight: '#FF6B8A',
+  primaryDark: '#B01030',
   secondary: '#34C759',
   accent: '#FF9500',
   card: '#FFFFFF',
@@ -27,6 +29,35 @@ export const colors = {
   // Overlay
   overlay: 'rgba(0, 0, 0, 0.4)',
   overlayLight: 'rgba(0, 0, 0, 0.2)',
+};
+
+// Dark mode colors
+export const darkColors = {
+  background: '#000000',
+  backgroundSecondary: '#1C1C1E',
+  text: '#FFFFFF',
+  textSecondary: '#8E8E93',
+  textTertiary: '#48484A',
+  primary: '#FF6B8A', // Lighter crimson for dark mode
+  primaryLight: '#FF8FA8',
+  primaryDark: '#DC143C',
+  secondary: '#32D74B',
+  accent: '#FF9F0A',
+  card: '#1C1C1E',
+  cardSecondary: '#2C2C2E',
+  highlight: '#FFD60A',
+  border: '#38383A',
+  separator: '#38383A',
+  
+  // Semantic colors
+  success: '#32D74B',
+  warning: '#FF9F0A',
+  error: '#FF453A',
+  info: '#0A84FF',
+  
+  // Overlay
+  overlay: 'rgba(0, 0, 0, 0.6)',
+  overlayLight: 'rgba(0, 0, 0, 0.4)',
 };
 
 export const buttonStyles = StyleSheet.create({
