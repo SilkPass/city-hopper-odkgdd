@@ -51,11 +51,28 @@ export default function FloatingTabBar({
   const router = useRouter();
   const pathname = usePathname();
 
+  // Determine active tab index based on current pathname
   const activeIndex = tabs.findIndex((tab) => {
-    if (tab.route === '/(home)') {
-      return pathname === '/(tabs)/(home)' || pathname === '/(tabs)/(home)/';
+    // Normalize paths for comparison
+    const normalizedPathname = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+    const normalizedTabRoute = tab.route.endsWith('/') ? tab.route.slice(0, -1) : tab.route;
+    
+    // Check for home route
+    if (normalizedTabRoute === '/(tabs)/(home)') {
+      return normalizedPathname === '/(tabs)/(home)' || normalizedPathname === '/(tabs)/(home)/index';
     }
-    return pathname.includes(tab.route);
+    
+    // Check for cities route
+    if (normalizedTabRoute === '/(tabs)/cities') {
+      return normalizedPathname === '/(tabs)/cities';
+    }
+    
+    // Check for profile route
+    if (normalizedTabRoute === '/(tabs)/profile') {
+      return normalizedPathname === '/(tabs)/profile';
+    }
+    
+    return false;
   });
 
   const indicatorPosition = useSharedValue(activeIndex >= 0 ? activeIndex : 0);
@@ -86,6 +103,7 @@ export default function FloatingTabBar({
   });
 
   const handleTabPress = (route: string) => {
+    console.log('Tab pressed, navigating to:', route);
     router.push(route as any);
   };
 
@@ -153,7 +171,7 @@ export default function FloatingTabBar({
                     },
                   ]}
                 >
-                  {t(tab.label)}
+                  {tab.label}
                 </Text>
               </View>
             </TouchableOpacity>

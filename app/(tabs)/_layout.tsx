@@ -6,22 +6,19 @@ import { Stack } from 'expo-router';
 import FloatingTabBar, { TabBarItem } from '@/components/FloatingTabBar';
 
 export default function TabLayout() {
-  // Define the tabs configuration
+  // Define the tabs configuration with correct routes
   const tabs: TabBarItem[] = [
     {
-      name: '(home)',
-      route: '/(tabs)/(home)/',
+      route: '/(tabs)/(home)',
       icon: 'house.fill',
       label: 'Home',
     },
     {
-      name: 'cities',
       route: '/(tabs)/cities',
       icon: 'building.2.fill',
       label: 'Cities',
     },
     {
-      name: 'profile',
       route: '/(tabs)/profile',
       icon: 'person.fill',
       label: 'Profile',
@@ -54,7 +51,7 @@ export default function TabLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          animation: 'none', // Remove fade animation to prevent black screen flash
+          animation: 'none',
         }}
       >
         <Stack.Screen name="(home)" />
