@@ -43,23 +43,35 @@ const CITIES: City[] = [
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 48) / 2;
 
+// Helper function to check if it's daytime (6 AM to 6 PM)
+const isDaytime = (): boolean => {
+  const currentHour = new Date().getHours();
+  return currentHour >= 6 && currentHour < 18;
+};
+
 export default function CitiesScreen() {
   const theme = useTheme();
   const { isDark } = useThemeMode();
   const { t } = useLanguage();
-  const currentColors = isDark ? darkColors : colors;
+  
+  // Use white background during daytime, otherwise use theme colors
+  const isDay = isDaytime();
+  const backgroundColor = isDay ? '#FFFFFF' : (isDark ? darkColors.background : colors.background);
+  const textColor = isDay ? '#000000' : (isDark ? darkColors.text : colors.text);
+  const cardBackgroundColor = isDay ? '#F5F5F5' : (isDark ? darkColors.backgroundSecondary : colors.backgroundSecondary);
+  const overlayColor = isDay ? 'rgba(0, 0, 0, 0.1)' : (isDark ? darkColors.overlayLight : colors.overlayLight);
 
   const handleCityPress = (cityName: string) => {
     console.log('City pressed:', cityName);
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: currentColors.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.title, { color: currentColors.text }]}>
+        <Text style={[styles.title, { color: textColor }]}>
           {t('cities')}
         </Text>
         
@@ -76,10 +88,10 @@ export default function CitiesScreen() {
                   style={styles.cityImage}
                   resizeMode="cover"
                 />
-                <View style={[styles.overlay, { backgroundColor: currentColors.overlayLight }]} />
+                <View style={[styles.overlay, { backgroundColor: overlayColor }]} />
               </View>
-              <View style={[styles.cityNameContainer, { backgroundColor: currentColors.backgroundSecondary }]}>
-                <Text style={[styles.cityName, { color: currentColors.text }]}>
+              <View style={[styles.cityNameContainer, { backgroundColor: cardBackgroundColor }]}>
+                <Text style={[styles.cityName, { color: textColor }]}>
                   {city.name}
                 </Text>
               </View>
