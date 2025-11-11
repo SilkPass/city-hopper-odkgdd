@@ -192,11 +192,8 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        {/* Map Card */}
+        {/* Map Card - No title, 1:1 aspect ratio */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
-            Map
-          </Text>
           <Pressable 
             style={[styles.mapCard, { backgroundColor: currentColors.cardSecondary }]}
             onPress={() => handleServicePress('Map')}
@@ -215,30 +212,14 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        {/* Services Grid */}
+        {/* Services Grid - Reordered: eSIM, Payment on line 1; Guide, Emergency on line 2 */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
             Services
           </Text>
           
           <View style={styles.servicesGrid}>
-            {/* Guide Service */}
-            <Pressable 
-              style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary }]}
-              onPress={() => handleServicePress('Travel Guide')}
-            >
-              <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.primary + '15' }]}>
-                <IconSymbol name="book.fill" color={currentColors.primary} size={32} />
-              </View>
-              <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
-                Guide
-              </Text>
-              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
-                Explore local attractions
-              </Text>
-            </Pressable>
-
-            {/* eSIM Service */}
+            {/* eSIM Service - Line 1 */}
             <Pressable 
               style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary }]}
               onPress={() => handleServicePress('eSIM')}
@@ -254,7 +235,7 @@ export default function HomeScreen() {
               </Text>
             </Pressable>
 
-            {/* Payment Service */}
+            {/* Payment Service - Line 1 */}
             <Pressable 
               style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary }]}
               onPress={() => handleServicePress('Payment')}
@@ -270,7 +251,23 @@ export default function HomeScreen() {
               </Text>
             </Pressable>
 
-            {/* Emergency Service */}
+            {/* Guide Service - Line 2 */}
+            <Pressable 
+              style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary }]}
+              onPress={() => handleServicePress('Travel Guide')}
+            >
+              <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.primary + '15' }]}>
+                <IconSymbol name="book.fill" color={currentColors.primary} size={32} />
+              </View>
+              <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
+                Guide
+              </Text>
+              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
+                Explore local attractions
+              </Text>
+            </Pressable>
+
+            {/* Emergency Service - Line 2 */}
             <Pressable 
               style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary }]}
               onPress={() => handleServicePress('Emergency')}
@@ -456,7 +453,7 @@ const styles = StyleSheet.create({
   },
   mapCard: {
     width: '100%',
-    height: 200,
+    aspectRatio: 1,
     borderRadius: 16,
     overflow: 'hidden',
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
