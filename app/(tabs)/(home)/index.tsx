@@ -10,7 +10,8 @@ import {
   Platform,
   ActivityIndicator,
   Dimensions,
-  Alert
+  Alert,
+  Modal
 } from "react-native";
 import { IconSymbol } from "@/components/IconSymbol";
 import { useTheme } from "@react-navigation/native";
@@ -18,6 +19,7 @@ import * as Location from 'expo-location';
 import { colors, darkColors } from "@/styles/commonStyles";
 import { useThemeMode } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get('window');
 
@@ -31,6 +33,8 @@ const CITIES: City[] = [
   { name: "Beijing", latitude: 39.9042, longitude: 116.4074 },
   { name: "Shanghai", latitude: 31.2304, longitude: 121.4737 },
   { name: "Hong Kong", latitude: 22.3193, longitude: 114.1694 },
+  { name: "Guangzhou", latitude: 23.1291, longitude: 113.2644 },
+  { name: "Shenzhen", latitude: 22.5431, longitude: 114.0579 },
 ];
 
 export default function HomeScreen() {
@@ -43,6 +47,7 @@ export default function HomeScreen() {
   const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
   const [loading, setLoading] = useState(true);
   const [locationPermission, setLocationPermission] = useState<Location.PermissionStatus | null>(null);
+  const [showCitySelector, setShowCitySelector] = useState(false);
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371;
@@ -116,6 +121,12 @@ export default function HomeScreen() {
     Alert.alert(service, `${service} feature coming soon!`);
   };
 
+  const handleCitySelect = (city: City) => {
+    console.log('City selected:', city.name);
+    setSelectedCity(city);
+    setShowCitySelector(false);
+  };
+
   if (loading) {
     return (
       <>
@@ -133,7 +144,7 @@ export default function HomeScreen() {
         <View style={[styles.container, { backgroundColor: currentColors.background }]}>
           <ActivityIndicator size="large" color={currentColors.primary} />
           <Text style={[styles.loadingText, { color: currentColors.textSecondary }]}>
-            {t('gettingYourLocation')}
+            Getting your location...
           </Text>
         </View>
       </>
@@ -160,14 +171,25 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
+        {/* Header with City Selector */}
         <View style={styles.header}>
           <Text style={[styles.greeting, { color: currentColors.textSecondary }]}>
             Welcome to
           </Text>
-          <Text style={[styles.title, { color: currentColors.text }]}>
-            {selectedCity?.name || 'Your City'}
-          </Text>
+          <Pressable 
+            style={styles.citySelector}
+            onPress={() => setShowCitySelector(true)}
+          >
+            <Text style={[styles.title, { color: currentColors.text }]}>
+              {selectedCity?.name || 'Your City'}
+            </Text>
+            <IconSymbol 
+              name="chevron.down" 
+              color={currentColors.primary} 
+              size={28} 
+              style={styles.chevronIcon}
+            />
+          </Pressable>
         </View>
 
         {/* Map Card */}
@@ -209,10 +231,10 @@ export default function HomeScreen() {
                 <IconSymbol name="book.fill" color={currentColors.primary} size={32} />
               </View>
               <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
-                Travel Guide
+                Guide
               </Text>
               <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
-                Explore local attractions and hidden gems
+                Explore local attractions
               </Text>
             </Pressable>
 
@@ -228,7 +250,7 @@ export default function HomeScreen() {
                 eSIM
               </Text>
               <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
-                Stay connected with local data plans
+                Stay connected locally
               </Text>
             </Pressable>
 
@@ -244,7 +266,7 @@ export default function HomeScreen() {
                 Payment
               </Text>
               <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
-                Secure and convenient payment options
+                Secure payment options
               </Text>
             </Pressable>
 
@@ -260,7 +282,7 @@ export default function HomeScreen() {
                 Emergency
               </Text>
               <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
-                Quick access to emergency contacts
+                Quick emergency access
               </Text>
             </Pressable>
           </View>
@@ -327,6 +349,67 @@ export default function HomeScreen() {
           </Pressable>
         </View>
       </ScrollView>
+
+      {/* City Selector Modal */}
+      <Modal
+        visible={showCitySelector}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowCitySelector(false)}
+      >
+        <SafeAreaView 
+          style={[styles.modalContainer, { backgroundColor: currentColors.background }]} 
+          edges={['top', 'bottom']}
+        >
+          {/* Modal Header */}
+          <View style={[styles.modalHeader, { borderBottomColor: currentColors.separator }]}>
+            <Pressable onPress={() => setShowCitySelector(false)} style={styles.backButton}>
+              <IconSymbol name="xmark" color={currentColors.textSecondary} size={24} />
+            </Pressable>
+            <Text style={[styles.modalTitle, { color: currentColors.text }]}>
+              Select City
+            </Text>
+            <View style={styles.placeholder} />
+          </View>
+
+          {/* Cities List */}
+          <ScrollView 
+            style={styles.citiesList}
+            contentContainerStyle={styles.citiesContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {CITIES.map((city) => (
+              <Pressable
+                key={city.name}
+                style={[
+                  styles.citySelectCard, 
+                  { 
+                    backgroundColor: currentColors.backgroundSecondary,
+                    borderColor: selectedCity?.name === city.name ? currentColors.primary : 'transparent',
+                    borderWidth: selectedCity?.name === city.name ? 2 : 0,
+                  }
+                ]}
+                onPress={() => handleCitySelect(city)}
+              >
+                <View style={[styles.cityIconContainer, { backgroundColor: currentColors.primary + '15' }]}>
+                  <IconSymbol name="building.2.fill" color={currentColors.primary} size={32} />
+                </View>
+                <View style={styles.citySelectInfo}>
+                  <Text style={[styles.citySelectName, { color: currentColors.text }]}>
+                    {city.name}
+                  </Text>
+                  <Text style={[styles.citySelectCoords, { color: currentColors.textSecondary }]}>
+                    {city.latitude.toFixed(2)}°, {city.longitude.toFixed(2)}°
+                  </Text>
+                </View>
+                {selectedCity?.name === city.name && (
+                  <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={28} />
+                )}
+              </Pressable>
+            ))}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </>
   );
 }
@@ -349,10 +432,18 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
+  citySelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   title: {
     fontSize: 34,
     fontWeight: '700',
     letterSpacing: -1,
+  },
+  chevronIcon: {
+    marginTop: 4,
   },
   section: {
     marginBottom: 32,
@@ -452,5 +543,66 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 17,
+  },
+  modalContainer: {
+    flex: 1,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  backButton: {
+    padding: 4,
+    width: 40,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  placeholder: {
+    width: 40,
+  },
+  citiesList: {
+    flex: 1,
+  },
+  citiesContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingBottom: 20,
+  },
+  citySelectCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
+    gap: 12,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
+    elevation: 2,
+  },
+  cityIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  citySelectInfo: {
+    flex: 1,
+  },
+  citySelectName: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 4,
+    letterSpacing: -0.5,
+  },
+  citySelectCoords: {
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

@@ -21,9 +21,7 @@ import Animated, {
   useSharedValue,
   withSpring,
   interpolate,
-  runOnJS,
 } from 'react-native-reanimated';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 export interface TabBarItem {
   route: string;
@@ -54,90 +52,64 @@ export default function FloatingTabBar({
   const pathname = usePathname();
 
   // Determine active tab index based on current pathname
-  const activeIndex = tabs.findIndex((tab) => {
-    // Normalize paths for comparison
-    const normalizedPathname = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
-    const normalizedTabRoute = tab.route.endsWith('/') ? tab.route.slice(0, -1) : tab.route;
+  const getActiveIndex = () => {
+    console.log('Current pathname:', pathname);
     
-    // Check for home route
-    if (normalizedTabRoute === '/(tabs)/(home)') {
-      return normalizedPathname === '/(tabs)/(home)' || normalizedPathname === '/(tabs)/(home)/index';
-    }
-    
-    // Check for cities route
-    if (normalizedTabRoute === '/(tabs)/cities') {
-      return normalizedPathname === '/(tabs)/cities';
-    }
-    
-    // Check for profile route
-    if (normalizedTabRoute === '/(tabs)/profile') {
-      return normalizedPathname === '/(tabs)/profile';
-    }
-    
-    return false;
-  });
-
-  const indicatorPosition = useSharedValue(activeIndex >= 0 ? activeIndex : 0);
-  const translateX = useSharedValue(0);
-  const startX = useSharedValue(0);
-
-  React.useEffect(() => {
-    if (activeIndex >= 0) {
-      indicatorPosition.value = withSpring(activeIndex, {
-        damping: 20,
-        stiffness: 200,
-      });
-    }
-  }, [activeIndex, indicatorPosition]);
-
-  const handleTabPress = (route: string) => {
-    console.log('Tab pressed, navigating to:', route);
-    router.push(route as any);
-  };
-
-  const navigateToTab = (index: number) => {
-    if (index >= 0 && index < tabs.length) {
-      console.log('Swiping to tab:', tabs[index].label);
-      handleTabPress(tabs[index].route);
-    }
-  };
-
-  // Pan gesture for swipe navigation
-  const panGesture = Gesture.Pan()
-    .onStart(() => {
-      startX.value = translateX.value;
-    })
-    .onUpdate((event) => {
-      translateX.value = startX.value + event.translationX;
-    })
-    .onEnd((event) => {
-      const threshold = 50; // Minimum swipe distance
-      const velocity = event.velocityX;
+    // Check each tab route
+    for (let i = 0; i < tabs.length; i++) {
+      const tab = tabs[i];
       
-      // Determine if swipe was significant enough
-      if (Math.abs(event.translationX) > threshold || Math.abs(velocity) > 500) {
-        let newIndex = activeIndex;
-        
-        // Swipe right (go to previous tab)
-        if (event.translationX > 0 && activeIndex > 0) {
-          newIndex = activeIndex - 1;
-        }
-        // Swipe left (go to next tab)
-        else if (event.translationX < 0 && activeIndex < tabs.length - 1) {
-          newIndex = activeIndex + 1;
-        }
-        
-        if (newIndex !== activeIndex) {
-          runOnJS(navigateToTab)(newIndex);
+      // Home route matching
+      if (tab.route === '/(tabs)/(home)') {
+        if (pathname.includes('/(home)') || pathname === '/(tabs)') {
+          console.log('Matched home tab, index:', i);
+          return i;
         }
       }
-      
-      // Reset translation
-      translateX.value = withSpring(0, {
-        damping: 20,
-        stiffness: 200,
-      });
+      // Cities route matching
+      else if (tab.route === '/(tabs)/cities') {
+        if (pathname.includes('/cities')) {
+          console.log('Matched cities tab, index:', i);
+          return i;
+        }
+      }
+      // Profile route matching
+      else if (tab.route === '/(tabs)/profile') {
+        if (pathname.includes('/profile')) {
+          console.log('Matched profile tab, index:', i);
+          return i;
+        }
+      }
+    }
+    
+    console.log('No match found, defaulting to index 0');
+    return 0;
+  };
+
+  const activeIndex = getActiveIndex();
+
+  const indicatorPosition = useSharedValue(activeIndex);
+
+  React.useEffect(() => {
+    console.log('Active index changed to:', activeIndex);
+    indicatorPosition.value = withSpring(activeIndex, {
+      damping: 20,
+      stiffness: 200,
     });
+  }, [activeIndex, indicatorPosition]);
+
+  const handleTabPress = (route: string, index: number) => {
+    console.log('Tab pressed, navigating to:', route, 'index:', index);
+    
+    // Use replace for smoother navigation without animation
+    try {
+      router.replace(route as any);
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Fallback to push if replace fails
+      router.push(route as any);
+    }
+  };
 
   const animatedIndicatorStyle = useAnimatedStyle(() => {
     const tabWidth = containerWidth / tabs.length;
@@ -167,67 +139,65 @@ export default function FloatingTabBar({
         },
       ]}
     >
-      <GestureDetector gesture={panGesture}>
-        <BlurView
-          intensity={Platform.OS === 'ios' ? 80 : 100}
-          tint={isDark ? 'dark' : 'light'}
+      <BlurView
+        intensity={Platform.OS === 'ios' ? 80 : 100}
+        tint={isDark ? 'dark' : 'light'}
+        style={[
+          styles.container,
+          {
+            width: containerWidth,
+            borderRadius: borderRadius,
+            backgroundColor: isDark 
+              ? 'rgba(26, 26, 26, 0.85)' 
+              : 'rgba(255, 255, 255, 0.85)',
+            borderColor: isDark ? darkColors.border : colors.border,
+          },
+        ]}
+      >
+        <Animated.View
           style={[
-            styles.container,
+            styles.indicator,
+            animatedIndicatorStyle,
             {
-              width: containerWidth,
-              borderRadius: borderRadius,
-              backgroundColor: isDark 
-                ? 'rgba(26, 26, 26, 0.85)' 
-                : 'rgba(255, 255, 255, 0.85)',
-              borderColor: isDark ? darkColors.border : colors.border,
+              backgroundColor: currentColors.primary + '20',
             },
           ]}
-        >
-          <Animated.View
-            style={[
-              styles.indicator,
-              animatedIndicatorStyle,
-              {
-                backgroundColor: currentColors.primary + '20',
-              },
-            ]}
-          />
+        />
 
-          {tabs.map((tab, index) => {
-            const isActive = index === activeIndex;
-            const iconColor = isActive ? currentColors.primary : currentColors.textSecondary;
+        {tabs.map((tab, index) => {
+          const isActive = index === activeIndex;
+          const iconColor = isActive ? currentColors.primary : currentColors.textSecondary;
 
-            return (
-              <TouchableOpacity
-                key={tab.route}
-                style={[styles.tab, { width: tabWidth }]}
-                onPress={() => handleTabPress(tab.route)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.tabContent}>
-                  <IconSymbol
-                    name={tab.icon as any}
-                    size={24}
-                    color={iconColor}
-                    style={styles.icon}
-                  />
-                  <Text
-                    style={[
-                      styles.label,
-                      {
-                        color: iconColor,
-                        fontWeight: isActive ? '600' : '500',
-                      },
-                    ]}
-                  >
-                    {tab.label}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </BlurView>
-      </GestureDetector>
+          return (
+            <TouchableOpacity
+              key={tab.route}
+              style={[styles.tab, { width: tabWidth }]}
+              onPress={() => handleTabPress(tab.route, index)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.tabContent}>
+                <IconSymbol
+                  name={tab.icon as any}
+                  size={24}
+                  color={iconColor}
+                  style={styles.icon}
+                />
+                <Text
+                  style={[
+                    styles.label,
+                    {
+                      color: iconColor,
+                      fontWeight: isActive ? '600' : '500',
+                    },
+                  ]}
+                >
+                  {tab.label}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </BlurView>
     </SafeAreaView>
   );
 }
