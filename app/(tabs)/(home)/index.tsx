@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Stack } from "expo-router";
 import { 
   ScrollView, 
@@ -62,42 +62,7 @@ export default function HomeScreen() {
   const searchInputRef = useRef<TextInput>(null);
   const slideAnim = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    requestLocationPermission();
-  }, []);
-
-  useEffect(() => {
-    // Filter cities based on search query
-    if (searchQuery.trim() === "") {
-      setFilteredCities(sortedCities);
-    } else {
-      const filtered = sortedCities.filter(city => 
-        city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        city.nameZh.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredCities(filtered);
-    }
-  }, [searchQuery, sortedCities]);
-
-  useEffect(() => {
-    if (showCitySelector) {
-      Animated.spring(slideAnim, {
-        toValue: 1,
-        useNativeDriver: true,
-        tension: 65,
-        friction: 11,
-      }).start();
-    } else {
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 65,
-        friction: 11,
-      }).start();
-    }
-  }, [showCitySelector]);
-
-  const requestLocationPermission = async () => {
+  const requestLocationPermission = useCallback(async () => {
     try {
       console.log('Requesting location permission...');
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -116,7 +81,7 @@ export default function HomeScreen() {
       setLoading(false);
       setSelectedCity(CITIES[0]);
     }
-  };
+  }, []);
 
   const getUserLocation = async () => {
     try {
@@ -183,6 +148,41 @@ export default function HomeScreen() {
       setShowCityDropdown(false);
     }
   };
+
+  useEffect(() => {
+    requestLocationPermission();
+  }, [requestLocationPermission]);
+
+  useEffect(() => {
+    // Filter cities based on search query
+    if (searchQuery.trim() === "") {
+      setFilteredCities(sortedCities);
+    } else {
+      const filtered = sortedCities.filter(city => 
+        city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        city.nameZh.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredCities(filtered);
+    }
+  }, [searchQuery, sortedCities]);
+
+  useEffect(() => {
+    if (showCitySelector) {
+      Animated.spring(slideAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 65,
+        friction: 11,
+      }).start();
+    } else {
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 65,
+        friction: 11,
+      }).start();
+    }
+  }, [showCitySelector, slideAnim]);
 
   const modalTranslateY = slideAnim.interpolate({
     inputRange: [0, 1],

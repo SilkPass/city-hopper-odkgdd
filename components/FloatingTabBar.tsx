@@ -67,7 +67,7 @@ export default function FloatingTabBar({
         stiffness: 200,
       });
     }
-  }, [activeIndex]);
+  }, [activeIndex, indicatorPosition]);
 
   const animatedIndicatorStyle = useAnimatedStyle(() => {
     const tabWidth = containerWidth / tabs.length;

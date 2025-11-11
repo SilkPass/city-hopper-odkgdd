@@ -233,7 +233,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
         console.log('Auto-detected language:', matchedLanguage);
       }
     }
-  }, []);
+  }, [i18n]);
 
   const setLanguage = (lang: SupportedLanguage) => {
     setLanguageState(lang);
