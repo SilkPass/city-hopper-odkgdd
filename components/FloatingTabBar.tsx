@@ -104,13 +104,22 @@ export default function FloatingTabBar({
   const indicatorPosition = useSharedValue(activeIndex);
   
   // Create shared values for each tab dynamically based on tabs length
+  // Fixed: Move useSharedValue calls outside of the map callback
   const tabPressScale = useMemo(() => {
-    return tabs.map(() => useSharedValue(1));
-  }, [tabs.length]);
+    const scales = [];
+    for (let i = 0; i < tabs.length; i++) {
+      scales.push(useSharedValue(1));
+    }
+    return scales;
+  }, [tabs]);
   
   const tabPressOpacity = useMemo(() => {
-    return tabs.map(() => useSharedValue(1));
-  }, [tabs.length]);
+    const opacities = [];
+    for (let i = 0; i < tabs.length; i++) {
+      opacities.push(useSharedValue(1));
+    }
+    return opacities;
+  }, [tabs]);
 
   useEffect(() => {
     console.log('Active index changed to:', activeIndex);
