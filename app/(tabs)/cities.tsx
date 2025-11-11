@@ -148,13 +148,13 @@ export default function CitiesScreen() {
           {language === 'mn' ? (
             <View style={styles.mongolianTitleContainer}>
               <Text style={[styles.mongolianSmallText, { color: currentColors.textSecondary }]}>
-                Та
+                ТА
               </Text>
               <Text style={[styles.mongolianLargeText, { color: currentColors.text }]}>
-                {t(selectedCity.nameKey)}д 位格选城市
+                {t(selectedCity.nameKey)}д
               </Text>
               <Text style={[styles.mongolianSmallText, { color: currentColors.textSecondary }]}>
-                тавтай морилно уу
+                ТАВТАЙ МОРИЛНО УУ
               </Text>
             </View>
           ) : (
