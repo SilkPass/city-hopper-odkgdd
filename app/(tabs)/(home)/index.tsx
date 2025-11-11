@@ -29,6 +29,12 @@ interface City {
   longitude: number;
 }
 
+interface WeatherData {
+  temperature: number;
+  condition: string;
+  icon: string;
+}
+
 const CITIES: City[] = [
   { name: "Beijing", latitude: 39.9042, longitude: 116.4074 },
   { name: "Shanghai", latitude: 31.2304, longitude: 121.4737 },
@@ -48,6 +54,8 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [locationPermission, setLocationPermission] = useState<Location.PermissionStatus | null>(null);
   const [showCitySelector, setShowCitySelector] = useState(false);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371;
@@ -60,6 +68,54 @@ export default function HomeScreen() {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
     return distance;
+  };
+
+  const fetchWeather = useCallback(async (city: City) => {
+    setWeatherLoading(true);
+    try {
+      console.log('Fetching weather for:', city.name);
+      // Using Open-Meteo API (free, no API key required)
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${city.latitude}&longitude=${city.longitude}&current=temperature_2m,weather_code&temperature_unit=celsius`
+      );
+      const data = await response.json();
+      console.log('Weather data:', data);
+      
+      if (data.current) {
+        const weatherCode = data.current.weather_code;
+        const condition = getWeatherCondition(weatherCode);
+        const icon = getWeatherIcon(weatherCode);
+        
+        setWeather({
+          temperature: Math.round(data.current.temperature_2m),
+          condition,
+          icon,
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching weather:', error);
+      setWeather(null);
+    } finally {
+      setWeatherLoading(false);
+    }
+  }, []);
+
+  const getWeatherCondition = (code: number): string => {
+    if (code === 0) return 'Clear';
+    if (code <= 3) return 'Cloudy';
+    if (code <= 67) return 'Rainy';
+    if (code <= 77) return 'Snowy';
+    if (code <= 99) return 'Stormy';
+    return 'Unknown';
+  };
+
+  const getWeatherIcon = (code: number): string => {
+    if (code === 0) return 'sun.max.fill';
+    if (code <= 3) return 'cloud.fill';
+    if (code <= 67) return 'cloud.rain.fill';
+    if (code <= 77) return 'cloud.snow.fill';
+    if (code <= 99) return 'cloud.bolt.fill';
+    return 'cloud.fill';
   };
 
   const getUserLocation = useCallback(async () => {
@@ -83,13 +139,15 @@ export default function HomeScreen() {
       
       citiesWithDistance.sort((a, b) => a.distance - b.distance);
       setSelectedCity(citiesWithDistance[0]);
+      fetchWeather(citiesWithDistance[0]);
       setLoading(false);
     } catch (error) {
       console.error('Error getting location:', error);
       setLoading(false);
       setSelectedCity(CITIES[0]);
+      fetchWeather(CITIES[0]);
     }
-  }, []);
+  }, [fetchWeather]);
 
   const requestLocationPermission = useCallback(async () => {
     try {
@@ -104,13 +162,15 @@ export default function HomeScreen() {
         console.log('Location permission denied');
         setLoading(false);
         setSelectedCity(CITIES[0]);
+        fetchWeather(CITIES[0]);
       }
     } catch (error) {
       console.error('Error requesting location permission:', error);
       setLoading(false);
       setSelectedCity(CITIES[0]);
+      fetchWeather(CITIES[0]);
     }
-  }, [getUserLocation]);
+  }, [getUserLocation, fetchWeather]);
 
   useEffect(() => {
     requestLocationPermission();
@@ -124,6 +184,7 @@ export default function HomeScreen() {
   const handleCitySelect = (city: City) => {
     console.log('City selected:', city.name);
     setSelectedCity(city);
+    fetchWeather(city);
     setShowCitySelector(false);
   };
 
@@ -171,25 +232,47 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header with City Selector */}
-        <View style={styles.header}>
-          <Text style={[styles.greeting, { color: currentColors.textSecondary }]}>
-            Welcome to
-          </Text>
-          <Pressable 
-            style={styles.citySelector}
-            onPress={() => setShowCitySelector(true)}
-          >
-            <Text style={[styles.title, { color: currentColors.text }]}>
-              {selectedCity?.name || 'Your City'}
+        {/* Header with City Selector and Weather */}
+        <View style={styles.headerContainer}>
+          <View style={styles.headerLeft}>
+            <Text style={[styles.greeting, { color: currentColors.textSecondary }]}>
+              Welcome to
             </Text>
-            <IconSymbol 
-              name="chevron.down" 
-              color={currentColors.primary} 
-              size={28} 
-              style={styles.chevronIcon}
-            />
-          </Pressable>
+            <Pressable 
+              style={styles.citySelector}
+              onPress={() => setShowCitySelector(true)}
+            >
+              <Text style={[styles.title, { color: currentColors.text }]}>
+                {selectedCity?.name || 'Your City'}
+              </Text>
+              <IconSymbol 
+                name="chevron.down" 
+                color={currentColors.primary} 
+                size={28} 
+                style={styles.chevronIcon}
+              />
+            </Pressable>
+          </View>
+
+          {/* Weather Widget */}
+          {weather && (
+            <View style={styles.weatherWidget}>
+              {weatherLoading ? (
+                <ActivityIndicator size="small" color={currentColors.primary} />
+              ) : (
+                <>
+                  <IconSymbol 
+                    name={weather.icon} 
+                    color={currentColors.primary} 
+                    size={32} 
+                  />
+                  <Text style={[styles.temperature, { color: currentColors.text }]}>
+                    {weather.temperature}°
+                  </Text>
+                </>
+              )}
+            </View>
+          )}
         </View>
 
         {/* Map Card - No title, 1:1 aspect ratio */}
@@ -212,12 +295,8 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        {/* Services Grid - Reordered: eSIM, Payment on line 1; Guide, Emergency on line 2 */}
+        {/* Services Grid - No title, Reordered: eSIM, Payment on line 1; Guide, Emergency on line 2 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
-            Services
-          </Text>
-          
           <View style={styles.servicesGrid}>
             {/* eSIM Service - Line 1 */}
             <Pressable 
@@ -419,8 +498,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
   },
-  header: {
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: 24,
+  },
+  headerLeft: {
+    flex: 1,
   },
   greeting: {
     fontSize: 15,
@@ -441,6 +526,17 @@ const styles = StyleSheet.create({
   },
   chevronIcon: {
     marginTop: 4,
+  },
+  weatherWidget: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 8,
+    gap: 4,
+  },
+  temperature: {
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: -0.5,
   },
   section: {
     marginBottom: 32,
