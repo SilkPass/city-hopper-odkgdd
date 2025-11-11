@@ -107,9 +107,9 @@ export default function FloatingTabBar({
     console.log('Active index changed to:', activeIndex);
     // Smooth spring animation for indicator
     indicatorPosition.value = withSpring(activeIndex, {
-      damping: 25,
-      stiffness: 300,
-      mass: 0.8,
+      damping: 20,
+      stiffness: 200,
+      mass: 0.5,
     });
   }, [activeIndex, indicatorPosition]);
 
@@ -137,12 +137,12 @@ export default function FloatingTabBar({
 
   const animatedIndicatorStyle = useAnimatedStyle(() => {
     // Calculate the width of each tab
-    const containerPadding = 6;
+    const containerPadding = 8;
     const availableWidth = containerWidth - (containerPadding * 2);
     const tabWidth = availableWidth / tabs.length;
     
-    // Calculate indicator dimensions
-    const indicatorPadding = 4;
+    // Calculate indicator dimensions - make it a rounded pill
+    const indicatorPadding = 6;
     const indicatorWidth = tabWidth - (indicatorPadding * 2);
     
     // Calculate the starting position for each tab
@@ -177,7 +177,7 @@ export default function FloatingTabBar({
       pointerEvents="box-none"
     >
       <BlurView
-        intensity={Platform.OS === 'ios' ? 95 : 100}
+        intensity={Platform.OS === 'ios' ? 80 : 85}
         tint={isDark ? 'dark' : 'light'}
         style={[
           styles.container,
@@ -185,23 +185,26 @@ export default function FloatingTabBar({
             width: containerWidth,
             borderRadius: borderRadius,
             backgroundColor: isDark 
-              ? 'rgba(28, 28, 30, 0.88)' 
-              : 'rgba(255, 255, 255, 0.92)',
+              ? 'rgba(44, 44, 46, 0.92)' 
+              : 'rgba(242, 242, 247, 0.94)',
             borderColor: isDark 
-              ? 'rgba(84, 84, 88, 0.36)' 
-              : 'rgba(0, 0, 0, 0.08)',
+              ? 'rgba(84, 84, 88, 0.28)' 
+              : 'rgba(0, 0, 0, 0.06)',
           },
         ]}
       >
-        {/* Animated indicator background */}
+        {/* Native iOS-style rounded pill indicator */}
         <Animated.View
           style={[
             styles.indicator,
             animatedIndicatorStyle,
             {
               backgroundColor: isDark
-                ? 'rgba(255, 107, 138, 0.15)'
-                : 'rgba(220, 20, 60, 0.12)',
+                ? 'rgba(58, 58, 60, 1)'
+                : 'rgba(255, 255, 255, 1)',
+              boxShadow: isDark
+                ? '0px 2px 8px rgba(0, 0, 0, 0.4)'
+                : '0px 2px 8px rgba(0, 0, 0, 0.12)',
             },
           ]}
         />
@@ -252,46 +255,33 @@ const TabButton = React.memo(({
   t,
 }: TabButtonProps) => {
   const iconScale = useSharedValue(1);
-  const iconRotate = useSharedValue(0);
   const pressScale = useSharedValue(1);
-  const pressOpacity = useSharedValue(1);
 
   useEffect(() => {
     if (isActive) {
-      // Bounce animation when tab becomes active
-      iconScale.value = withSpring(1.15, {
-        damping: 12,
-        stiffness: 300,
+      // Subtle bounce animation when tab becomes active
+      iconScale.value = withSpring(1.08, {
+        damping: 15,
+        stiffness: 350,
       }, () => {
         iconScale.value = withSpring(1, {
-          damping: 15,
+          damping: 18,
           stiffness: 400,
         });
       });
-
-      // Subtle rotation for active state
-      iconRotate.value = withSpring(0, {
-        damping: 20,
-        stiffness: 300,
-      });
     } else {
       iconScale.value = withSpring(1, {
-        damping: 15,
+        damping: 18,
         stiffness: 400,
       });
-      iconRotate.value = withSpring(0, {
-        damping: 20,
-        stiffness: 300,
-      });
     }
-  }, [isActive, iconScale, iconRotate]);
+  }, [isActive, iconScale]);
 
   const animatedTabStyle = useAnimatedStyle(() => {
     return {
       transform: [
         { scale: pressScale.value },
       ],
-      opacity: pressOpacity.value,
     };
   });
 
@@ -299,17 +289,16 @@ const TabButton = React.memo(({
     return {
       transform: [
         { scale: iconScale.value },
-        { rotate: `${iconRotate.value}deg` },
       ],
     };
   });
 
   const animatedLabelStyle = useAnimatedStyle(() => {
     return {
-      opacity: withTiming(isActive ? 1 : 0.6, { duration: 200 }),
+      opacity: withTiming(isActive ? 1 : 0.5, { duration: 200 }),
       transform: [
         {
-          translateY: withSpring(isActive ? 0 : 1, {
+          scale: withSpring(isActive ? 1 : 0.96, {
             damping: 20,
             stiffness: 300,
           }),
@@ -321,15 +310,15 @@ const TabButton = React.memo(({
   const iconColor = isActive 
     ? currentColors.primary 
     : isDark 
-      ? 'rgba(235, 235, 245, 0.6)' 
-      : 'rgba(60, 60, 67, 0.6)';
+      ? 'rgba(235, 235, 245, 0.55)' 
+      : 'rgba(60, 60, 67, 0.55)';
 
   return (
     <Pressable
       style={[styles.tab, { width: tabWidth }]}
       onPress={() => onPress(tab.route, index)}
       onPressIn={() => {
-        pressScale.value = withSpring(0.9, {
+        pressScale.value = withSpring(0.92, {
           damping: 15,
           stiffness: 400,
         });
@@ -345,7 +334,7 @@ const TabButton = React.memo(({
         <Animated.View style={[styles.iconContainer, animatedIconStyle]}>
           <IconSymbol
             name={tab.icon as any}
-            size={26}
+            size={24}
             color={iconColor}
           />
         </Animated.View>
@@ -379,42 +368,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingVertical: 10,
-    paddingHorizontal: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
     borderWidth: StyleSheet.hairlineWidth,
     boxShadow: Platform.select({
-      ios: '0px 8px 24px rgba(0, 0, 0, 0.15)',
-      android: '0px 4px 16px rgba(0, 0, 0, 0.18)',
-      default: '0px 8px 24px rgba(0, 0, 0, 0.15)',
+      ios: '0px 8px 24px rgba(0, 0, 0, 0.12)',
+      android: '0px 4px 16px rgba(0, 0, 0, 0.15)',
+      default: '0px 8px 24px rgba(0, 0, 0, 0.12)',
     }),
-    elevation: 12,
+    elevation: 10,
     overflow: 'hidden',
   },
   indicator: {
     position: 'absolute',
-    height: '85%',
-    borderRadius: 20,
-    top: '7.5%',
+    height: '82%',
+    borderRadius: 22,
+    top: '9%',
+    elevation: 2,
   },
   tab: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 6,
+    paddingVertical: 8,
     zIndex: 1,
   },
   tabContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
+    gap: 3,
   },
   iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 2,
+    marginBottom: 1,
   },
   label: {
     fontSize: 10,
-    letterSpacing: -0.1,
+    letterSpacing: -0.08,
     textAlign: 'center',
   },
 });
