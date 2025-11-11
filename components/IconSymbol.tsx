@@ -1,3 +1,4 @@
+
 // This file is a fallback for using MaterialIcons on Android and web.
 
 import React from "react";
@@ -52,6 +53,7 @@ const MAPPING = {
   "checkmark.circle": "check-circle-outline",
   "checkmark.square.fill": "check-box",
   "checkmark.square": "check-box-outline-blank",
+  "xmark.circle.fill": "cancel",
   "multiply": "clear",
   "trash.fill": "delete",
   "trash": "delete-outline",
@@ -80,6 +82,7 @@ const MAPPING = {
   "play.fill": "play-arrow",
   "pause.fill": "pause",
   "stop.fill": "stop",
+  "book.fill": "menu-book",
 
   // System & Settings
   "gear": "settings",
@@ -94,6 +97,7 @@ const MAPPING = {
 
   // Shapes & Symbols
   "square": "square",
+  "square.grid.2x2.fill": "grid-view",
   "square.grid.3x3": "apps",
   "circle": "circle",
   "triangle.fill": "change-history",
@@ -126,7 +130,9 @@ const MAPPING = {
   "location": "location-on",
   "map.fill": "map",
   "map": "map",
+  "mappin.circle.fill": "place",
   "compass.drawing": "explore",
+  "building.2.fill": "location-city",
 
   // Time & Calendar
   "clock.fill": "access-time",
@@ -161,6 +167,22 @@ const MAPPING = {
   "lightbulb.fill": "lightbulb",
   "moon.fill": "dark-mode",
   "sun.max.fill": "light-mode",
+
+  // Health & Medical
+  "pills.fill": "medication",
+  "cross.case.fill": "medical-services",
+
+  // Food & Dining
+  "fork.knife": "restaurant",
+
+  // Transportation
+  "car.fill": "directions-car",
+
+  // Weather
+  "cloud.sun.fill": "wb-cloudy",
+
+  // Language & Globe
+  "globe": "language",
 } as Partial<
   Record<
     import("expo-symbols").SymbolViewProps["name"],
