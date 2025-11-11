@@ -103,15 +103,26 @@ export default function FloatingTabBar({
   // Shared values for animations - create them at the top level
   const indicatorPosition = useSharedValue(activeIndex);
   
-  // Create shared values for each tab using a ref to store them
+  // Create shared values for each tab using useRef to store them
   // This ensures they're created once and reused across renders
   const tabPressScaleRef = useRef<Animated.SharedValue<number>[]>([]);
   const tabPressOpacityRef = useRef<Animated.SharedValue<number>[]>([]);
   
   // Initialize shared values if not already created or if tabs length changed
+  // We need to do this outside of any callback to satisfy React Hooks rules
   if (tabPressScaleRef.current.length !== tabs.length) {
-    tabPressScaleRef.current = tabs.map(() => useSharedValue(1));
-    tabPressOpacityRef.current = tabs.map(() => useSharedValue(1));
+    const newScaleValues: Animated.SharedValue<number>[] = [];
+    const newOpacityValues: Animated.SharedValue<number>[] = [];
+    
+    for (let i = 0; i < tabs.length; i++) {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      newScaleValues.push(useSharedValue(1));
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      newOpacityValues.push(useSharedValue(1));
+    }
+    
+    tabPressScaleRef.current = newScaleValues;
+    tabPressOpacityRef.current = newOpacityValues;
   }
 
   useEffect(() => {
