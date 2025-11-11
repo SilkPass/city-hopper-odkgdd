@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Stack } from "expo-router";
 import { 
   ScrollView, 
@@ -12,7 +12,9 @@ import {
   TextInput,
   ActivityIndicator,
   Dimensions,
-  Modal
+  Modal,
+  FlatList,
+  Keyboard
 } from "react-native";
 import { IconSymbol } from "@/components/IconSymbol";
 import { useTheme } from "@react-navigation/native";
@@ -43,10 +45,26 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [locationPermission, setLocationPermission] = useState<Location.PermissionStatus | null>(null);
   const [showCitySelector, setShowCitySelector] = useState(false);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [filteredCities, setFilteredCities] = useState<City[]>(CITIES);
+  const searchInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     requestLocationPermission();
   }, []);
+
+  useEffect(() => {
+    // Filter cities based on search query
+    if (searchQuery.trim() === "") {
+      setFilteredCities(sortedCities);
+    } else {
+      const filtered = sortedCities.filter(city => 
+        city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        city.nameZh.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredCities(filtered);
+    }
+  }, [searchQuery, sortedCities]);
 
   const requestLocationPermission = async () => {
     try {
@@ -116,6 +134,29 @@ export default function HomeScreen() {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
     return distance;
+  };
+
+  const handleCitySelect = (city: City) => {
+    setSelectedCity(city);
+    setSearchQuery("");
+    setShowCityDropdown(false);
+    Keyboard.dismiss();
+  };
+
+  const handleSearchFocus = () => {
+    // Show dropdown when search is focused, especially if location was denied
+    if (locationPermission !== 'granted' || searchQuery.length > 0) {
+      setShowCityDropdown(true);
+    }
+  };
+
+  const handleSearchChange = (text: string) => {
+    setSearchQuery(text);
+    if (text.length > 0 || locationPermission !== 'granted') {
+      setShowCityDropdown(true);
+    } else {
+      setShowCityDropdown(false);
+    }
   };
 
   const renderHeaderRight = () => (
@@ -229,6 +270,7 @@ export default function HomeScreen() {
         style={[styles.container, { backgroundColor: colors.background }]}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Selected City Display */}
         <View style={styles.cityHeader}>
@@ -250,42 +292,83 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Search Input */}
-        <View style={styles.searchContainer}>
-          <IconSymbol name="magnifyingglass" color={colors.textSecondary} size={20} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search destination"
-            placeholderTextColor={colors.textSecondary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
+        {/* Search Input with City Dropdown */}
+        <View style={styles.searchWrapper}>
+          <View style={styles.searchContainer}>
+            <IconSymbol name="magnifyingglass" color={colors.textSecondary} size={20} />
+            <TextInput
+              ref={searchInputRef}
+              style={styles.searchInput}
+              placeholder={locationPermission === 'granted' ? "Search destination" : "Search and select city"}
+              placeholderTextColor={colors.textSecondary}
+              value={searchQuery}
+              onChangeText={handleSearchChange}
+              onFocus={handleSearchFocus}
+            />
+            {searchQuery.length > 0 && (
+              <Pressable onPress={() => {
+                setSearchQuery("");
+                setShowCityDropdown(false);
+              }}>
+                <IconSymbol name="xmark.circle.fill" color={colors.textSecondary} size={20} />
+              </Pressable>
+            )}
+          </View>
 
-        {/* City Selection Buttons */}
-        <View style={styles.cityButtonsContainer}>
-          {sortedCities.map((city, index) => (
-            <Pressable
-              key={city.name}
-              style={[
-                styles.cityButton,
-                selectedCity?.name === city.name && styles.cityButtonSelected
-              ]}
-              onPress={() => setSelectedCity(city)}
-            >
-              <Text style={[
-                styles.cityButtonText,
-                selectedCity?.name === city.name && styles.cityButtonTextSelected
-              ]}>
-                {city.name}
-              </Text>
-              {index === 0 && userLocation && (
-                <View style={styles.closestBadge}>
-                  <Text style={styles.closestBadgeText}>Closest</Text>
+          {/* City Dropdown */}
+          {showCityDropdown && (
+            <View style={styles.cityDropdown}>
+              {locationPermission !== 'granted' && (
+                <View style={styles.dropdownHeader}>
+                  <IconSymbol name="info.circle.fill" color={colors.primary} size={16} />
+                  <Text style={styles.dropdownHeaderText}>
+                    Select a city to continue
+                  </Text>
                 </View>
               )}
-            </Pressable>
-          ))}
+              
+              {filteredCities.length > 0 ? (
+                filteredCities.map((city, index) => (
+                  <Pressable
+                    key={city.name}
+                    style={[
+                      styles.dropdownItem,
+                      selectedCity?.name === city.name && styles.dropdownItemSelected
+                    ]}
+                    onPress={() => handleCitySelect(city)}
+                  >
+                    <View style={styles.dropdownItemLeft}>
+                      <IconSymbol 
+                        name="location.fill" 
+                        color={selectedCity?.name === city.name ? colors.primary : colors.textSecondary} 
+                        size={18} 
+                      />
+                      <View>
+                        <Text style={[
+                          styles.dropdownItemText,
+                          selectedCity?.name === city.name && styles.dropdownItemTextSelected
+                        ]}>
+                          {city.name}
+                        </Text>
+                        {index === 0 && userLocation && locationPermission === 'granted' && (
+                          <Text style={styles.dropdownItemSubtext}>
+                            Closest to you
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                    {selectedCity?.name === city.name && (
+                      <IconSymbol name="checkmark.circle.fill" color={colors.primary} size={20} />
+                    )}
+                  </Pressable>
+                ))
+              ) : (
+                <View style={styles.dropdownEmpty}>
+                  <Text style={styles.dropdownEmptyText}>No cities found</Text>
+                </View>
+              )}
+            </View>
+          )}
         </View>
 
         {/* Service Buttons */}
@@ -458,6 +541,10 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
   },
+  searchWrapper: {
+    marginBottom: 16,
+    zIndex: 1000,
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -465,40 +552,78 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    marginBottom: 16,
     gap: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
     color: colors.text,
   },
-  cityButtonsContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-  },
-  cityButton: {
-    flex: 1,
+  cityDropdown: {
     backgroundColor: colors.card,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
     borderRadius: 12,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    maxHeight: 300,
+    overflow: 'hidden',
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+    elevation: 5,
+  },
+  dropdownHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
+    padding: 12,
+    backgroundColor: colors.highlight,
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  cityButtonSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.card,
+  dropdownHeaderText: {
+    fontSize: 13,
+    color: colors.text,
+    fontWeight: '500',
   },
-  cityButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textSecondary,
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  cityButtonTextSelected: {
+  dropdownItemSelected: {
+    backgroundColor: colors.highlight,
+  },
+  dropdownItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  dropdownItemText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.text,
+  },
+  dropdownItemTextSelected: {
     color: colors.primary,
+    fontWeight: '600',
+  },
+  dropdownItemSubtext: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  dropdownEmpty: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  dropdownEmptyText: {
+    fontSize: 14,
+    color: colors.textSecondary,
   },
   closestBadge: {
     marginTop: 4,
