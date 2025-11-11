@@ -81,8 +81,9 @@ export default function CitiesScreen() {
   const { t } = useLanguage();
   const currentColors = isDark ? darkColors : colors;
 
-  const [selectedCity, setSelectedCity] = useState<City | null>(null);
+  const [selectedCity, setSelectedCity] = useState<City>(CITIES[0]);
   const [showCityModal, setShowCityModal] = useState(false);
+  const [showCitySelectorModal, setShowCitySelectorModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleCityPress = (city: City) => {
@@ -94,6 +95,12 @@ export default function CitiesScreen() {
   const handleCloseModal = () => {
     setShowCityModal(false);
     setSearchQuery('');
+  };
+
+  const handleCitySelect = (city: City) => {
+    console.log('City selected from dropdown:', city.name);
+    setSelectedCity(city);
+    setShowCitySelectorModal(false);
   };
 
   const filteredAttractions = selectedCity
@@ -110,9 +117,22 @@ export default function CitiesScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.title, { color: currentColors.text }]}>
-          {t('cities')}
-        </Text>
+        {/* Header with City Selector */}
+        <View style={styles.headerContainer}>
+          <Text style={[styles.title, { color: currentColors.text }]}>
+            {selectedCity.name}
+          </Text>
+          <Pressable 
+            style={styles.citySelectorButton}
+            onPress={() => setShowCitySelectorModal(true)}
+          >
+            <IconSymbol 
+              name="chevron.down" 
+              color={currentColors.primary} 
+              size={24} 
+            />
+          </Pressable>
+        </View>
         
         <View style={styles.grid}>
           {CITIES.map((city) => (
@@ -141,6 +161,66 @@ export default function CitiesScreen() {
           ))}
         </View>
       </ScrollView>
+
+      {/* City Selector Modal */}
+      <Modal
+        visible={showCitySelectorModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowCitySelectorModal(false)}
+      >
+        <SafeAreaView style={[styles.modalContainer, { backgroundColor: currentColors.background }]} edges={['top', 'bottom']}>
+          {/* Modal Header */}
+          <View style={[styles.modalHeader, { borderBottomColor: currentColors.separator }]}>
+            <Pressable onPress={() => setShowCitySelectorModal(false)} style={styles.backButton}>
+              <IconSymbol name="xmark" color={currentColors.textSecondary} size={24} />
+            </Pressable>
+            <Text style={[styles.modalTitle, { color: currentColors.text }]}>
+              Select City
+            </Text>
+            <View style={styles.placeholder} />
+          </View>
+
+          {/* Cities List */}
+          <ScrollView 
+            style={styles.citiesList}
+            contentContainerStyle={styles.citiesContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {CITIES.map((city) => (
+              <Pressable
+                key={city.name}
+                style={[
+                  styles.citySelectCard, 
+                  { 
+                    backgroundColor: currentColors.backgroundSecondary,
+                    borderColor: selectedCity.name === city.name ? currentColors.primary : 'transparent',
+                    borderWidth: selectedCity.name === city.name ? 2 : 0,
+                  }
+                ]}
+                onPress={() => handleCitySelect(city)}
+              >
+                <Image
+                  source={{ uri: city.imageUrl }}
+                  style={styles.citySelectImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.citySelectInfo}>
+                  <Text style={[styles.citySelectName, { color: currentColors.text }]}>
+                    {city.name}
+                  </Text>
+                  <Text style={[styles.citySelectAttractions, { color: currentColors.textSecondary }]}>
+                    {city.attractions.length} attractions
+                  </Text>
+                </View>
+                {selectedCity.name === city.name && (
+                  <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={28} />
+                )}
+              </Pressable>
+            ))}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
 
       {/* City Attractions Modal */}
       <Modal
@@ -237,11 +317,20 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: Platform.OS === 'android' ? 100 : 20,
   },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
   title: {
     fontSize: 34,
     fontWeight: '700',
-    marginBottom: 24,
     letterSpacing: -1,
+  },
+  citySelectorButton: {
+    padding: 8,
+    marginRight: -8,
   },
   grid: {
     flexDirection: 'row',
@@ -307,6 +396,42 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     width: 40,
+  },
+  citiesList: {
+    flex: 1,
+  },
+  citiesContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingBottom: 20,
+  },
+  citySelectCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 16,
+    marginBottom: 12,
+    gap: 12,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
+    elevation: 2,
+  },
+  citySelectImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+  },
+  citySelectInfo: {
+    flex: 1,
+  },
+  citySelectName: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 4,
+    letterSpacing: -0.5,
+  },
+  citySelectAttractions: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   searchSection: {
     paddingHorizontal: 16,
