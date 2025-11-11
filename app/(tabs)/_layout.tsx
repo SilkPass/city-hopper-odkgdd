@@ -35,6 +35,14 @@ export default function TabLayout() {
         screenOptions={{
           headerShown: false,
           tabBarStyle: { display: 'none' },
+          // iOS-style page transitions
+          animation: Platform.select({
+            ios: 'shift',
+            android: 'fade',
+            default: 'fade',
+          }),
+          // Smooth transitions between tabs
+          animationDuration: 250,
         }}
         tabBar={() => <FloatingTabBar tabs={tabs} />}
       >
