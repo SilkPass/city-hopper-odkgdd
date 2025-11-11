@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   mongolianLargeText: {
-    fontSize: 28,
+    fontSize: 34,
     fontWeight: '700',
     letterSpacing: -0.8,
   },
