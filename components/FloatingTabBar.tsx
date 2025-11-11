@@ -9,7 +9,7 @@ import {
   Pressable,
 } from 'react-native';
 import { IconSymbol } from '@/components/IconSymbol';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { BlurView } from 'expo-blur';
 import { colors, darkColors } from '@/styles/commonStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -100,26 +100,19 @@ export default function FloatingTabBar({
 
   const activeIndex = getActiveIndex();
 
-  // Shared values for animations - create them at the top level, not in a callback
+  // Shared values for animations - create them at the top level
   const indicatorPosition = useSharedValue(activeIndex);
   
-  // Create shared values for each tab dynamically based on tabs length
-  // Fixed: Move useSharedValue calls outside of the map callback
-  const tabPressScale = useMemo(() => {
-    const scales = [];
-    for (let i = 0; i < tabs.length; i++) {
-      scales.push(useSharedValue(1));
-    }
-    return scales;
-  }, [tabs]);
+  // Create shared values for each tab using a ref to store them
+  // This ensures they're created once and reused across renders
+  const tabPressScaleRef = useRef<Animated.SharedValue<number>[]>([]);
+  const tabPressOpacityRef = useRef<Animated.SharedValue<number>[]>([]);
   
-  const tabPressOpacity = useMemo(() => {
-    const opacities = [];
-    for (let i = 0; i < tabs.length; i++) {
-      opacities.push(useSharedValue(1));
-    }
-    return opacities;
-  }, [tabs]);
+  // Initialize shared values if not already created or if tabs length changed
+  if (tabPressScaleRef.current.length !== tabs.length) {
+    tabPressScaleRef.current = tabs.map(() => useSharedValue(1));
+    tabPressOpacityRef.current = tabs.map(() => useSharedValue(1));
+  }
 
   useEffect(() => {
     console.log('Active index changed to:', activeIndex);
@@ -146,12 +139,12 @@ export default function FloatingTabBar({
     triggerHapticFeedback();
     
     // Animate tab press
-    if (tabPressScale[index]) {
-      tabPressScale[index].value = withSpring(0.85, {
+    if (tabPressScaleRef.current[index]) {
+      tabPressScaleRef.current[index].value = withSpring(0.85, {
         damping: 15,
         stiffness: 400,
       }, () => {
-        tabPressScale[index].value = withSpring(1, {
+        tabPressScaleRef.current[index].value = withSpring(1, {
           damping: 15,
           stiffness: 400,
         });
@@ -243,8 +236,8 @@ export default function FloatingTabBar({
               currentColors={currentColors}
               isDark={isDark}
               onPress={handleTabPress}
-              pressScale={tabPressScale[index]}
-              pressOpacity={tabPressOpacity[index]}
+              pressScale={tabPressScaleRef.current[index]}
+              pressOpacity={tabPressOpacityRef.current[index]}
               t={t}
             />
           );
