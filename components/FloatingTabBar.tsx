@@ -110,8 +110,8 @@ export default function FloatingTabBar({
             width: containerWidth,
             borderRadius: borderRadius,
             backgroundColor: isDark 
-              ? 'rgba(28, 28, 30, 0.8)' 
-              : 'rgba(255, 255, 255, 0.8)',
+              ? 'rgba(26, 26, 26, 0.85)' 
+              : 'rgba(255, 255, 255, 0.85)',
             borderColor: isDark ? darkColors.border : colors.border,
           },
         ]}

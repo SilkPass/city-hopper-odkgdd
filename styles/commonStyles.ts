@@ -1,62 +1,62 @@
 
 import { StyleSheet, ViewStyle, TextStyle } from 'react-native';
 
-// Crimson as the main color with iOS 26 inspired palette
+// Crimson-based modernist color palette
 export const colors = {
-  // Light mode colors
-  background: '#F2F2F7',
+  // Light mode colors - Crimson modernist theme
+  background: '#FAFAFA',
   backgroundSecondary: '#FFFFFF',
-  text: '#000000',
-  textSecondary: '#8E8E93',
-  textTertiary: '#C7C7CC',
+  text: '#1A1A1A',
+  textSecondary: '#6B6B6B',
+  textTertiary: '#A0A0A0',
   primary: '#DC143C', // Crimson
-  primaryLight: '#FF6B8A',
+  primaryLight: '#E84A67',
   primaryDark: '#B01030',
-  secondary: '#34C759',
-  accent: '#FF9500',
+  secondary: '#2C2C2C', // Dark gray for modernist feel
+  accent: '#8B0000', // Dark red accent
   card: '#FFFFFF',
-  cardSecondary: '#F2F2F7',
-  highlight: '#FFCC00',
-  border: '#C6C6C8',
-  separator: '#E5E5EA',
+  cardSecondary: '#F5F5F5',
+  highlight: '#DC143C',
+  border: '#E0E0E0',
+  separator: '#ECECEC',
   
   // Semantic colors
-  success: '#34C759',
-  warning: '#FF9500',
-  error: '#FF3B30',
-  info: '#007AFF',
+  success: '#2E7D32',
+  warning: '#ED6C02',
+  error: '#D32F2F',
+  info: '#0288D1',
   
   // Overlay
-  overlay: 'rgba(0, 0, 0, 0.4)',
-  overlayLight: 'rgba(0, 0, 0, 0.2)',
+  overlay: 'rgba(0, 0, 0, 0.5)',
+  overlayLight: 'rgba(0, 0, 0, 0.25)',
 };
 
-// Dark mode colors
+// Dark mode colors - Crimson modernist theme
 export const darkColors = {
-  background: '#000000',
-  backgroundSecondary: '#1C1C1E',
+  background: '#0A0A0A',
+  backgroundSecondary: '#1A1A1A',
   text: '#FFFFFF',
-  textSecondary: '#8E8E93',
-  textTertiary: '#48484A',
+  textSecondary: '#A0A0A0',
+  textTertiary: '#6B6B6B',
   primary: '#FF6B8A', // Lighter crimson for dark mode
   primaryLight: '#FF8FA8',
   primaryDark: '#DC143C',
-  secondary: '#32D74B',
-  accent: '#FF9F0A',
-  card: '#1C1C1E',
-  cardSecondary: '#2C2C2E',
-  highlight: '#FFD60A',
-  border: '#38383A',
-  separator: '#38383A',
+  secondary: '#E0E0E0', // Light gray for modernist feel
+  accent: '#FF4D6D', // Bright red accent
+  card: '#1A1A1A',
+  cardSecondary: '#252525',
+  highlight: '#FF6B8A',
+  border: '#2C2C2C',
+  separator: '#2C2C2C',
   
   // Semantic colors
-  success: '#32D74B',
-  warning: '#FF9F0A',
-  error: '#FF453A',
-  info: '#0A84FF',
+  success: '#4CAF50',
+  warning: '#FF9800',
+  error: '#F44336',
+  info: '#2196F3',
   
   // Overlay
-  overlay: 'rgba(0, 0, 0, 0.6)',
+  overlay: 'rgba(0, 0, 0, 0.7)',
   overlayLight: 'rgba(0, 0, 0, 0.4)',
 };
 

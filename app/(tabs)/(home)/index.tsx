@@ -33,6 +33,14 @@ interface City {
   longitude: number;
 }
 
+interface Attraction {
+  id: string;
+  name: string;
+  city: string;
+  category: string;
+  description: string;
+}
+
 const CITIES: City[] = [
   { name: "Beijing", nameZh: "北京", latitude: 39.9042, longitude: 116.4074 },
   { name: "Shanghai", nameZh: "上海", latitude: 31.2304, longitude: 121.4737 },
@@ -42,6 +50,19 @@ const CITIES: City[] = [
   { name: "Chengdu", nameZh: "成都", latitude: 30.5728, longitude: 104.0668 },
   { name: "Hangzhou", nameZh: "杭州", latitude: 30.2741, longitude: 120.1551 },
   { name: "Xi'an", nameZh: "西安", latitude: 34.3416, longitude: 108.9398 },
+];
+
+const ATTRACTIONS: Attraction[] = [
+  { id: '1', name: 'Forbidden City', city: 'Beijing', category: 'Historical Site', description: 'Imperial palace complex' },
+  { id: '2', name: 'Summer Palace', city: 'Beijing', category: 'Historical Site', description: 'Royal garden and palace' },
+  { id: '3', name: 'Great Wall', city: 'Beijing', category: 'Historical Site', description: 'Ancient fortification' },
+  { id: '4', name: 'Temple of Heaven', city: 'Beijing', category: 'Cultural Landmark', description: 'Imperial temple complex' },
+  { id: '5', name: 'The Bund', city: 'Shanghai', category: 'Scenic Spot', description: 'Waterfront promenade' },
+  { id: '6', name: 'Yu Garden', city: 'Shanghai', category: 'Cultural Landmark', description: 'Classical Chinese garden' },
+  { id: '7', name: 'Oriental Pearl Tower', city: 'Shanghai', category: 'Modern Attraction', description: 'Iconic TV tower' },
+  { id: '8', name: 'Victoria Harbour', city: 'Hong Kong', category: 'Scenic Spot', description: 'Natural harbor' },
+  { id: '9', name: 'Victoria\'s Peak', city: 'Hong Kong', category: 'Scenic Spot', description: 'Mountain peak with views' },
+  { id: '10', name: 'Temple Street', city: 'Hong Kong', category: 'Cultural Landmark', description: 'Night market' },
 ];
 
 export default function HomeScreen() {
@@ -57,8 +78,8 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [locationPermission, setLocationPermission] = useState<Location.PermissionStatus | null>(null);
   const [showCitySelector, setShowCitySelector] = useState(false);
-  const [showCityDropdown, setShowCityDropdown] = useState(false);
-  const [filteredCities, setFilteredCities] = useState<City[]>(CITIES);
+  const [filteredAttractions, setFilteredAttractions] = useState<Attraction[]>([]);
+  const [showAttractionResults, setShowAttractionResults] = useState(false);
   const searchInputRef = useRef<TextInput>(null);
   const slideAnim = useRef(new Animated.Value(0)).current;
 
@@ -128,43 +149,43 @@ export default function HomeScreen() {
 
   const handleCitySelect = (city: City) => {
     setSelectedCity(city);
-    setSearchQuery("");
-    setShowCityDropdown(false);
     setShowCitySelector(false);
-    Keyboard.dismiss();
-  };
-
-  const handleSearchFocus = () => {
-    if (locationPermission !== 'granted' || searchQuery.length > 0) {
-      setShowCityDropdown(true);
-    }
   };
 
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
-    if (text.length > 0 || locationPermission !== 'granted') {
-      setShowCityDropdown(true);
-    } else {
-      setShowCityDropdown(false);
+    
+    if (!selectedCity) {
+      setShowAttractionResults(false);
+      return;
     }
+    
+    if (text.trim().length > 0) {
+      const cityAttractions = ATTRACTIONS.filter(attr => attr.city === selectedCity.name);
+      const filtered = cityAttractions.filter(attraction => 
+        attraction.name.toLowerCase().includes(text.toLowerCase()) ||
+        attraction.category.toLowerCase().includes(text.toLowerCase()) ||
+        attraction.description.toLowerCase().includes(text.toLowerCase())
+      );
+      setFilteredAttractions(filtered);
+      setShowAttractionResults(true);
+    } else {
+      setFilteredAttractions([]);
+      setShowAttractionResults(false);
+    }
+  };
+
+  const handleAttractionSelect = (attraction: Attraction) => {
+    console.log('Selected attraction:', attraction);
+    Alert.alert(attraction.name, attraction.description);
+    setSearchQuery("");
+    setShowAttractionResults(false);
+    Keyboard.dismiss();
   };
 
   useEffect(() => {
     requestLocationPermission();
   }, [requestLocationPermission]);
-
-  useEffect(() => {
-    // Filter cities based on search query
-    if (searchQuery.trim() === "") {
-      setFilteredCities(sortedCities);
-    } else {
-      const filtered = sortedCities.filter(city => 
-        city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        city.nameZh.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredCities(filtered);
-    }
-  }, [searchQuery, sortedCities]);
 
   useEffect(() => {
     if (showCitySelector) {
@@ -188,6 +209,10 @@ export default function HomeScreen() {
     inputRange: [0, 1],
     outputRange: [600, 0],
   });
+
+  const cityAttractions = selectedCity 
+    ? ATTRACTIONS.filter(attr => attr.city === selectedCity.name)
+    : [];
 
   if (loading) {
     return (
@@ -329,194 +354,143 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Top Header Row: City Picker | Welcome Text | Profile Photo */}
-        <View style={styles.topHeaderRow}>
-          {/* City Picker Button */}
+        {/* City Selector Button */}
+        <View style={styles.citySelectorContainer}>
           <Pressable
             onPress={() => setShowCitySelector(true)}
-            style={[styles.cityPickerButton, { backgroundColor: currentColors.cardSecondary }]}
+            style={[styles.citySelectorButton, { 
+              backgroundColor: currentColors.backgroundSecondary,
+              borderColor: currentColors.border 
+            }]}
           >
-            <Text style={styles.cityPickerEmoji}>📍</Text>
-          </Pressable>
-
-          {/* Welcome Text (Center) */}
-          <View style={styles.welcomeContainer}>
-            <Text style={[styles.welcomeText, { color: currentColors.textSecondary }]}>
-              {t('welcome')}
-            </Text>
-            <Text style={[styles.cityNameHeader, { color: currentColors.text }]}>
-              {selectedCity?.name}
-            </Text>
-          </View>
-
-          {/* Profile Photo */}
-          <Pressable
-            onPress={() => Alert.alert("Profile", "Profile feature")}
-            style={styles.profilePhotoButton}
-          >
-            <View style={[styles.profilePicture, { backgroundColor: currentColors.primary }]}>
-              <IconSymbol name="person.fill" color="#FFFFFF" size={20} />
+            <View style={styles.citySelectorContent}>
+              <View style={[styles.citySelectorIcon, { backgroundColor: currentColors.primary + '15' }]}>
+                <IconSymbol name="location.fill" color={currentColors.primary} size={20} />
+              </View>
+              <View style={styles.citySelectorTextContainer}>
+                <Text style={[styles.citySelectorLabel, { color: currentColors.textSecondary }]}>
+                  Current City
+                </Text>
+                <Text style={[styles.citySelectorCity, { color: currentColors.text }]}>
+                  {selectedCity?.name || 'Select City'}
+                </Text>
+              </View>
+              <IconSymbol name="chevron.down" color={currentColors.textTertiary} size={20} />
             </View>
           </Pressable>
         </View>
 
-        {/* Map Card with Inlaid Search Bar */}
-        <View style={styles.mapContainer}>
-          <View style={[styles.mapCard, { backgroundColor: currentColors.cardSecondary }]}>
-            <View style={styles.mapPlaceholder}>
-              <IconSymbol name="map.fill" color={currentColors.textTertiary} size={56} />
-              <Text style={[styles.mapPlaceholderText, { color: currentColors.textSecondary }]}>
-                Maps are not supported in Natively web preview
-              </Text>
-              <Text style={[styles.mapPlaceholderSubtext, { color: currentColors.textTertiary }]}>
-                {selectedCity?.latitude.toFixed(4)}, {selectedCity?.longitude.toFixed(4)}
-              </Text>
-            </View>
+        {/* Search Bar for Attractions */}
+        <View style={styles.searchSection}>
+          <View style={[styles.searchContainer, { 
+            backgroundColor: currentColors.backgroundSecondary,
+            borderColor: currentColors.border 
+          }]}>
+            <IconSymbol name="magnifyingglass" color={currentColors.textSecondary} size={20} />
+            <TextInput
+              ref={searchInputRef}
+              style={[styles.searchInput, { color: currentColors.text }]}
+              placeholder={selectedCity ? t('searchAttractions') : t('selectCityFirst')}
+              placeholderTextColor={currentColors.textSecondary}
+              value={searchQuery}
+              onChangeText={handleSearchChange}
+              editable={!!selectedCity}
+            />
+            {searchQuery.length > 0 && (
+              <Pressable onPress={() => {
+                setSearchQuery("");
+                setShowAttractionResults(false);
+              }}>
+                <IconSymbol name="xmark.circle.fill" color={currentColors.textSecondary} size={20} />
+              </Pressable>
+            )}
           </View>
 
-          {/* Search Bar Inlaid at Bottom of Map */}
-          <View style={styles.searchInlayContainer}>
-            <View style={styles.searchWrapper}>
-              <View style={[styles.searchContainer, { backgroundColor: currentColors.backgroundSecondary }]}>
-                <IconSymbol name="magnifyingglass" color={currentColors.textSecondary} size={18} />
-                <TextInput
-                  ref={searchInputRef}
-                  style={[styles.searchInput, { color: currentColors.text }]}
-                  placeholder={locationPermission === 'granted' ? t('searchDestinations') : t('searchSelectCity')}
-                  placeholderTextColor={currentColors.textSecondary}
-                  value={searchQuery}
-                  onChangeText={handleSearchChange}
-                  onFocus={handleSearchFocus}
-                />
-                {searchQuery.length > 0 && (
-                  <Pressable onPress={() => {
-                    setSearchQuery("");
-                    setShowCityDropdown(false);
-                  }}>
-                    <IconSymbol name="xmark.circle.fill" color={currentColors.textSecondary} size={18} />
+          {/* Attraction Search Results */}
+          {showAttractionResults && (
+            <View style={[styles.attractionResults, { 
+              backgroundColor: currentColors.backgroundSecondary,
+              borderColor: currentColors.border 
+            }]}>
+              {filteredAttractions.length > 0 ? (
+                filteredAttractions.map((attraction) => (
+                  <Pressable
+                    key={attraction.id}
+                    style={[styles.attractionItem, { borderBottomColor: currentColors.separator }]}
+                    onPress={() => handleAttractionSelect(attraction)}
+                  >
+                    <View style={[styles.attractionIcon, { backgroundColor: currentColors.primary + '10' }]}>
+                      <IconSymbol name="mappin.circle.fill" color={currentColors.primary} size={24} />
+                    </View>
+                    <View style={styles.attractionInfo}>
+                      <Text style={[styles.attractionName, { color: currentColors.text }]}>
+                        {attraction.name}
+                      </Text>
+                      <Text style={[styles.attractionCategory, { color: currentColors.textSecondary }]}>
+                        {attraction.category}
+                      </Text>
+                    </View>
+                    <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={18} />
                   </Pressable>
-                )}
-              </View>
-
-              {showCityDropdown && (
-                <View style={[styles.cityDropdown, { backgroundColor: currentColors.backgroundSecondary }]}>
-                  {locationPermission !== 'granted' && (
-                    <View style={[styles.dropdownHeader, { 
-                      backgroundColor: currentColors.info + '10',
-                      borderBottomColor: currentColors.separator 
-                    }]}>
-                      <IconSymbol name="info.circle.fill" color={currentColors.info} size={14} />
-                      <Text style={[styles.dropdownHeaderText, { color: currentColors.text }]}>
-                        {t('selectCityToContinue')}
-                      </Text>
-                    </View>
-                  )}
-                  
-                  {filteredCities.length > 0 ? (
-                    filteredCities.map((city, index) => {
-                      const isSelected = selectedCity?.name === city.name;
-                      const isClosest = index === 0 && userLocation && locationPermission === 'granted';
-                      
-                      return (
-                        <Pressable
-                          key={city.name}
-                          style={[
-                            styles.dropdownItem,
-                            { borderBottomColor: currentColors.separator },
-                            isSelected && { backgroundColor: currentColors.primary + '08' }
-                          ]}
-                          onPress={() => handleCitySelect(city)}
-                        >
-                          <View style={styles.dropdownItemLeft}>
-                            <IconSymbol 
-                              name="location.fill" 
-                              color={isSelected ? currentColors.primary : currentColors.textSecondary} 
-                              size={16} 
-                            />
-                            <View>
-                              <Text style={[
-                                styles.dropdownItemText,
-                                { color: currentColors.text },
-                                isSelected && { color: currentColors.primary }
-                              ]}>
-                                {city.name}
-                              </Text>
-                              {isClosest && (
-                                <Text style={[styles.dropdownItemSubtext, { color: currentColors.textSecondary }]}>
-                                  {t('closestToYou')}
-                                </Text>
-                              )}
-                            </View>
-                          </View>
-                          {isSelected && (
-                            <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={20} />
-                          )}
-                        </Pressable>
-                      );
-                    })
-                  ) : (
-                    <View style={styles.dropdownEmpty}>
-                      <Text style={[styles.dropdownEmptyText, { color: currentColors.textSecondary }]}>
-                        {t('noCitiesFound')}
-                      </Text>
-                    </View>
-                  )}
+                ))
+              ) : (
+                <View style={styles.noResults}>
+                  <IconSymbol name="magnifyingglass" color={currentColors.textTertiary} size={32} />
+                  <Text style={[styles.noResultsText, { color: currentColors.textSecondary }]}>
+                    {t('noAttractionsFound')}
+                  </Text>
                 </View>
               )}
             </View>
+          )}
+        </View>
+
+        {/* Map Placeholder */}
+        <View style={[styles.mapCard, { backgroundColor: currentColors.cardSecondary }]}>
+          <View style={styles.mapPlaceholder}>
+            <IconSymbol name="map.fill" color={currentColors.textTertiary} size={56} />
+            <Text style={[styles.mapPlaceholderText, { color: currentColors.textSecondary }]}>
+              Maps are not supported in Natively web preview
+            </Text>
+            {selectedCity && (
+              <Text style={[styles.mapPlaceholderSubtext, { color: currentColors.textTertiary }]}>
+                {selectedCity.latitude.toFixed(4)}, {selectedCity.longitude.toFixed(4)}
+              </Text>
+            )}
           </View>
         </View>
 
-        {/* Services Section */}
-        <View style={styles.servicesSection}>
-          <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
-            {t('exploreServices')}
-          </Text>
-          
-          <Pressable 
-            style={[styles.serviceCardLarge, { backgroundColor: currentColors.backgroundSecondary }]}
-            onPress={() => Alert.alert(t('myGuide'), t('exploreLocalRecommendations'))}
-          >
-            <View style={styles.serviceCardContent}>
-              <View style={[styles.serviceIconLarge, { backgroundColor: currentColors.primary + '15' }]}>
-                <IconSymbol name="book.fill" color={currentColors.primary} size={28} />
-              </View>
-              <View style={styles.serviceTextContainer}>
-                <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
-                  {t('myGuide')}
-                </Text>
-                <Text style={[styles.serviceSubtitle, { color: currentColors.textSecondary }]}>
-                  {t('exploreLocalRecommendations')}
-                </Text>
-              </View>
-              <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={20} />
-            </View>
-          </Pressable>
-
-          <View style={styles.serviceRow}>
-            <Pressable 
-              style={[styles.serviceCardSmall, { backgroundColor: currentColors.secondary }]}
-              onPress={() => Alert.alert(t('esim'), t('stayConnected'))}
-            >
-              <View style={styles.serviceIconSmall}>
-                <IconSymbol name="simcard.fill" color="#FFFFFF" size={32} />
-              </View>
-              <Text style={styles.serviceCardSmallTitle}>{t('esim')}</Text>
-              <Text style={styles.serviceCardSmallSubtitle}>{t('stayConnected')}</Text>
-            </Pressable>
-
-            <Pressable 
-              style={[styles.serviceCardSmall, { backgroundColor: currentColors.accent }]}
-              onPress={() => Alert.alert(t('payment'), t('easyTransactions'))}
-            >
-              <View style={styles.serviceIconSmall}>
-                <IconSymbol name="creditcard.fill" color="#FFFFFF" size={32} />
-              </View>
-              <Text style={styles.serviceCardSmallTitle}>{t('payment')}</Text>
-              <Text style={styles.serviceCardSmallSubtitle}>{t('easyTransactions')}</Text>
-            </Pressable>
+        {/* Popular Attractions Section */}
+        {selectedCity && cityAttractions.length > 0 && (
+          <View style={styles.attractionsSection}>
+            <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
+              {t('popularAttractions')}
+            </Text>
+            
+            {cityAttractions.map((attraction) => (
+              <Pressable
+                key={attraction.id}
+                style={[styles.attractionCard, { backgroundColor: currentColors.backgroundSecondary }]}
+                onPress={() => handleAttractionSelect(attraction)}
+              >
+                <View style={styles.attractionCardContent}>
+                  <View style={[styles.attractionCardIcon, { backgroundColor: currentColors.primary + '15' }]}>
+                    <IconSymbol name="mappin.circle.fill" color={currentColors.primary} size={28} />
+                  </View>
+                  <View style={styles.attractionCardText}>
+                    <Text style={[styles.attractionCardTitle, { color: currentColors.text }]}>
+                      {attraction.name}
+                    </Text>
+                    <Text style={[styles.attractionCardSubtitle, { color: currentColors.textSecondary }]}>
+                      {attraction.category} • {attraction.description}
+                    </Text>
+                  </View>
+                  <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={20} />
+                </View>
+              </Pressable>
+            ))}
           </View>
-        </View>
+        )}
 
         {/* Location Permission Info */}
         {locationPermission !== 'granted' && (
@@ -548,64 +522,112 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: Platform.OS === 'android' ? 100 : 20,
   },
-  topHeaderRow: {
+  citySelectorContainer: {
+    marginBottom: 16,
+  },
+  citySelectorButton: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  citySelectorContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-    paddingHorizontal: 4,
+    padding: 16,
+    gap: 12,
   },
-  cityPickerButton: {
+  citySelectorIcon: {
     width: 44,
     height: 44,
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.08)',
-    elevation: 2,
   },
-  cityPickerEmoji: {
-    fontSize: 24,
-  },
-  welcomeContainer: {
+  citySelectorTextContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 12,
   },
-  welcomeText: {
-    fontSize: 15,
-    fontWeight: '400',
+  citySelectorLabel: {
+    fontSize: 13,
+    fontWeight: '500',
     marginBottom: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  cityNameHeader: {
-    fontSize: 24,
+  citySelectorCity: {
+    fontSize: 20,
     fontWeight: '700',
     letterSpacing: -0.5,
   },
-  profilePhotoButton: {
-    width: 44,
-    height: 44,
+  searchSection: {
+    marginBottom: 20,
+    position: 'relative',
+    zIndex: 1000,
   },
-  profilePicture: {
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 17,
+    fontWeight: '400',
+  },
+  attractionResults: {
+    marginTop: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+    maxHeight: 320,
+    boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.1)',
+    elevation: 8,
+  },
+  attractionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    gap: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  attractionIcon: {
     width: 44,
     height: 44,
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    overflow: 'hidden',
-    boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.08)',
-    elevation: 2,
   },
-  mapContainer: {
-    position: 'relative',
-    marginBottom: 24,
+  attractionInfo: {
+    flex: 1,
+  },
+  attractionName: {
+    fontSize: 17,
+    fontWeight: '600',
+    marginBottom: 2,
+    letterSpacing: -0.3,
+  },
+  attractionCategory: {
+    fontSize: 13,
+    fontWeight: '400',
+  },
+  noResults: {
+    padding: 32,
+    alignItems: 'center',
+    gap: 12,
+  },
+  noResultsText: {
+    fontSize: 15,
+    fontWeight: '500',
   },
   mapCard: {
     width: '100%',
-    height: 280,
+    height: 240,
     borderRadius: 16,
     overflow: 'hidden',
+    marginBottom: 24,
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
     elevation: 2,
   },
@@ -626,149 +648,48 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
   },
-  searchInlayContainer: {
-    position: 'absolute',
-    bottom: 16,
-    left: 16,
-    right: 16,
-    zIndex: 1000,
-  },
-  searchWrapper: {
-    zIndex: 1000,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 8,
-    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
-    elevation: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 17,
-  },
-  cityDropdown: {
-    borderRadius: 12,
-    marginTop: 8,
-    maxHeight: 280,
-    overflow: 'hidden',
-    boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.15)',
-    elevation: 10,
-  },
-  dropdownHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    gap: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  dropdownHeaderText: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  dropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  dropdownItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  dropdownItemText: {
-    fontSize: 17,
-    fontWeight: '500',
-  },
-  dropdownItemSubtext: {
-    fontSize: 13,
-    marginTop: 2,
-  },
-  dropdownEmpty: {
-    padding: 24,
-    alignItems: 'center',
-  },
-  dropdownEmptyText: {
-    fontSize: 15,
-  },
-  servicesSection: {
+  attractionsSection: {
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: 16,
     letterSpacing: -0.5,
   },
-  serviceCardLarge: {
+  attractionCard: {
     borderRadius: 16,
-    padding: 16,
     marginBottom: 12,
+    overflow: 'hidden',
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
     elevation: 2,
   },
-  serviceCardContent: {
+  attractionCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-  },
-  serviceIconLarge: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  serviceTextContainer: {
-    flex: 1,
-  },
-  serviceTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    marginBottom: 2,
-    letterSpacing: -0.3,
-  },
-  serviceSubtitle: {
-    fontSize: 13,
-    fontWeight: '400',
-  },
-  serviceRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  serviceCardSmall: {
-    flex: 1,
-    aspectRatio: 1,
-    borderRadius: 16,
     padding: 16,
-    justifyContent: 'space-between',
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
-    elevation: 2,
+    gap: 12,
   },
-  serviceIconSmall: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  attractionCardIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  serviceCardSmallTitle: {
-    fontSize: 17,
+  attractionCardText: {
+    flex: 1,
+  },
+  attractionCardTitle: {
+    fontSize: 18,
     fontWeight: '600',
-    color: '#FFFFFF',
+    marginBottom: 4,
     letterSpacing: -0.3,
   },
-  serviceCardSmallSubtitle: {
-    fontSize: 13,
+  attractionCardSubtitle: {
+    fontSize: 14,
     fontWeight: '400',
-    color: 'rgba(255, 255, 255, 0.8)',
+    lineHeight: 18,
   },
   permissionCard: {
     flexDirection: 'row',
