@@ -9,7 +9,7 @@ import {
   Pressable,
 } from 'react-native';
 import { IconSymbol } from '@/components/IconSymbol';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { BlurView } from 'expo-blur';
 import { colors, darkColors } from '@/styles/commonStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -66,7 +66,7 @@ export default function FloatingTabBar({
       
       // Home route matching
       if (tab.route === '/(tabs)/(home)') {
-        if (pathname.includes('/(home)') || pathname === '/(tabs)') {
+        if (pathname.includes('/(home)') || pathname === '/(tabs)' || pathname === '/') {
           console.log('Matched home tab, index:', i);
           return i;
         }
@@ -102,28 +102,6 @@ export default function FloatingTabBar({
 
   // Shared values for animations - create them at the top level
   const indicatorPosition = useSharedValue(activeIndex);
-  
-  // Create shared values for each tab using useRef to store them
-  // This ensures they're created once and reused across renders
-  const tabPressScaleRef = useRef<Animated.SharedValue<number>[]>([]);
-  const tabPressOpacityRef = useRef<Animated.SharedValue<number>[]>([]);
-  
-  // Initialize shared values if not already created or if tabs length changed
-  // We need to do this outside of any callback to satisfy React Hooks rules
-  if (tabPressScaleRef.current.length !== tabs.length) {
-    const newScaleValues: Animated.SharedValue<number>[] = [];
-    const newOpacityValues: Animated.SharedValue<number>[] = [];
-    
-    for (let i = 0; i < tabs.length; i++) {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      newScaleValues.push(useSharedValue(1));
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      newOpacityValues.push(useSharedValue(1));
-    }
-    
-    tabPressScaleRef.current = newScaleValues;
-    tabPressOpacityRef.current = newOpacityValues;
-  }
 
   useEffect(() => {
     console.log('Active index changed to:', activeIndex);
@@ -148,26 +126,12 @@ export default function FloatingTabBar({
     
     // Trigger haptic feedback
     triggerHapticFeedback();
-    
-    // Animate tab press
-    if (tabPressScaleRef.current[index]) {
-      tabPressScaleRef.current[index].value = withSpring(0.85, {
-        damping: 15,
-        stiffness: 400,
-      }, () => {
-        tabPressScaleRef.current[index].value = withSpring(1, {
-          damping: 15,
-          stiffness: 400,
-        });
-      });
-    }
 
     // Navigate with smooth transition
     try {
-      router.replace(route as any);
+      router.push(route as any);
     } catch (error) {
       console.error('Navigation error:', error);
-      router.push(route as any);
     }
   };
 
@@ -247,8 +211,6 @@ export default function FloatingTabBar({
               currentColors={currentColors}
               isDark={isDark}
               onPress={handleTabPress}
-              pressScale={tabPressScaleRef.current[index]}
-              pressOpacity={tabPressOpacityRef.current[index]}
               t={t}
             />
           );
@@ -267,8 +229,6 @@ interface TabButtonProps {
   currentColors: typeof colors;
   isDark: boolean;
   onPress: (route: string, index: number) => void;
-  pressScale: Animated.SharedValue<number>;
-  pressOpacity: Animated.SharedValue<number>;
   t: (key: string) => string;
 }
 
@@ -280,12 +240,12 @@ const TabButton = React.memo(({
   currentColors,
   isDark,
   onPress,
-  pressScale,
-  pressOpacity,
   t,
 }: TabButtonProps) => {
   const iconScale = useSharedValue(1);
   const iconRotate = useSharedValue(0);
+  const pressScale = useSharedValue(1);
+  const pressOpacity = useSharedValue(1);
 
   useEffect(() => {
     if (isActive) {
