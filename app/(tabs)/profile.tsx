@@ -1,91 +1,175 @@
-import React from "react";
+
 import { View, Text, StyleSheet, ScrollView, Platform } from "react-native";
+import React from "react";
+import { GlassView } from "expo-glass-effect";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/IconSymbol";
-import { GlassView } from "expo-glass-effect";
 import { useTheme } from "@react-navigation/native";
+import { colors } from "@/styles/commonStyles";
 
 export default function ProfileScreen() {
   const theme = useTheme();
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]} edges={['top']}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={[
-          styles.contentContainer,
-          Platform.OS !== 'ios' && styles.contentContainerWithTabBar
-        ]}
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        <GlassView style={[
-          styles.profileHeader,
-          Platform.OS !== 'ios' && { backgroundColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }
-        ]} glassEffectStyle="regular">
-          <IconSymbol name="person.circle.fill" size={80} color={theme.colors.primary} />
-          <Text style={[styles.name, { color: theme.colors.text }]}>John Doe</Text>
-          <Text style={[styles.email, { color: theme.dark ? '#98989D' : '#666' }]}>john.doe@example.com</Text>
-        </GlassView>
+        <View style={styles.header}>
+          <View style={styles.avatarContainer}>
+            <IconSymbol name="person.circle.fill" size={80} color={colors.primary} />
+          </View>
+          <Text style={styles.name}>Jerry</Text>
+          <Text style={styles.email}>jerry@example.com</Text>
+        </View>
 
-        <GlassView style={[
-          styles.section,
-          Platform.OS !== 'ios' && { backgroundColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }
-        ]} glassEffectStyle="regular">
-          <View style={styles.infoRow}>
-            <IconSymbol name="phone.fill" size={20} color={theme.dark ? '#98989D' : '#666'} />
-            <Text style={[styles.infoText, { color: theme.colors.text }]}>+1 (555) 123-4567</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <IconSymbol name="location.fill" size={20} color={theme.dark ? '#98989D' : '#666'} />
-            <Text style={[styles.infoText, { color: theme.colors.text }]}>San Francisco, CA</Text>
-          </View>
-        </GlassView>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Account Settings</Text>
+          
+          <GlassView 
+            style={[
+              styles.card,
+              Platform.OS !== 'ios' && { backgroundColor: colors.card }
+            ]} 
+            glassEffectStyle="regular"
+          >
+            <View style={styles.menuItem}>
+              <IconSymbol name="person.fill" size={24} color={colors.primary} />
+              <Text style={styles.menuItemText}>Edit Profile</Text>
+              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
+            </View>
+          </GlassView>
+
+          <GlassView 
+            style={[
+              styles.card,
+              Platform.OS !== 'ios' && { backgroundColor: colors.card }
+            ]} 
+            glassEffectStyle="regular"
+          >
+            <View style={styles.menuItem}>
+              <IconSymbol name="bell.fill" size={24} color={colors.secondary} />
+              <Text style={styles.menuItemText}>Notifications</Text>
+              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
+            </View>
+          </GlassView>
+
+          <GlassView 
+            style={[
+              styles.card,
+              Platform.OS !== 'ios' && { backgroundColor: colors.card }
+            ]} 
+            glassEffectStyle="regular"
+          >
+            <View style={styles.menuItem}>
+              <IconSymbol name="lock.fill" size={24} color={colors.accent} />
+              <Text style={styles.menuItemText}>Privacy & Security</Text>
+              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
+            </View>
+          </GlassView>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Preferences</Text>
+          
+          <GlassView 
+            style={[
+              styles.card,
+              Platform.OS !== 'ios' && { backgroundColor: colors.card }
+            ]} 
+            glassEffectStyle="regular"
+          >
+            <View style={styles.menuItem}>
+              <IconSymbol name="globe" size={24} color={colors.primary} />
+              <Text style={styles.menuItemText}>Language</Text>
+              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
+            </View>
+          </GlassView>
+
+          <GlassView 
+            style={[
+              styles.card,
+              Platform.OS !== 'ios' && { backgroundColor: colors.card }
+            ]} 
+            glassEffectStyle="regular"
+          >
+            <View style={styles.menuItem}>
+              <IconSymbol name="moon.fill" size={24} color={colors.accent} />
+              <Text style={styles.menuItemText}>Dark Mode</Text>
+              <IconSymbol name="chevron.right" size={20} color={colors.textSecondary} />
+            </View>
+          </GlassView>
+        </View>
+
+        <View style={[styles.section, { paddingBottom: Platform.OS === 'android' ? 100 : 20 }]}>
+          <GlassView 
+            style={[
+              styles.card,
+              Platform.OS !== 'ios' && { backgroundColor: colors.card }
+            ]} 
+            glassEffectStyle="regular"
+          >
+            <View style={styles.menuItem}>
+              <IconSymbol name="arrow.right.square.fill" size={24} color="#FF3B30" />
+              <Text style={[styles.menuItemText, { color: '#FF3B30' }]}>Sign Out</Text>
+            </View>
+          </GlassView>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    // backgroundColor handled dynamically
-  },
   container: {
     flex: 1,
   },
-  contentContainer: {
-    padding: 20,
+  scrollContent: {
+    paddingHorizontal: 16,
   },
-  contentContainerWithTabBar: {
-    paddingBottom: 100, // Extra padding for floating tab bar
-  },
-  profileHeader: {
+  header: {
     alignItems: 'center',
-    borderRadius: 12,
-    padding: 32,
+    paddingVertical: 32,
+  },
+  avatarContainer: {
     marginBottom: 16,
-    gap: 12,
   },
   name: {
     fontSize: 24,
     fontWeight: 'bold',
-    // color handled dynamically
+    color: colors.text,
+    marginBottom: 4,
   },
   email: {
     fontSize: 16,
-    // color handled dynamically
+    color: colors.textSecondary,
   },
   section: {
-    borderRadius: 12,
-    padding: 20,
-    gap: 12,
+    marginBottom: 24,
   },
-  infoRow: {
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  card: {
+    borderRadius: 12,
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
+  menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 16,
     gap: 12,
   },
-  infoText: {
+  menuItemText: {
+    flex: 1,
     fontSize: 16,
-    // color handled dynamically
+    fontWeight: '500',
+    color: colors.text,
   },
 });
