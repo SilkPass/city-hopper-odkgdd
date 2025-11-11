@@ -11,7 +11,8 @@ import {
   Platform,
   TextInput,
   ActivityIndicator,
-  Dimensions
+  Dimensions,
+  Modal
 } from "react-native";
 import { IconSymbol } from "@/components/IconSymbol";
 import { useTheme } from "@react-navigation/native";
@@ -28,9 +29,9 @@ interface City {
 }
 
 const CITIES: City[] = [
-  { name: "Beijing", nameZh: "北京", latitude: 39.9042, longitude: 116.4074 },
-  { name: "Shanghai", nameZh: "上海", latitude: 31.2304, longitude: 121.4737 },
-  { name: "Hong Kong", nameZh: "香港", latitude: 22.3193, longitude: 114.1694 },
+  { name: "Beijing", nameZh: "Beijing", latitude: 39.9042, longitude: 116.4074 },
+  { name: "Shanghai", nameZh: "Shanghai", latitude: 31.2304, longitude: 121.4737 },
+  { name: "Hong Kong", nameZh: "Hong Kong", latitude: 22.3193, longitude: 114.1694 },
 ];
 
 export default function HomeScreen() {
@@ -41,6 +42,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [locationPermission, setLocationPermission] = useState<Location.PermissionStatus | null>(null);
+  const [showCitySelector, setShowCitySelector] = useState(false);
 
   useEffect(() => {
     requestLocationPermission();
@@ -118,24 +120,24 @@ export default function HomeScreen() {
 
   const renderHeaderRight = () => (
     <Pressable
-      onPress={() => Alert.alert("Settings", "Settings feature coming soon")}
+      onPress={() => Alert.alert("Profile", "Profile feature")}
       style={styles.headerButtonContainer}
     >
-      <IconSymbol name="gear" color={colors.primary} size={24} />
+      <View style={styles.profilePicture}>
+        <IconSymbol name="person.fill" color="#FFFFFF" size={20} />
+      </View>
     </Pressable>
   );
 
   const renderHeaderLeft = () => (
-    <View style={styles.headerLeft}>
-      <View style={styles.locationBadge}>
-        <IconSymbol name="location.fill" color="#FF3B30" size={16} />
-        <Text style={styles.locationBadgeText}>阿拉木图</Text>
-      </View>
-      <View style={styles.userBadge}>
-        <IconSymbol name="person.fill" color={colors.textSecondary} size={16} />
-        <Text style={styles.userBadgeText}>@Jerry</Text>
-      </View>
-    </View>
+    <Pressable
+      onPress={() => setShowCitySelector(true)}
+      style={styles.citySelector}
+    >
+      <IconSymbol name="location.fill" color={colors.primary} size={16} />
+      <Text style={styles.citySelectorText}>{selectedCity?.name || 'Select City'}</Text>
+      <IconSymbol name="chevron.down" color={colors.textSecondary} size={14} />
+    </Pressable>
   );
 
   if (loading) {
@@ -144,7 +146,7 @@ export default function HomeScreen() {
         {Platform.OS === 'ios' && (
           <Stack.Screen
             options={{
-              title: "选择地点",
+              title: "Select Location",
               headerRight: renderHeaderRight,
               headerLeft: renderHeaderLeft,
             }}
@@ -163,12 +165,66 @@ export default function HomeScreen() {
       {Platform.OS === 'ios' && (
         <Stack.Screen
           options={{
-            title: "选择地点",
+            title: "Select Location",
             headerRight: renderHeaderRight,
             headerLeft: renderHeaderLeft,
           }}
         />
       )}
+      
+      {/* City Selector Modal */}
+      <Modal
+        visible={showCitySelector}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowCitySelector(false)}
+      >
+        <Pressable 
+          style={styles.modalOverlay}
+          onPress={() => setShowCitySelector(false)}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select City</Text>
+              <Pressable onPress={() => setShowCitySelector(false)}>
+                <IconSymbol name="xmark.circle.fill" color={colors.textSecondary} size={28} />
+              </Pressable>
+            </View>
+            
+            {sortedCities.map((city, index) => (
+              <Pressable
+                key={city.name}
+                style={[
+                  styles.cityModalItem,
+                  selectedCity?.name === city.name && styles.cityModalItemSelected
+                ]}
+                onPress={() => {
+                  setSelectedCity(city);
+                  setShowCitySelector(false);
+                }}
+              >
+                <View style={styles.cityModalItemContent}>
+                  <Text style={[
+                    styles.cityModalItemText,
+                    selectedCity?.name === city.name && styles.cityModalItemTextSelected
+                  ]}>
+                    {city.name}
+                  </Text>
+                  {index === 0 && userLocation && (
+                    <View style={styles.closestBadge}>
+                      <Text style={styles.closestBadgeText}>Closest</Text>
+                    </View>
+                  )}
+                </View>
+                {selectedCity?.name === city.name && (
+                  <IconSymbol name="checkmark.circle.fill" color={colors.primary} size={24} />
+                )}
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
+
       <ScrollView 
         style={[styles.container, { backgroundColor: colors.background }]}
         contentContainerStyle={styles.scrollContent}
@@ -177,7 +233,7 @@ export default function HomeScreen() {
         {/* Selected City Display */}
         <View style={styles.cityHeader}>
           <Text style={styles.cityName}>
-            {selectedCity?.name}, {selectedCity?.nameZh}!
+            Welcome to {selectedCity?.name}!
           </Text>
         </View>
 
@@ -199,7 +255,7 @@ export default function HomeScreen() {
           <IconSymbol name="magnifyingglass" color={colors.textSecondary} size={20} />
           <TextInput
             style={styles.searchInput}
-            placeholder="搜索目的地"
+            placeholder="Search destination"
             placeholderTextColor={colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -221,7 +277,7 @@ export default function HomeScreen() {
                 styles.cityButtonText,
                 selectedCity?.name === city.name && styles.cityButtonTextSelected
               ]}>
-                {city.nameZh}
+                {city.name}
               </Text>
               {index === 0 && userLocation && (
                 <View style={styles.closestBadge}>
@@ -256,7 +312,7 @@ export default function HomeScreen() {
             onPress={() => Alert.alert("Payment", "Payment feature coming soon")}
           >
             <IconSymbol name="creditcard.fill" color="#FFFFFF" size={32} />
-            <Text style={styles.serviceButtonSmallText}>支付</Text>
+            <Text style={styles.serviceButtonSmallText}>Payment</Text>
           </Pressable>
         </View>
 
@@ -286,38 +342,82 @@ const styles = StyleSheet.create({
   headerButtonContainer: {
     padding: 8,
   },
-  headerLeft: {
+  profilePicture: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  citySelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  citySelectorText: {
+    fontSize: 14,
+    color: colors.text,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 40,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+  cityModalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.card,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  cityModalItemSelected: {
+    borderColor: colors.primary,
+  },
+  cityModalItemContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  locationBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.card,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    gap: 4,
-  },
-  locationBadgeText: {
-    fontSize: 14,
+  cityModalItemText: {
+    fontSize: 18,
+    fontWeight: '600',
     color: colors.text,
-    fontWeight: '500',
   },
-  userBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.card,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    gap: 4,
-  },
-  userBadgeText: {
-    fontSize: 14,
-    color: colors.text,
-    fontWeight: '500',
+  cityModalItemTextSelected: {
+    color: colors.primary,
   },
   loadingText: {
     marginTop: 16,

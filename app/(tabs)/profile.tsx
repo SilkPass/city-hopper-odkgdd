@@ -18,10 +18,11 @@ export default function ProfileScreen() {
       >
         <View style={styles.header}>
           <View style={styles.avatarContainer}>
-            <IconSymbol name="person.circle.fill" size={80} color={colors.primary} />
+            <View style={styles.profilePicture}>
+              <IconSymbol name="person.fill" size={60} color="#FFFFFF" />
+            </View>
           </View>
-          <Text style={styles.name}>Jerry</Text>
-          <Text style={styles.email}>jerry@example.com</Text>
+          <Text style={styles.username}>@Jerry</Text>
         </View>
 
         <View style={styles.section}>
@@ -135,15 +136,19 @@ const styles = StyleSheet.create({
   avatarContainer: {
     marginBottom: 16,
   },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 4,
+  profilePicture: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
   },
-  email: {
-    fontSize: 16,
-    color: colors.textSecondary,
+  username: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.text,
   },
   section: {
     marginBottom: 24,
