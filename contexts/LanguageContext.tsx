@@ -22,7 +22,6 @@ export const useLanguage = () => {
   return context;
 };
 
-// Translation strings
 const translations = {
   en: {
     welcome: 'Welcome to',
@@ -170,18 +169,18 @@ const translations = {
   },
   uz: {
     welcome: 'Xush kelibsiz',
-    searchDestinations: 'Yo\'nalishlarni qidirish...',
+    searchDestinations: 'Yonalishlarni qidirish...',
     searchSelectCity: 'Shaharni qidirish va tanlash',
     selectCity: 'Shaharni tanlash',
     closestToYou: 'Sizga eng yaqin',
     noCitiesFound: 'Shaharlar topilmadi',
     selectCityToContinue: 'Davom etish uchun shaharni tanlang',
-    exploreServices: 'Xizmatlarni o\'rganish',
-    myGuide: 'Mening yo\'lboshchim',
-    exploreLocalRecommendations: 'Mahalliy tavsiyalarni o\'rganing',
+    exploreServices: 'Xizmatlarni organish',
+    myGuide: 'Mening yolboshchim',
+    exploreLocalRecommendations: 'Mahalliy tavsiyalarni organing',
     esim: 'eSIM',
-    stayConnected: 'Aloqada bo\'ling',
-    payment: 'To\'lov',
+    stayConnected: 'Aloqada boling',
+    payment: 'Tolov',
     easyTransactions: 'Oson tranzaksiyalar',
     enableLocation: 'Joylashuvni yoqish',
     allowLocationAccess: 'Eng yaqin shaharni avtomatik topish uchun joylashuvga kirishga ruxsat bering',
@@ -192,7 +191,7 @@ const translations = {
     privacySecurity: 'Maxfiylik va xavfsizlik',
     preferences: 'Sozlamalar',
     language: 'Til',
-    darkMode: 'Qorong\'i rejim',
+    darkMode: 'Qorongi rejim',
     signOut: 'Chiqish',
     cities: 'Shaharlar',
     home: 'Bosh sahifa',
@@ -220,7 +219,6 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   });
 
   useEffect(() => {
-    // Try to detect user's language from device settings
     const deviceLocale = Localization.getLocales()[0]?.languageCode;
     console.log('Device locale:', deviceLocale);
     
