@@ -1,16 +1,32 @@
 
 import { StyleSheet, ViewStyle, TextStyle } from 'react-native';
 
+// iOS 26 inspired color palette
 export const colors = {
-  background: '#F5F5F5',
-  text: '#212121',
-  textSecondary: '#757575',
-  primary: '#4285F4',
-  secondary: '#66BB6A',
-  accent: '#9C27B0',
+  // Light mode colors
+  background: '#F2F2F7',
+  backgroundSecondary: '#FFFFFF',
+  text: '#000000',
+  textSecondary: '#8E8E93',
+  textTertiary: '#C7C7CC',
+  primary: '#007AFF',
+  secondary: '#34C759',
+  accent: '#FF9500',
   card: '#FFFFFF',
-  highlight: '#FFEB3B',
-  border: '#E0E0E0',
+  cardSecondary: '#F2F2F7',
+  highlight: '#FFCC00',
+  border: '#C6C6C8',
+  separator: '#E5E5EA',
+  
+  // Semantic colors
+  success: '#34C759',
+  warning: '#FF9500',
+  error: '#FF3B30',
+  info: '#007AFF',
+  
+  // Overlay
+  overlay: 'rgba(0, 0, 0, 0.4)',
+  overlayLight: 'rgba(0, 0, 0, 0.2)',
 };
 
 export const buttonStyles = StyleSheet.create({
@@ -51,18 +67,19 @@ export const commonStyles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontSize: 28,
+    fontWeight: '700',
     textAlign: 'center',
     color: colors.text,
-    marginBottom: 10
+    marginBottom: 10,
+    letterSpacing: -0.5,
   },
   text: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 17,
+    fontWeight: '400',
     color: colors.text,
     marginBottom: 8,
-    lineHeight: 24,
+    lineHeight: 22,
     textAlign: 'center',
   },
   section: {
@@ -77,13 +94,11 @@ export const commonStyles = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.card,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 12,
     padding: 16,
     marginVertical: 8,
     width: '100%',
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.08)',
     elevation: 2,
   },
   icon: {

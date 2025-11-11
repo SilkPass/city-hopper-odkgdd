@@ -13,13 +13,14 @@ import {
   ActivityIndicator,
   Dimensions,
   Modal,
-  FlatList,
-  Keyboard
+  Keyboard,
+  Animated
 } from "react-native";
 import { IconSymbol } from "@/components/IconSymbol";
 import { useTheme } from "@react-navigation/native";
 import * as Location from 'expo-location';
 import { colors } from "@/styles/commonStyles";
+import { BlurView } from 'expo-blur';
 
 const { width } = Dimensions.get('window');
 
@@ -31,9 +32,14 @@ interface City {
 }
 
 const CITIES: City[] = [
-  { name: "Beijing", nameZh: "Beijing", latitude: 39.9042, longitude: 116.4074 },
-  { name: "Shanghai", nameZh: "Shanghai", latitude: 31.2304, longitude: 121.4737 },
-  { name: "Hong Kong", nameZh: "Hong Kong", latitude: 22.3193, longitude: 114.1694 },
+  { name: "Beijing", nameZh: "北京", latitude: 39.9042, longitude: 116.4074 },
+  { name: "Shanghai", nameZh: "上海", latitude: 31.2304, longitude: 121.4737 },
+  { name: "Hong Kong", nameZh: "香港", latitude: 22.3193, longitude: 114.1694 },
+  { name: "Guangzhou", nameZh: "广州", latitude: 23.1291, longitude: 113.2644 },
+  { name: "Shenzhen", nameZh: "深圳", latitude: 22.5431, longitude: 114.0579 },
+  { name: "Chengdu", nameZh: "成都", latitude: 30.5728, longitude: 104.0668 },
+  { name: "Hangzhou", nameZh: "杭州", latitude: 30.2741, longitude: 120.1551 },
+  { name: "Xi'an", nameZh: "西安", latitude: 34.3416, longitude: 108.9398 },
 ];
 
 export default function HomeScreen() {
@@ -48,6 +54,7 @@ export default function HomeScreen() {
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [filteredCities, setFilteredCities] = useState<City[]>(CITIES);
   const searchInputRef = useRef<TextInput>(null);
+  const slideAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     requestLocationPermission();
@@ -66,6 +73,24 @@ export default function HomeScreen() {
     }
   }, [searchQuery, sortedCities]);
 
+  useEffect(() => {
+    if (showCitySelector) {
+      Animated.spring(slideAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 65,
+        friction: 11,
+      }).start();
+    } else {
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 65,
+        friction: 11,
+      }).start();
+    }
+  }, [showCitySelector]);
+
   const requestLocationPermission = async () => {
     try {
       console.log('Requesting location permission...');
@@ -78,7 +103,6 @@ export default function HomeScreen() {
       } else {
         console.log('Location permission denied');
         setLoading(false);
-        // Default to showing cities in original order
         setSelectedCity(CITIES[0]);
       }
     } catch (error) {
@@ -97,7 +121,6 @@ export default function HomeScreen() {
       console.log('User location:', location);
       setUserLocation(location);
       
-      // Calculate distances and sort cities
       const citiesWithDistance = CITIES.map(city => ({
         ...city,
         distance: calculateDistance(
@@ -108,11 +131,8 @@ export default function HomeScreen() {
         )
       }));
       
-      // Sort by distance
       citiesWithDistance.sort((a, b) => a.distance - b.distance);
       setSortedCities(citiesWithDistance);
-      
-      // Select the closest city
       setSelectedCity(citiesWithDistance[0]);
       setLoading(false);
     } catch (error) {
@@ -122,9 +142,8 @@ export default function HomeScreen() {
     }
   };
 
-  // Haversine formula to calculate distance between two coordinates
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371; // Radius of the Earth in km
+    const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a = 
@@ -140,11 +159,11 @@ export default function HomeScreen() {
     setSelectedCity(city);
     setSearchQuery("");
     setShowCityDropdown(false);
+    setShowCitySelector(false);
     Keyboard.dismiss();
   };
 
   const handleSearchFocus = () => {
-    // Show dropdown when search is focused, especially if location was denied
     if (locationPermission !== 'granted' || searchQuery.length > 0) {
       setShowCityDropdown(true);
     }
@@ -165,7 +184,7 @@ export default function HomeScreen() {
       style={styles.headerButtonContainer}
     >
       <View style={styles.profilePicture}>
-        <IconSymbol name="person.fill" color="#FFFFFF" size={20} />
+        <IconSymbol name="person.fill" color="#FFFFFF" size={18} />
       </View>
     </Pressable>
   );
@@ -175,11 +194,20 @@ export default function HomeScreen() {
       onPress={() => setShowCitySelector(true)}
       style={styles.citySelector}
     >
-      <IconSymbol name="location.fill" color={colors.primary} size={16} />
-      <Text style={styles.citySelectorText}>{selectedCity?.name || 'Select City'}</Text>
-      <IconSymbol name="chevron.down" color={colors.textSecondary} size={14} />
+      <View style={styles.citySelectorContent}>
+        <IconSymbol name="location.fill" color={colors.primary} size={14} />
+        <Text style={styles.citySelectorText} numberOfLines={1}>
+          {selectedCity?.name || 'Select City'}
+        </Text>
+        <IconSymbol name="chevron.down" color={colors.textSecondary} size={12} />
+      </View>
     </Pressable>
   );
+
+  const modalTranslateY = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [600, 0],
+  });
 
   if (loading) {
     return (
@@ -187,9 +215,13 @@ export default function HomeScreen() {
         {Platform.OS === 'ios' && (
           <Stack.Screen
             options={{
-              title: "Select Location",
+              title: "",
+              headerTransparent: false,
               headerRight: renderHeaderRight,
               headerLeft: renderHeaderLeft,
+              headerStyle: {
+                backgroundColor: colors.backgroundSecondary,
+              },
             }}
           />
         )}
@@ -206,9 +238,14 @@ export default function HomeScreen() {
       {Platform.OS === 'ios' && (
         <Stack.Screen
           options={{
-            title: "Select Location",
+            title: "",
+            headerTransparent: false,
             headerRight: renderHeaderRight,
             headerLeft: renderHeaderLeft,
+            headerStyle: {
+              backgroundColor: colors.backgroundSecondary,
+            },
+            headerShadowVisible: false,
           }}
         />
       )}
@@ -217,52 +254,86 @@ export default function HomeScreen() {
       <Modal
         visible={showCitySelector}
         transparent={true}
-        animationType="slide"
+        animationType="none"
         onRequestClose={() => setShowCitySelector(false)}
       >
         <Pressable 
           style={styles.modalOverlay}
           onPress={() => setShowCitySelector(false)}
         >
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select City</Text>
-              <Pressable onPress={() => setShowCitySelector(false)}>
-                <IconSymbol name="xmark.circle.fill" color={colors.textSecondary} size={28} />
-              </Pressable>
-            </View>
-            
-            {sortedCities.map((city, index) => (
-              <Pressable
-                key={city.name}
-                style={[
-                  styles.cityModalItem,
-                  selectedCity?.name === city.name && styles.cityModalItemSelected
-                ]}
-                onPress={() => {
-                  setSelectedCity(city);
-                  setShowCitySelector(false);
-                }}
+          <Animated.View 
+            style={[
+              styles.modalContent,
+              {
+                transform: [{ translateY: modalTranslateY }],
+              }
+            ]}
+          >
+            <Pressable onPress={(e) => e.stopPropagation()}>
+              <View style={styles.modalHandle} />
+              
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Select City</Text>
+                <Pressable 
+                  onPress={() => setShowCitySelector(false)}
+                  style={styles.modalCloseButton}
+                >
+                  <IconSymbol name="xmark.circle.fill" color={colors.textSecondary} size={28} />
+                </Pressable>
+              </View>
+              
+              <ScrollView 
+                style={styles.cityList}
+                showsVerticalScrollIndicator={false}
               >
-                <View style={styles.cityModalItemContent}>
-                  <Text style={[
-                    styles.cityModalItemText,
-                    selectedCity?.name === city.name && styles.cityModalItemTextSelected
-                  ]}>
-                    {city.name}
-                  </Text>
-                  {index === 0 && userLocation && (
-                    <View style={styles.closestBadge}>
-                      <Text style={styles.closestBadgeText}>Closest</Text>
-                    </View>
-                  )}
-                </View>
-                {selectedCity?.name === city.name && (
-                  <IconSymbol name="checkmark.circle.fill" color={colors.primary} size={24} />
-                )}
-              </Pressable>
-            ))}
-          </View>
+                {sortedCities.map((city, index) => {
+                  const isSelected = selectedCity?.name === city.name;
+                  const isClosest = index === 0 && userLocation && locationPermission === 'granted';
+                  
+                  return (
+                    <Pressable
+                      key={city.name}
+                      style={[
+                        styles.cityModalItem,
+                        isSelected && styles.cityModalItemSelected
+                      ]}
+                      onPress={() => handleCitySelect(city)}
+                    >
+                      <View style={styles.cityModalItemLeft}>
+                        <View style={[
+                          styles.cityIconContainer,
+                          isSelected && styles.cityIconContainerSelected
+                        ]}>
+                          <IconSymbol 
+                            name="location.fill" 
+                            color={isSelected ? colors.primary : colors.textSecondary} 
+                            size={18} 
+                          />
+                        </View>
+                        <View style={styles.cityModalItemTextContainer}>
+                          <Text style={[
+                            styles.cityModalItemText,
+                            isSelected && styles.cityModalItemTextSelected
+                          ]}>
+                            {city.name}
+                          </Text>
+                          {isClosest && (
+                            <View style={styles.closestBadge}>
+                              <IconSymbol name="location.fill" color={colors.primary} size={10} />
+                              <Text style={styles.closestBadgeText}>Closest to you</Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                      {isSelected && (
+                        <IconSymbol name="checkmark.circle.fill" color={colors.primary} size={24} />
+                      )}
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </Pressable>
+          </Animated.View>
         </Pressable>
       </Modal>
 
@@ -272,140 +343,172 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Selected City Display */}
-        <View style={styles.cityHeader}>
-          <Text style={styles.cityName}>
-            Welcome to {selectedCity?.name}!
-          </Text>
-        </View>
-
-        {/* Map Placeholder */}
-        <View style={styles.mapContainer}>
-          <View style={styles.mapPlaceholder}>
-            <IconSymbol name="map.fill" color={colors.textSecondary} size={48} />
-            <Text style={styles.mapPlaceholderText}>
-              Maps are not supported in Natively web preview.
-            </Text>
-            <Text style={styles.mapPlaceholderSubtext}>
-              Location: {selectedCity?.name} ({selectedCity?.latitude.toFixed(4)}, {selectedCity?.longitude.toFixed(4)})
-            </Text>
-          </View>
-        </View>
-
-        {/* Search Input with City Dropdown */}
-        <View style={styles.searchWrapper}>
-          <View style={styles.searchContainer}>
-            <IconSymbol name="magnifyingglass" color={colors.textSecondary} size={20} />
-            <TextInput
-              ref={searchInputRef}
-              style={styles.searchInput}
-              placeholder={locationPermission === 'granted' ? "Search destination" : "Search and select city"}
-              placeholderTextColor={colors.textSecondary}
-              value={searchQuery}
-              onChangeText={handleSearchChange}
-              onFocus={handleSearchFocus}
-            />
-            {searchQuery.length > 0 && (
-              <Pressable onPress={() => {
-                setSearchQuery("");
-                setShowCityDropdown(false);
-              }}>
-                <IconSymbol name="xmark.circle.fill" color={colors.textSecondary} size={20} />
-              </Pressable>
-            )}
-          </View>
-
-          {/* City Dropdown */}
-          {showCityDropdown && (
-            <View style={styles.cityDropdown}>
-              {locationPermission !== 'granted' && (
-                <View style={styles.dropdownHeader}>
-                  <IconSymbol name="info.circle.fill" color={colors.primary} size={16} />
-                  <Text style={styles.dropdownHeaderText}>
-                    Select a city to continue
-                  </Text>
-                </View>
-              )}
-              
-              {filteredCities.length > 0 ? (
-                filteredCities.map((city, index) => (
-                  <Pressable
-                    key={city.name}
-                    style={[
-                      styles.dropdownItem,
-                      selectedCity?.name === city.name && styles.dropdownItemSelected
-                    ]}
-                    onPress={() => handleCitySelect(city)}
-                  >
-                    <View style={styles.dropdownItemLeft}>
-                      <IconSymbol 
-                        name="location.fill" 
-                        color={selectedCity?.name === city.name ? colors.primary : colors.textSecondary} 
-                        size={18} 
-                      />
-                      <View>
-                        <Text style={[
-                          styles.dropdownItemText,
-                          selectedCity?.name === city.name && styles.dropdownItemTextSelected
-                        ]}>
-                          {city.name}
-                        </Text>
-                        {index === 0 && userLocation && locationPermission === 'granted' && (
-                          <Text style={styles.dropdownItemSubtext}>
-                            Closest to you
-                          </Text>
-                        )}
-                      </View>
-                    </View>
-                    {selectedCity?.name === city.name && (
-                      <IconSymbol name="checkmark.circle.fill" color={colors.primary} size={20} />
-                    )}
-                  </Pressable>
-                ))
-              ) : (
-                <View style={styles.dropdownEmpty}>
-                  <Text style={styles.dropdownEmptyText}>No cities found</Text>
-                </View>
-              )}
+        {/* Hero Section */}
+        <View style={styles.heroSection}>
+          <Text style={styles.greeting}>Welcome to</Text>
+          <Text style={styles.cityName}>{selectedCity?.name}</Text>
+          {userLocation && locationPermission === 'granted' && (
+            <View style={styles.locationBadge}>
+              <IconSymbol name="location.fill" color={colors.primary} size={12} />
+              <Text style={styles.locationBadgeText}>Current location detected</Text>
             </View>
           )}
         </View>
 
-        {/* Service Buttons */}
-        <Pressable 
-          style={[styles.serviceButton, { backgroundColor: colors.primary }]}
-          onPress={() => Alert.alert("My Guide", "Guide feature coming soon")}
-        >
-          <IconSymbol name="book.fill" color="#FFFFFF" size={24} />
-          <Text style={styles.serviceButtonText}>My Guide</Text>
-          <IconSymbol name="chevron.right" color="#FFFFFF" size={20} />
-        </Pressable>
+        {/* Map Card */}
+        <View style={styles.mapCard}>
+          <View style={styles.mapPlaceholder}>
+            <IconSymbol name="map.fill" color={colors.textTertiary} size={56} />
+            <Text style={styles.mapPlaceholderText}>
+              Maps are not supported in Natively web preview
+            </Text>
+            <Text style={styles.mapPlaceholderSubtext}>
+              {selectedCity?.latitude.toFixed(4)}, {selectedCity?.longitude.toFixed(4)}
+            </Text>
+          </View>
+        </View>
 
-        <View style={styles.serviceRow}>
+        {/* Search Section */}
+        <View style={styles.searchSection}>
+          <Text style={styles.sectionTitle}>Explore Services</Text>
+          <View style={styles.searchWrapper}>
+            <View style={styles.searchContainer}>
+              <IconSymbol name="magnifyingglass" color={colors.textSecondary} size={18} />
+              <TextInput
+                ref={searchInputRef}
+                style={styles.searchInput}
+                placeholder={locationPermission === 'granted' ? "Search destinations..." : "Search and select city"}
+                placeholderTextColor={colors.textSecondary}
+                value={searchQuery}
+                onChangeText={handleSearchChange}
+                onFocus={handleSearchFocus}
+              />
+              {searchQuery.length > 0 && (
+                <Pressable onPress={() => {
+                  setSearchQuery("");
+                  setShowCityDropdown(false);
+                }}>
+                  <IconSymbol name="xmark.circle.fill" color={colors.textSecondary} size={18} />
+                </Pressable>
+              )}
+            </View>
+
+            {showCityDropdown && (
+              <View style={styles.cityDropdown}>
+                {locationPermission !== 'granted' && (
+                  <View style={styles.dropdownHeader}>
+                    <IconSymbol name="info.circle.fill" color={colors.info} size={14} />
+                    <Text style={styles.dropdownHeaderText}>
+                      Select a city to continue
+                    </Text>
+                  </View>
+                )}
+                
+                {filteredCities.length > 0 ? (
+                  filteredCities.map((city, index) => {
+                    const isSelected = selectedCity?.name === city.name;
+                    const isClosest = index === 0 && userLocation && locationPermission === 'granted';
+                    
+                    return (
+                      <Pressable
+                        key={city.name}
+                        style={[
+                          styles.dropdownItem,
+                          isSelected && styles.dropdownItemSelected
+                        ]}
+                        onPress={() => handleCitySelect(city)}
+                      >
+                        <View style={styles.dropdownItemLeft}>
+                          <IconSymbol 
+                            name="location.fill" 
+                            color={isSelected ? colors.primary : colors.textSecondary} 
+                            size={16} 
+                          />
+                          <View>
+                            <Text style={[
+                              styles.dropdownItemText,
+                              isSelected && styles.dropdownItemTextSelected
+                            ]}>
+                              {city.name}
+                            </Text>
+                            {isClosest && (
+                              <Text style={styles.dropdownItemSubtext}>
+                                Closest to you
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                        {isSelected && (
+                          <IconSymbol name="checkmark.circle.fill" color={colors.primary} size={20} />
+                        )}
+                      </Pressable>
+                    );
+                  })
+                ) : (
+                  <View style={styles.dropdownEmpty}>
+                    <Text style={styles.dropdownEmptyText}>No cities found</Text>
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Services Grid */}
+        <View style={styles.servicesSection}>
           <Pressable 
-            style={[styles.serviceButtonSmall, { backgroundColor: colors.secondary }]}
-            onPress={() => Alert.alert("eSIM", "eSIM feature coming soon")}
+            style={styles.serviceCardLarge}
+            onPress={() => Alert.alert("My Guide", "Explore local guides and recommendations")}
           >
-            <IconSymbol name="simcard.fill" color="#FFFFFF" size={32} />
-            <Text style={styles.serviceButtonSmallText}>eSIM</Text>
+            <View style={styles.serviceCardContent}>
+              <View style={styles.serviceIconLarge}>
+                <IconSymbol name="book.fill" color={colors.primary} size={28} />
+              </View>
+              <View style={styles.serviceTextContainer}>
+                <Text style={styles.serviceTitle}>My Guide</Text>
+                <Text style={styles.serviceSubtitle}>Explore local recommendations</Text>
+              </View>
+              <IconSymbol name="chevron.right" color={colors.textTertiary} size={20} />
+            </View>
           </Pressable>
 
-          <Pressable 
-            style={[styles.serviceButtonSmall, { backgroundColor: colors.accent }]}
-            onPress={() => Alert.alert("Payment", "Payment feature coming soon")}
-          >
-            <IconSymbol name="creditcard.fill" color="#FFFFFF" size={32} />
-            <Text style={styles.serviceButtonSmallText}>Payment</Text>
-          </Pressable>
+          <View style={styles.serviceRow}>
+            <Pressable 
+              style={[styles.serviceCardSmall, { backgroundColor: colors.secondary }]}
+              onPress={() => Alert.alert("eSIM", "Get connected with local eSIM")}
+            >
+              <View style={styles.serviceIconSmall}>
+                <IconSymbol name="simcard.fill" color="#FFFFFF" size={32} />
+              </View>
+              <Text style={styles.serviceCardSmallTitle}>eSIM</Text>
+              <Text style={styles.serviceCardSmallSubtitle}>Stay connected</Text>
+            </Pressable>
+
+            <Pressable 
+              style={[styles.serviceCardSmall, { backgroundColor: colors.accent }]}
+              onPress={() => Alert.alert("Payment", "Manage local payments")}
+            >
+              <View style={styles.serviceIconSmall}>
+                <IconSymbol name="creditcard.fill" color="#FFFFFF" size={32} />
+              </View>
+              <Text style={styles.serviceCardSmallTitle}>Payment</Text>
+              <Text style={styles.serviceCardSmallSubtitle}>Easy transactions</Text>
+            </Pressable>
+          </View>
         </View>
 
         {/* Location Permission Info */}
         {locationPermission !== 'granted' && (
-          <View style={styles.permissionInfo}>
-            <IconSymbol name="info.circle.fill" color={colors.primary} size={20} />
-            <Text style={styles.permissionInfoText}>
-              Enable location services to automatically find the nearest city
-            </Text>
+          <View style={styles.permissionCard}>
+            <View style={styles.permissionIconContainer}>
+              <IconSymbol name="location.fill" color={colors.primary} size={24} />
+            </View>
+            <View style={styles.permissionTextContainer}>
+              <Text style={styles.permissionTitle}>Enable Location</Text>
+              <Text style={styles.permissionText}>
+                Allow location access to automatically find the nearest city
+              </Text>
+            </View>
           </View>
         )}
       </ScrollView>
@@ -418,110 +521,179 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingHorizontal: 20,
+    paddingTop: 8,
     paddingBottom: Platform.OS === 'android' ? 100 : 20,
   },
   headerButtonContainer: {
-    padding: 8,
+    marginRight: 8,
   },
   profilePicture: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
   },
   citySelector: {
+    marginLeft: 8,
+    maxWidth: 140,
+  },
+  citySelectorContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.card,
-    paddingHorizontal: 12,
+    backgroundColor: colors.cardSecondary,
+    paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 16,
-    gap: 6,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: 20,
+    gap: 4,
   },
   citySelectorText: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.text,
     fontWeight: '600',
+    letterSpacing: -0.3,
+    maxWidth: 80,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.backgroundSecondary,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 8,
     paddingBottom: 40,
-    maxHeight: '70%',
+    maxHeight: '80%',
+  },
+  modalHandle: {
+    width: 36,
+    height: 5,
+    backgroundColor: colors.separator,
+    borderRadius: 3,
+    alignSelf: 'center',
+    marginBottom: 16,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    paddingHorizontal: 20,
+    marginBottom: 16,
   },
   modalTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '700',
     color: colors.text,
+    letterSpacing: -0.5,
+  },
+  modalCloseButton: {
+    padding: 4,
+  },
+  cityList: {
+    paddingHorizontal: 20,
   },
   cityModalItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.card,
-    padding: 16,
+    backgroundColor: colors.cardSecondary,
+    padding: 14,
     borderRadius: 12,
     marginBottom: 8,
-    borderWidth: 2,
-    borderColor: 'transparent',
   },
   cityModalItemSelected: {
-    borderColor: colors.primary,
+    backgroundColor: colors.primary + '15',
   },
-  cityModalItemContent: {
+  cityModalItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
+    flex: 1,
+  },
+  cityIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.separator,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cityIconContainerSelected: {
+    backgroundColor: colors.primary + '20',
+  },
+  cityModalItemTextContainer: {
+    flex: 1,
   },
   cityModalItemText: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '600',
     color: colors.text,
+    letterSpacing: -0.3,
   },
   cityModalItemTextSelected: {
     color: colors.primary,
   },
+  closestBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 4,
+  },
+  closestBadgeText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.primary,
+  },
   loadingText: {
     marginTop: 16,
-    fontSize: 16,
+    fontSize: 17,
     color: colors.textSecondary,
   },
-  cityHeader: {
-    marginBottom: 16,
+  heroSection: {
+    marginBottom: 20,
+  },
+  greeting: {
+    fontSize: 17,
+    fontWeight: '400',
+    color: colors.textSecondary,
+    marginBottom: 4,
   },
   cityName: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: 34,
+    fontWeight: '700',
     color: colors.text,
+    letterSpacing: -1,
+    marginBottom: 8,
   },
-  mapContainer: {
-    width: '100%',
-    height: 250,
+  locationBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: colors.primary + '15',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 12,
+    gap: 4,
+  },
+  locationBadgeText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  mapCard: {
+    width: '100%',
+    height: 200,
+    borderRadius: 16,
     overflow: 'hidden',
-    marginBottom: 16,
-    backgroundColor: colors.card,
+    marginBottom: 24,
+    backgroundColor: colors.cardSecondary,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
+    elevation: 2,
   },
   mapPlaceholder: {
     flex: 1,
@@ -531,55 +703,63 @@ const styles = StyleSheet.create({
   },
   mapPlaceholderText: {
     marginTop: 12,
-    fontSize: 14,
+    fontSize: 15,
     color: colors.textSecondary,
     textAlign: 'center',
+    fontWeight: '500',
   },
   mapPlaceholderSubtext: {
-    marginTop: 8,
-    fontSize: 12,
-    color: colors.textSecondary,
+    marginTop: 6,
+    fontSize: 13,
+    color: colors.textTertiary,
     textAlign: 'center',
   },
+  searchSection: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 12,
+    letterSpacing: -0.5,
+  },
   searchWrapper: {
-    marginBottom: 16,
     zIndex: 1000,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.card,
+    backgroundColor: colors.cardSecondary,
     borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     gap: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
+    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.06)',
+    elevation: 1,
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 17,
     color: colors.text,
   },
   cityDropdown: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.backgroundSecondary,
     borderRadius: 12,
     marginTop: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    maxHeight: 300,
+    maxHeight: 280,
     overflow: 'hidden',
-    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-    elevation: 5,
+    boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.12)',
+    elevation: 8,
   },
   dropdownHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    backgroundColor: colors.highlight,
+    backgroundColor: colors.info + '10',
     gap: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.separator,
   },
   dropdownHeaderText: {
     fontSize: 13,
@@ -591,11 +771,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.separator,
   },
   dropdownItemSelected: {
-    backgroundColor: colors.highlight,
+    backgroundColor: colors.primary + '08',
   },
   dropdownItemLeft: {
     flexDirection: 'row',
@@ -604,7 +784,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   dropdownItemText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '500',
     color: colors.text,
   },
@@ -613,75 +793,120 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   dropdownItemSubtext: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.textSecondary,
     marginTop: 2,
   },
   dropdownEmpty: {
-    padding: 20,
+    padding: 24,
     alignItems: 'center',
   },
   dropdownEmptyText: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.textSecondary,
   },
-  closestBadge: {
-    marginTop: 4,
-    backgroundColor: colors.highlight,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+  servicesSection: {
+    marginBottom: 24,
   },
-  closestBadgeText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: colors.text,
+  serviceCardLarge: {
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
+    elevation: 2,
   },
-  serviceButton: {
+  serviceCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginBottom: 12,
     gap: 12,
   },
-  serviceButtonText: {
+  serviceIconLarge: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primary + '15',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  serviceTextContainer: {
     flex: 1,
-    fontSize: 18,
+  },
+  serviceTitle: {
+    fontSize: 17,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: colors.text,
+    marginBottom: 2,
+    letterSpacing: -0.3,
+  },
+  serviceSubtitle: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: colors.textSecondary,
   },
   serviceRow: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 16,
   },
-  serviceButtonSmall: {
+  serviceCardSmall: {
     flex: 1,
     aspectRatio: 1,
-    borderRadius: 12,
+    borderRadius: 16,
+    padding: 16,
+    justifyContent: 'space-between',
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
+    elevation: 2,
+  },
+  serviceIconSmall: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
   },
-  serviceButtonSmallText: {
-    fontSize: 16,
+  serviceCardSmallTitle: {
+    fontSize: 17,
     fontWeight: '600',
     color: '#FFFFFF',
+    letterSpacing: -0.3,
   },
-  permissionInfo: {
+  serviceCardSmallSubtitle: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  permissionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.card,
+    backgroundColor: colors.backgroundSecondary,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     gap: 12,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
+    elevation: 2,
   },
-  permissionInfoText: {
+  permissionIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primary + '15',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  permissionTextContainer: {
     flex: 1,
-    fontSize: 14,
+  },
+  permissionTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 2,
+    letterSpacing: -0.3,
+  },
+  permissionText: {
+    fontSize: 13,
     color: colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 18,
   },
 });
