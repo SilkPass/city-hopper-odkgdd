@@ -95,16 +95,19 @@ export default function FloatingTabBar({
   // Shared values for animations - create them at the top level, not in a callback
   const indicatorPosition = useSharedValue(activeIndex);
   
-  // Create shared values for each tab using useMemo to avoid recreating on every render
-  const tabPressScale = useMemo(() => 
-    tabs.map(() => useSharedValue(1)),
-    [tabs.length]
-  );
+  // Create shared values for each tab - initialize with proper array length
+  // We need to create these outside of useMemo to avoid calling hooks in callbacks
+  const tabPressScale0 = useSharedValue(1);
+  const tabPressScale1 = useSharedValue(1);
+  const tabPressScale2 = useSharedValue(1);
   
-  const tabPressOpacity = useMemo(() => 
-    tabs.map(() => useSharedValue(1)),
-    [tabs.length]
-  );
+  const tabPressOpacity0 = useSharedValue(1);
+  const tabPressOpacity1 = useSharedValue(1);
+  const tabPressOpacity2 = useSharedValue(1);
+  
+  // Create arrays from the individual shared values
+  const tabPressScale = useMemo(() => [tabPressScale0, tabPressScale1, tabPressScale2], [tabs]);
+  const tabPressOpacity = useMemo(() => [tabPressOpacity0, tabPressOpacity1, tabPressOpacity2], [tabs]);
 
   useEffect(() => {
     console.log('Active index changed to:', activeIndex);
@@ -131,15 +134,17 @@ export default function FloatingTabBar({
     triggerHapticFeedback();
     
     // Animate tab press
-    tabPressScale[index].value = withSpring(0.85, {
-      damping: 15,
-      stiffness: 400,
-    }, () => {
-      tabPressScale[index].value = withSpring(1, {
+    if (tabPressScale[index]) {
+      tabPressScale[index].value = withSpring(0.85, {
         damping: 15,
         stiffness: 400,
+      }, () => {
+        tabPressScale[index].value = withSpring(1, {
+          damping: 15,
+          stiffness: 400,
+        });
       });
-    });
+    }
 
     // Navigate with smooth transition
     try {
