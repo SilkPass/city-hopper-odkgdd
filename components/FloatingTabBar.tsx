@@ -136,8 +136,14 @@ export default function FloatingTabBar({
   };
 
   const animatedIndicatorStyle = useAnimatedStyle(() => {
-    const tabWidth = containerWidth / tabs.length;
-    const padding = 6;
+    // Calculate the width of each tab
+    const containerPadding = 6;
+    const availableWidth = containerWidth - (containerPadding * 2);
+    const tabWidth = availableWidth / tabs.length;
+    
+    // Calculate indicator dimensions
+    const indicatorPadding = 4;
+    const indicatorWidth = tabWidth - (indicatorPadding * 2);
     
     return {
       transform: [
@@ -145,11 +151,11 @@ export default function FloatingTabBar({
           translateX: interpolate(
             indicatorPosition.value,
             tabs.map((_, i) => i),
-            tabs.map((_, i) => (tabWidth * i) + padding)
+            tabs.map((_, i) => containerPadding + indicatorPadding + (tabWidth * i))
           ),
         },
       ],
-      width: tabWidth - (padding * 2),
+      width: indicatorWidth,
       opacity: withTiming(1, { duration: 200 }),
     };
   });
