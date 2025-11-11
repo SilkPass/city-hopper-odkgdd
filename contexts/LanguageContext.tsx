@@ -95,6 +95,10 @@ const translations = {
     discoverRestaurants: 'Discover local restaurants',
     visaInfo: 'Visa Information',
     visaRequirements: 'Check visa requirements',
+    onlineConsultation: 'Online Consultation',
+    consultDoctorOnline: 'Consult with doctors online',
+    buyMedicine: 'Buy Medicine',
+    orderMedicineOnline: 'Order medicine online',
   },
   mn: {
     welcome: 'Тавтай морилно уу',
@@ -173,6 +177,10 @@ const translations = {
     discoverRestaurants: 'Орон нутгийн ресторан олох',
     visaInfo: 'Визний мэдээлэл',
     visaRequirements: 'Визний шаардлагыг шалгах',
+    onlineConsultation: 'Онлайн зөвлөгөө',
+    consultDoctorOnline: 'Эмч нартай онлайнаар зөвлөлдөх',
+    buyMedicine: 'Эм худалдаж авах',
+    orderMedicineOnline: 'Эмийг онлайнаар захиалах',
   },
 };
 

@@ -19,6 +19,58 @@ import { Stack } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
+interface ServiceModule {
+  id: string;
+  titleKey: string;
+  descriptionKey: string;
+  icon: string;
+  color: string;
+  span: 1 | 2; // 1 for single column, 2 for full width
+}
+
+const SERVICE_MODULES: ServiceModule[] = [
+  {
+    id: 'guide',
+    titleKey: 'guide',
+    descriptionKey: 'exploreLocal',
+    icon: 'book.fill',
+    color: '#45B7D1',
+    span: 2,
+  },
+  {
+    id: 'esim',
+    titleKey: 'eSIM',
+    descriptionKey: 'stayConnected',
+    icon: 'antenna.radiowaves.left.and.right',
+    color: '#FF6B6B',
+    span: 1,
+  },
+  {
+    id: 'payment',
+    titleKey: 'payment',
+    descriptionKey: 'securePayment',
+    icon: 'creditcard.fill',
+    color: '#4ECDC4',
+    span: 1,
+  },
+  {
+    id: 'onlineConsultation',
+    titleKey: 'onlineConsultation',
+    descriptionKey: 'consultDoctorOnline',
+    icon: 'video.fill',
+    color: '#6C5CE7',
+    span: 1,
+  },
+  {
+    id: 'buyMedicine',
+    titleKey: 'buyMedicine',
+    descriptionKey: 'orderMedicineOnline',
+    icon: 'pills.fill',
+    color: '#26DE81',
+    span: 1,
+  },
+];
+
 interface Service {
   id: string;
   titleKey: string;
@@ -29,30 +81,6 @@ interface Service {
 }
 
 const SERVICES: Service[] = [
-  {
-    id: 'esim',
-    titleKey: 'eSIM',
-    descriptionKey: 'stayConnected',
-    icon: 'antenna.radiowaves.left.and.right',
-    color: '#FF6B6B',
-    category: 'essential',
-  },
-  {
-    id: 'payment',
-    titleKey: 'payment',
-    descriptionKey: 'securePayment',
-    icon: 'creditcard.fill',
-    color: '#4ECDC4',
-    category: 'essential',
-  },
-  {
-    id: 'guide',
-    titleKey: 'guide',
-    descriptionKey: 'exploreLocal',
-    icon: 'book.fill',
-    color: '#45B7D1',
-    category: 'convenience',
-  },
   {
     id: 'emergency',
     titleKey: 'emergency',
@@ -155,6 +183,9 @@ export default function ServicesScreen() {
     return SERVICES.filter(service => service.category === category);
   };
 
+  const cardWidth = (width - 52) / 2;
+  const fullWidth = width - 40;
+
   return (
     <>
       {Platform.OS === 'ios' && (
@@ -191,6 +222,36 @@ export default function ServicesScreen() {
               </Text>
             </View>
           )}
+
+          {/* Service Modules Grid */}
+          <View style={styles.modulesSection}>
+            <View style={styles.modulesGrid}>
+              {SERVICE_MODULES.map((module) => (
+                <Pressable
+                  key={module.id}
+                  style={[
+                    styles.moduleCard,
+                    { 
+                      backgroundColor: currentColors.backgroundSecondary,
+                      width: module.span === 2 ? fullWidth : cardWidth,
+                      aspectRatio: module.span === 2 ? 2.2 : 1,
+                    }
+                  ]}
+                  onPress={() => handleServicePress(module.id)}
+                >
+                  <View style={[styles.moduleIconContainer, { backgroundColor: module.color + '15' }]}>
+                    <IconSymbol name={module.icon} color={module.color} size={module.span === 2 ? 40 : 32} />
+                  </View>
+                  <Text style={[styles.moduleTitle, { color: currentColors.text }]}>
+                    {t(module.titleKey)}
+                  </Text>
+                  <Text style={[styles.moduleDescription, { color: currentColors.textSecondary }]}>
+                    {t(module.descriptionKey)}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
 
           {/* Essential Services */}
           <View style={styles.categorySection}>
@@ -299,6 +360,40 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '400',
     lineHeight: 24,
+  },
+  modulesSection: {
+    marginBottom: 32,
+  },
+  modulesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  moduleCard: {
+    borderRadius: 20,
+    padding: 24,
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.08)',
+    elevation: 3,
+    justifyContent: 'center',
+  },
+  moduleIconContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  moduleTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 8,
+    letterSpacing: -0.5,
+  },
+  moduleDescription: {
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: '400',
   },
   categorySection: {
     marginBottom: 32,
