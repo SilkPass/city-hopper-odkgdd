@@ -448,7 +448,7 @@ const TabButton = React.memo(({
   );
 });
 
-// Separate component for iPad top bar tabs (horizontal layout, no labels)
+// Separate component for iPad top bar tabs (horizontal layout with text labels)
 const TabButtonTop = React.memo(({
   tab,
   index,
@@ -459,28 +459,28 @@ const TabButtonTop = React.memo(({
   onPress,
   t,
 }: TabButtonProps) => {
-  const iconScale = useSharedValue(1);
+  const textScale = useSharedValue(1);
   const pressScale = useSharedValue(1);
 
   useEffect(() => {
     if (isActive) {
       // Subtle bounce animation when tab becomes active
-      iconScale.value = withSpring(1.08, {
+      textScale.value = withSpring(1.05, {
         damping: 15,
         stiffness: 350,
       }, () => {
-        iconScale.value = withSpring(1, {
+        textScale.value = withSpring(1, {
           damping: 18,
           stiffness: 400,
         });
       });
     } else {
-      iconScale.value = withSpring(1, {
+      textScale.value = withSpring(1, {
         damping: 18,
         stiffness: 400,
       });
     }
-  }, [isActive, iconScale]);
+  }, [isActive, textScale]);
 
   const animatedTabStyle = useAnimatedStyle(() => {
     return {
@@ -490,28 +490,29 @@ const TabButtonTop = React.memo(({
     };
   });
 
-  const animatedIconStyle = useAnimatedStyle(() => {
+  const animatedTextStyle = useAnimatedStyle(() => {
     return {
+      opacity: withTiming(isActive ? 1 : 0.6, { duration: 200 }),
       transform: [
-        { scale: iconScale.value },
+        { scale: textScale.value },
       ],
     };
   });
 
-  const iconColor = isActive 
+  const textColor = isActive 
     ? currentColors.primary 
     : isDark 
-      ? 'rgba(235, 235, 245, 0.55)' 
-      : 'rgba(60, 60, 67, 0.55)';
+      ? 'rgba(235, 235, 245, 0.6)' 
+      : 'rgba(60, 60, 67, 0.6)';
 
-  const iconSize = 22;
+  const fontSize = 15;
 
   return (
     <Pressable
       style={[styles.tabTop, { width: tabWidth }]}
       onPress={() => onPress(tab.route, index)}
       onPressIn={() => {
-        pressScale.value = withSpring(0.92, {
+        pressScale.value = withSpring(0.94, {
           damping: 15,
           stiffness: 400,
         });
@@ -524,13 +525,19 @@ const TabButtonTop = React.memo(({
       }}
     >
       <Animated.View style={[styles.tabContentTop, animatedTabStyle]}>
-        <Animated.View style={[styles.iconContainer, animatedIconStyle]}>
-          <IconSymbol
-            name={tab.icon as any}
-            size={iconSize}
-            color={iconColor}
-          />
-        </Animated.View>
+        <Animated.Text
+          style={[
+            styles.labelTop,
+            animatedTextStyle,
+            {
+              color: textColor,
+              fontWeight: isActive ? '600' : '500',
+              fontSize: fontSize,
+            },
+          ]}
+        >
+          {t(tab.labelKey)}
+        </Animated.Text>
       </Animated.View>
     </Pressable>
   );
@@ -619,6 +626,10 @@ const styles = StyleSheet.create({
   },
   label: {
     letterSpacing: -0.08,
+    textAlign: 'center',
+  },
+  labelTop: {
+    letterSpacing: -0.2,
     textAlign: 'center',
   },
 });
