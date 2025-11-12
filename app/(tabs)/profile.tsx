@@ -1,6 +1,6 @@
 
-import { View, Text, StyleSheet, ScrollView, Platform, Pressable } from "react-native";
-import React from "react";
+import { View, Text, StyleSheet, ScrollView, Platform, Pressable, Modal } from "react-native";
+import React, { useState } from "react";
 import { GlassView } from "expo-glass-effect";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/IconSymbol";
@@ -9,20 +9,47 @@ import { colors, darkColors } from "@/styles/commonStyles";
 import { useThemeMode } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+type SupportedLanguage = 'en' | 'mn' | 'ru' | 'kk' | 'uz';
+
+interface LanguageOption {
+  code: SupportedLanguage;
+  name: string;
+  nativeName: string;
+  flag: string;
+}
+
+const LANGUAGE_OPTIONS: LanguageOption[] = [
+  { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
+  { code: 'mn', name: 'Mongolian', nativeName: 'Монгол', flag: '🇲🇳' },
+  { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' },
+  { code: 'kk', name: 'Kazakh', nativeName: 'Қазақша', flag: '🇰🇿' },
+  { code: 'uz', name: 'Uzbek', nativeName: 'O\'zbekcha', flag: '🇺🇿' },
+];
+
 export default function ProfileScreen() {
   const theme = useTheme();
   const { isDark } = useThemeMode();
   const { t, language, setLanguage } = useLanguage();
   const currentColors = isDark ? darkColors : colors;
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
 
   const handleMenuPress = (item: string) => {
     console.log('Menu item pressed:', item);
   };
 
-  const handleLanguageToggle = () => {
-    const newLanguage = language === 'en' ? 'mn' : 'en';
-    console.log('Switching language to:', newLanguage);
-    setLanguage(newLanguage);
+  const handleLanguagePress = () => {
+    setShowLanguageModal(true);
+  };
+
+  const handleLanguageSelect = (langCode: SupportedLanguage) => {
+    console.log('Switching language to:', langCode);
+    setLanguage(langCode);
+    setShowLanguageModal(false);
+  };
+
+  const getCurrentLanguageName = () => {
+    const currentLang = LANGUAGE_OPTIONS.find(lang => lang.code === language);
+    return currentLang ? `${currentLang.flag} ${currentLang.nativeName}` : 'English';
   };
 
   return (
@@ -136,7 +163,7 @@ export default function ProfileScreen() {
             </GlassView>
           </Pressable>
 
-          <Pressable onPress={handleLanguageToggle}>
+          <Pressable onPress={handleLanguagePress}>
             <GlassView 
               style={[
                 styles.card,
@@ -151,11 +178,12 @@ export default function ProfileScreen() {
                 <Text style={[styles.menuItemText, { color: currentColors.text }]}>
                   {t('language')}
                 </Text>
-                <View style={[styles.badge, { backgroundColor: currentColors.primary + '15' }]}>
-                  <Text style={[styles.badgeText, { color: currentColors.primary }]}>
-                    {language === 'en' ? 'English' : 'Монгол'}
+                <View style={[styles.languageBadge, { backgroundColor: currentColors.primary + '15' }]}>
+                  <Text style={[styles.languageBadgeText, { color: currentColors.primary }]}>
+                    {getCurrentLanguageName()}
                   </Text>
                 </View>
+                <IconSymbol name="chevron.right" size={20} color={currentColors.textSecondary} />
               </View>
             </GlassView>
           </Pressable>
@@ -182,6 +210,67 @@ export default function ProfileScreen() {
           </Pressable>
         </View>
       </ScrollView>
+
+      {/* Language Selection Modal */}
+      <Modal
+        visible={showLanguageModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowLanguageModal(false)}
+      >
+        <SafeAreaView 
+          style={[styles.modalContainer, { backgroundColor: currentColors.background }]} 
+          edges={['top', 'bottom']}
+        >
+          {/* Modal Header */}
+          <View style={[styles.modalHeader, { borderBottomColor: currentColors.separator }]}>
+            <Pressable onPress={() => setShowLanguageModal(false)} style={styles.backButton}>
+              <IconSymbol name="xmark" color={currentColors.textSecondary} size={24} />
+            </Pressable>
+            <Text style={[styles.modalTitle, { color: currentColors.text }]}>
+              {t('language')}
+            </Text>
+            <View style={styles.placeholder} />
+          </View>
+
+          {/* Language Options */}
+          <ScrollView 
+            style={styles.languageList}
+            contentContainerStyle={styles.languageContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {LANGUAGE_OPTIONS.map((lang) => (
+              <Pressable
+                key={lang.code}
+                style={[
+                  styles.languageCard, 
+                  { 
+                    backgroundColor: currentColors.backgroundSecondary,
+                    borderColor: language === lang.code ? currentColors.primary : 'transparent',
+                    borderWidth: language === lang.code ? 2 : 0,
+                  }
+                ]}
+                onPress={() => handleLanguageSelect(lang.code)}
+              >
+                <View style={styles.languageFlag}>
+                  <Text style={styles.flagEmoji}>{lang.flag}</Text>
+                </View>
+                <View style={styles.languageInfo}>
+                  <Text style={[styles.languageName, { color: currentColors.text }]}>
+                    {lang.nativeName}
+                  </Text>
+                  <Text style={[styles.languageEnglishName, { color: currentColors.textSecondary }]}>
+                    {lang.name}
+                  </Text>
+                </View>
+                {language === lang.code && (
+                  <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={28} />
+                )}
+              </Pressable>
+            ))}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -260,5 +349,80 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  languageBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 4,
+  },
+  languageBadgeText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  modalContainer: {
+    flex: 1,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  backButton: {
+    padding: 4,
+    width: 40,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  placeholder: {
+    width: 40,
+  },
+  languageList: {
+    flex: 1,
+  },
+  languageContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingBottom: 20,
+  },
+  languageCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
+    gap: 12,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
+    elevation: 2,
+  },
+  languageFlag: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(128, 128, 128, 0.1)',
+  },
+  flagEmoji: {
+    fontSize: 32,
+  },
+  languageInfo: {
+    flex: 1,
+  },
+  languageName: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 4,
+    letterSpacing: -0.5,
+  },
+  languageEnglishName: {
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
