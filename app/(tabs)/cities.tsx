@@ -155,13 +155,22 @@ export default function CitiesScreen() {
       )
     : [];
 
-  // Calculate card width: 4 cities per row on iPad, 2 on phone
+  // Calculate card width with proper responsive logic
   const sidebarWidth = isTablet ? 320 : 0;
   const contentWidth = isTablet ? width - sidebarWidth : width;
   const horizontalPadding = isTablet ? 32 : 16;
-  const cardWidth = isTablet 
-    ? (contentWidth - horizontalPadding * 2 - 60) / 4  // 4 cities per row with gaps
-    : (contentWidth - horizontalPadding * 2 - 16) / 2; // 2 cities per row
+  const availableWidth = contentWidth - (horizontalPadding * 2);
+  
+  // Determine number of columns based on screen size
+  let numColumns = 2; // Default for phone
+  if (isTablet) {
+    numColumns = 4; // iPad shows 4 columns
+  }
+  
+  // Calculate card width with gaps
+  const gap = 20;
+  const totalGapWidth = gap * (numColumns - 1);
+  const cardWidth = (availableWidth - totalGapWidth) / numColumns;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: currentColors.background }]} edges={['top']}>
@@ -174,7 +183,7 @@ export default function CitiesScreen() {
             width: sidebarWidth,
           }]}>
             <View style={styles.sidebarHeader}>
-              <Text style={[styles.sidebarTitle, { color: currentColors.text }]}>
+              <Text style={[styles.sidebarTitle, { color: currentColors.text }]} numberOfLines={1}>
                 {selectedCity ? t(selectedCity.nameKey) : t('selectCity')}
               </Text>
             </View>
@@ -195,10 +204,10 @@ export default function CitiesScreen() {
 
                 {/* City Info */}
                 <View style={styles.sidebarInfo}>
-                  <Text style={[styles.sidebarCityName, { color: currentColors.text }]}>
+                  <Text style={[styles.sidebarCityName, { color: currentColors.text }]} numberOfLines={2}>
                     {t(selectedCity.nameKey)}
                   </Text>
-                  <Text style={[styles.sidebarProvince, { color: currentColors.textSecondary }]}>
+                  <Text style={[styles.sidebarProvince, { color: currentColors.textSecondary }]} numberOfLines={1}>
                     {t(selectedCity.provinceKey)}
                   </Text>
                 </View>
@@ -242,10 +251,10 @@ export default function CitiesScreen() {
                           <IconSymbol name="mappin.circle.fill" color={currentColors.primary} size={20} />
                         </View>
                         <View style={styles.sidebarAttractionInfo}>
-                          <Text style={[styles.sidebarAttractionName, { color: currentColors.text }]}>
+                          <Text style={[styles.sidebarAttractionName, { color: currentColors.text }]} numberOfLines={1}>
                             {attraction.name}
                           </Text>
-                          <Text style={[styles.sidebarAttractionCategory, { color: currentColors.textSecondary }]}>
+                          <Text style={[styles.sidebarAttractionCategory, { color: currentColors.textSecondary }]} numberOfLines={1}>
                             {attraction.category}
                           </Text>
                           <Text style={[styles.sidebarAttractionDescription, { color: currentColors.textTertiary }]} numberOfLines={2}>
@@ -283,7 +292,7 @@ export default function CitiesScreen() {
           >
             {/* Header with City Selector */}
             <View style={styles.headerContainer}>
-              <Text style={[styles.title, { color: currentColors.text, fontSize: isTablet ? 42 : 34 }]}>
+              <Text style={[styles.title, { color: currentColors.text, fontSize: isTablet ? 42 : 34 }]} numberOfLines={1}>
                 {language === 'mn' ? 'Хот' : 'Cities'}
               </Text>
               {!isTablet && (
@@ -300,7 +309,7 @@ export default function CitiesScreen() {
               )}
             </View>
             
-            <View style={styles.grid}>
+            <View style={[styles.grid, { gap: gap }]}>
               {orderedCities.map((city, index) => (
                 <Pressable
                   key={city.name}
@@ -323,10 +332,10 @@ export default function CitiesScreen() {
                     <View style={[styles.overlay, { backgroundColor: currentColors.overlayLight }]} />
                   </View>
                   <View style={[styles.cityNameContainer, { backgroundColor: currentColors.backgroundSecondary }]}>
-                    <Text style={[styles.cityName, { color: currentColors.text, fontSize: isTablet ? 18 : 17 }]}>
+                    <Text style={[styles.cityName, { color: currentColors.text, fontSize: isTablet ? 18 : 17 }]} numberOfLines={1}>
                       {t(city.nameKey)}
                     </Text>
-                    <Text style={[styles.attractionCount, { color: currentColors.textSecondary, fontSize: isTablet ? 14 : 13 }]}>
+                    <Text style={[styles.attractionCount, { color: currentColors.textSecondary, fontSize: isTablet ? 14 : 13 }]} numberOfLines={1}>
                       {city.attractions.length} {t('attractions')}
                     </Text>
                   </View>
@@ -382,10 +391,10 @@ export default function CitiesScreen() {
                     resizeMode="cover"
                   />
                   <View style={styles.citySelectInfo}>
-                    <Text style={[styles.citySelectName, { color: currentColors.text }]}>
+                    <Text style={[styles.citySelectName, { color: currentColors.text }]} numberOfLines={1}>
                       {t(city.nameKey)}
                     </Text>
-                    <Text style={[styles.citySelectProvince, { color: currentColors.textSecondary }]}>
+                    <Text style={[styles.citySelectProvince, { color: currentColors.textSecondary }]} numberOfLines={1}>
                       {t(city.provinceKey)}
                     </Text>
                   </View>
@@ -492,9 +501,11 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
+    flexShrink: 0,
   },
   sidebarAttractionInfo: {
     flex: 1,
+    minWidth: 0,
   },
   sidebarAttractionName: {
     fontSize: 15,
@@ -550,21 +561,23 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: '700',
     letterSpacing: -1,
+    flexShrink: 1,
   },
   citySelectorButton: {
     padding: 8,
     marginRight: -8,
+    flexShrink: 0,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 20,
   },
   cityCard: {
     borderRadius: 16,
     overflow: 'hidden',
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
     elevation: 3,
+    marginBottom: 20,
   },
   imageContainer: {
     width: '100%',
@@ -640,9 +653,11 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 12,
+    flexShrink: 0,
   },
   citySelectInfo: {
     flex: 1,
+    minWidth: 0,
   },
   citySelectName: {
     fontSize: 20,

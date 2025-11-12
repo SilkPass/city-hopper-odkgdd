@@ -1,8 +1,7 @@
-
 {
   "expo": {
-    "name": "Seric",
-    "slug": "Seric",
+    "name": "city-hopper-odkgdd",
+    "slug": "city-hopper-odkgdd",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/natively-dark.png",
@@ -29,7 +28,7 @@
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.Seric",
+      "package": "com.seric.seric",
       "versionCode": 1
     },
     "web": {
