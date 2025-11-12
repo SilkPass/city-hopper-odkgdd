@@ -107,9 +107,9 @@ export default function FloatingTabBar({
     console.log('Active index changed to:', activeIndex);
     // Smooth spring animation for indicator
     indicatorPosition.value = withSpring(activeIndex, {
-      damping: 20,
-      stiffness: 200,
-      mass: 0.5,
+      damping: 25,
+      stiffness: 250,
+      mass: 0.6,
     });
   }, [activeIndex, indicatorPosition]);
 
@@ -141,21 +141,21 @@ export default function FloatingTabBar({
     const availableWidth = containerWidth - (containerPadding * 2);
     const tabWidth = availableWidth / tabs.length;
     
-    // Calculate indicator dimensions - make it a rounded pill
-    const indicatorPadding = 6;
-    const indicatorWidth = tabWidth - (indicatorPadding * 2);
+    // Calculate indicator dimensions - make it a rounded pill with proper padding
+    const indicatorHorizontalPadding = 4;
+    const indicatorWidth = tabWidth - (indicatorHorizontalPadding * 2);
     
-    // Calculate the starting position for each tab
-    const startX = containerPadding + indicatorPadding;
+    // Calculate the position - start from container padding
+    const translateX = interpolate(
+      indicatorPosition.value,
+      tabs.map((_, i) => i),
+      tabs.map((_, i) => containerPadding + indicatorHorizontalPadding + (tabWidth * i))
+    );
     
     return {
       transform: [
         {
-          translateX: interpolate(
-            indicatorPosition.value,
-            tabs.map((_, i) => i),
-            tabs.map((_, i) => startX + (tabWidth * i))
-          ),
+          translateX: translateX,
         },
       ],
       width: indicatorWidth,
@@ -163,7 +163,7 @@ export default function FloatingTabBar({
     };
   });
 
-  const tabWidth = containerWidth / tabs.length;
+  const tabWidth = (containerWidth - 16) / tabs.length;
 
   return (
     <SafeAreaView
@@ -381,9 +381,9 @@ const styles = StyleSheet.create({
   },
   indicator: {
     position: 'absolute',
-    height: '82%',
-    borderRadius: 22,
-    top: '9%',
+    height: '84%',
+    borderRadius: 20,
+    top: '8%',
     elevation: 2,
   },
   tab: {
