@@ -23,7 +23,7 @@ const LANGUAGE_OPTIONS: LanguageOption[] = [
   { code: 'mn', name: 'Mongolian', nativeName: 'Монгол', flag: '🇲🇳' },
   { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' },
   { code: 'kk', name: 'Kazakh', nativeName: 'Қазақша', flag: '🇰🇿' },
-  { code: 'uz', name: 'Uzbek', nativeName: 'O\'zbekcha', flag: '🇺🇿' },
+  { code: 'uz', name: 'Uzbek', nativeName: 'Oʻzbekcha', flag: '🇺🇿' },
 ];
 
 export default function ProfileScreen() {
