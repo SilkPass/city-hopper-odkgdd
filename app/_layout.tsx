@@ -6,7 +6,7 @@ import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { SystemBars } from "react-native-edge-to-edge";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { useColorScheme, Alert } from "react-native";
+import { useColorScheme, Alert, View } from "react-native";
 import { useNetworkState } from "expo-network";
 import {
   DarkTheme,
@@ -85,11 +85,34 @@ function RootLayoutContent() {
 
   return (
     <>
-      <StatusBar style={isDark ? "light" : "dark"} animated />
+      {/* Background view that extends to all edges including status bar and bottom areas */}
+      <View 
+        style={{ 
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: isDark ? darkColors.background : colors.background,
+          zIndex: -1,
+        }} 
+      />
+      <StatusBar 
+        style={isDark ? "light" : "dark"} 
+        animated 
+        backgroundColor={isDark ? darkColors.background : colors.background}
+        translucent={false}
+      />
       <ThemeProvider value={isDark ? CustomDarkTheme : CustomDefaultTheme}>
         <WidgetProvider>
-          <GestureHandlerRootView>
-            <Stack>
+          <GestureHandlerRootView style={{ flex: 1, backgroundColor: isDark ? darkColors.background : colors.background }}>
+            <Stack
+              screenOptions={{
+                contentStyle: {
+                  backgroundColor: isDark ? darkColors.background : colors.background,
+                },
+              }}
+            >
               {/* Main app with tabs */}
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 

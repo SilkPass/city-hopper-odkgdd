@@ -112,19 +112,6 @@ export default function FloatingTabBar({
 
   const activeIndex = getActiveIndex();
 
-  // Shared values for animations - create them at the top level
-  const indicatorPosition = useSharedValue(activeIndex);
-
-  useEffect(() => {
-    console.log('Active index changed to:', activeIndex);
-    // Smooth spring animation for indicator
-    indicatorPosition.value = withSpring(activeIndex, {
-      damping: 25,
-      stiffness: 250,
-      mass: 0.6,
-    });
-  }, [activeIndex, indicatorPosition]);
-
   const triggerHapticFeedback = () => {
     if (Platform.OS === 'ios') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -147,44 +134,6 @@ export default function FloatingTabBar({
     }
   };
 
-  const animatedIndicatorStyle = useAnimatedStyle(() => {
-    // Container padding on both sides
-    const containerPadding = isTablet ? 6 : 8;
-    
-    // Total available width for tabs
-    const availableWidth = containerWidth - (containerPadding * 2);
-    
-    // Width of each tab slot
-    const tabWidth = availableWidth / tabs.length;
-    
-    // Padding inside each tab slot for the indicator
-    const indicatorPadding = isTablet ? 4 : 4;
-    
-    // Actual indicator width (tab width minus padding on both sides)
-    const indicatorWidth = tabWidth - (indicatorPadding * 2);
-    
-    // Calculate translateX for each tab position
-    // Start at containerPadding + indicatorPadding, then add tabWidth for each subsequent tab
-    const translateX = interpolate(
-      indicatorPosition.value,
-      tabs.map((_, i) => i),
-      tabs.map((_, i) => {
-        // For each tab: start position + (tab width * index) + padding
-        return containerPadding + indicatorPadding + (tabWidth * i);
-      })
-    );
-    
-    return {
-      transform: [
-        {
-          translateX: translateX,
-        },
-      ],
-      width: indicatorWidth,
-      opacity: 1,
-    };
-  });
-
   const tabWidth = (containerWidth - (isTablet ? 12 : 16)) / tabs.length;
 
   // iPad-specific top bar styling
@@ -196,6 +145,7 @@ export default function FloatingTabBar({
           styles.safeAreaTop,
           {
             top: 0,
+            backgroundColor: isDark ? darkColors.background : colors.background,
           },
         ]}
         pointerEvents="box-none"
@@ -219,24 +169,6 @@ export default function FloatingTabBar({
             },
           ]}
         >
-          {/* Native iOS-style rounded pill indicator */}
-          <Animated.View
-            style={[
-              styles.indicatorTop,
-              animatedIndicatorStyle,
-              {
-                backgroundColor: isDark
-                  ? 'rgba(58, 58, 60, 1)'
-                  : 'rgba(255, 255, 255, 1)',
-                boxShadow: isDark
-                  ? '0px 2px 8px rgba(0, 0, 0, 0.4)'
-                  : '0px 2px 8px rgba(0, 0, 0, 0.12)',
-                height: '86%',
-                top: '7%',
-              },
-            ]}
-          />
-
           {/* Tab buttons */}
           {tabs.map((tab, index) => {
             const isActive = index === activeIndex;
@@ -268,6 +200,7 @@ export default function FloatingTabBar({
         styles.safeArea,
         {
           bottom: calculatedBottomMargin,
+          backgroundColor: isDark ? darkColors.background : colors.background,
         },
       ]}
       pointerEvents="box-none"
@@ -291,24 +224,6 @@ export default function FloatingTabBar({
           },
         ]}
       >
-        {/* Native iOS-style rounded pill indicator */}
-        <Animated.View
-          style={[
-            styles.indicator,
-            animatedIndicatorStyle,
-            {
-              backgroundColor: isDark
-                ? 'rgba(58, 58, 60, 1)'
-                : 'rgba(255, 255, 255, 1)',
-              boxShadow: isDark
-                ? '0px 2px 8px rgba(0, 0, 0, 0.4)'
-                : '0px 2px 8px rgba(0, 0, 0, 0.12)',
-              height: '84%',
-              top: '8%',
-            },
-          ]}
-        />
-
         {/* Tab buttons */}
         {tabs.map((tab, index) => {
           const isActive = index === activeIndex;
@@ -597,16 +512,6 @@ const styles = StyleSheet.create({
     }),
     elevation: 8,
     overflow: 'hidden',
-  },
-  indicator: {
-    position: 'absolute',
-    borderRadius: 20,
-    elevation: 2,
-  },
-  indicatorTop: {
-    position: 'absolute',
-    borderRadius: 16,
-    elevation: 2,
   },
   tab: {
     alignItems: 'center',
