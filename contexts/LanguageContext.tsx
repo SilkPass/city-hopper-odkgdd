@@ -129,6 +129,7 @@ const translations = {
     autoThemeDescription: 'Light during day, dark at night',
     lightThemeDescription: 'Always use light theme',
     darkThemeDescription: 'Always use dark theme',
+    selectCityToViewInfo: 'Select a city to view information',
   },
   mn: {
     welcome: 'ТА',
@@ -233,6 +234,7 @@ const translations = {
     autoThemeDescription: 'Өдөр цайвар, шөнө харанхуй',
     lightThemeDescription: 'Үргэлж цайвар загвар ашиглах',
     darkThemeDescription: 'Үргэлж харанхуй загвар ашиглах',
+    selectCityToViewInfo: 'Мэдээлэл харахын тулд хот сонгоно уу',
   },
   ru: {
     welcome: 'Добро пожаловать в',
@@ -337,6 +339,7 @@ const translations = {
     autoThemeDescription: 'Светлая днем, темная ночью',
     lightThemeDescription: 'Всегда использовать светлую тему',
     darkThemeDescription: 'Всегда использовать темную тему',
+    selectCityToViewInfo: 'Выберите город для просмотра информации',
   },
   kk: {
     welcome: '',
@@ -441,6 +444,7 @@ const translations = {
     autoThemeDescription: 'Күндіз ашық, түнде қараңғы',
     lightThemeDescription: 'Әрқашан ашық тақырыпты пайдалану',
     darkThemeDescription: 'Әрқашан қараңғы тақырыпты пайдалану',
+    selectCityToViewInfo: 'Ақпаратты көру үшін қаланы таңдаңыз',
   },
   uz: {
     welcome: '',
@@ -545,6 +549,7 @@ const translations = {
     autoThemeDescription: 'Kunduz yorugʻ, kechasi qorongʻi',
     lightThemeDescription: 'Doim yorugʻ mavzudan foydalanish',
     darkThemeDescription: 'Doim qorongʻi mavzudan foydalanish',
+    selectCityToViewInfo: 'Maʼlumotni koʻrish uchun shaharni tanlang',
   },
   uk: {
     welcome: 'Ласкаво просимо до',
@@ -649,6 +654,7 @@ const translations = {
     autoThemeDescription: 'Світла вдень, темна вночі',
     lightThemeDescription: 'Завжди використовувати світлу тему',
     darkThemeDescription: 'Завжди використовувати темну тему',
+    selectCityToViewInfo: 'Виберіть місто для перегляду інформації',
   },
   fa: {
     welcome: 'خوش آمدید به',
@@ -753,6 +759,7 @@ const translations = {
     autoThemeDescription: 'روشن در روز، تاریک در شب',
     lightThemeDescription: 'همیشه از تم روشن استفاده کنید',
     darkThemeDescription: 'همیشه از تم تاریک استفاده کنید',
+    selectCityToViewInfo: 'برای مشاهده اطلاعات شهری را انتخاب کنید',
   },
 };
 

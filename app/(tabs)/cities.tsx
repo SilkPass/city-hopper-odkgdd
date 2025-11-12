@@ -18,6 +18,7 @@ import {
   TextInput,
   Modal,
   Animated,
+  useWindowDimensions,
 } from 'react-native';
 
 interface City {
@@ -105,18 +106,15 @@ const CITIES: City[] = [
   },
 ];
 
-const { width } = Dimensions.get('window');
-const isTablet = width >= 768;
-const cardWidth = isTablet ? (width - 96) / 5 : (width - 48) / 2;
-
 export default function CitiesScreen() {
   const theme = useTheme();
   const { isDark } = useThemeMode();
   const { t, language } = useLanguage();
   const currentColors = isDark ? darkColors : colors;
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
 
-  const [selectedCity, setSelectedCity] = useState<City>(CITIES[0]);
-  const [showCityModal, setShowCityModal] = useState(false);
+  const [selectedCity, setSelectedCity] = useState<City | null>(null);
   const [showCitySelectorModal, setShowCitySelectorModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -141,12 +139,6 @@ export default function CitiesScreen() {
   const handleCityPress = (city: City) => {
     console.log('City pressed:', city.name);
     setSelectedCity(city);
-    setShowCityModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowCityModal(false);
-    setSearchQuery('');
   };
 
   const handleCitySelect = (city: City) => {
@@ -163,207 +155,386 @@ export default function CitiesScreen() {
       )
     : [];
 
+  // Calculate card width: 4 cities per row on iPad, 2 on phone
+  const sidebarWidth = isTablet ? 320 : 0;
+  const contentWidth = isTablet ? width - sidebarWidth : width;
   const horizontalPadding = isTablet ? 32 : 16;
+  const cardWidth = isTablet 
+    ? (contentWidth - horizontalPadding * 2 - 60) / 4  // 4 cities per row with gaps
+    : (contentWidth - horizontalPadding * 2 - 16) / 2; // 2 cities per row
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: currentColors.background }]} edges={['top']}>
-      <ScrollView 
-        contentContainerStyle={[styles.scrollContent, { paddingHorizontal: horizontalPadding }]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header with City Selector */}
-        <View style={styles.headerContainer}>
-          <Text style={[styles.title, { color: currentColors.text, fontSize: isTablet ? 42 : 34 }]}>
-            {language === 'mn' ? 'Хот' : 'Cities'}
-          </Text>
-          <Pressable 
-            style={styles.citySelectorButton}
-            onPress={() => setShowCitySelectorModal(true)}
-          >
-            <IconSymbol 
-              name="chevron.down" 
-              color={currentColors.primary} 
-              size={isTablet ? 32 : 24} 
-            />
-          </Pressable>
-        </View>
-        
-        <View style={styles.grid}>
-          {orderedCities.map((city) => (
-            <Pressable
-              key={city.name}
-              style={[styles.cityCard, { width: cardWidth }]}
-              onPress={() => handleCityPress(city)}
-            >
-              <View style={styles.imageContainer}>
-                <Image
-                  source={{ uri: city.imageUrl }}
-                  style={styles.cityImage}
-                  resizeMode="cover"
-                />
-                <View style={[styles.overlay, { backgroundColor: currentColors.overlayLight }]} />
-              </View>
-              <View style={[styles.cityNameContainer, { backgroundColor: currentColors.backgroundSecondary }]}>
-                <Text style={[styles.cityName, { color: currentColors.text, fontSize: isTablet ? 20 : 17 }]}>
-                  {t(city.nameKey)}
-                </Text>
-                <Text style={[styles.attractionCount, { color: currentColors.textSecondary, fontSize: isTablet ? 15 : 13 }]}>
-                  {city.attractions.length} {t('attractions')}
-                </Text>
-              </View>
-            </Pressable>
-          ))}
-        </View>
-      </ScrollView>
+      <View style={styles.mainContainer}>
+        {/* Sidebar - Only visible on iPad */}
+        {isTablet && (
+          <View style={[styles.sidebar, { 
+            backgroundColor: currentColors.backgroundSecondary,
+            borderRightColor: currentColors.separator,
+            width: sidebarWidth,
+          }]}>
+            <View style={styles.sidebarHeader}>
+              <Text style={[styles.sidebarTitle, { color: currentColors.text }]}>
+                {selectedCity ? t(selectedCity.nameKey) : t('selectCity')}
+              </Text>
+            </View>
 
-      {/* City Selector Modal */}
-      <Modal
-        visible={showCitySelectorModal}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowCitySelectorModal(false)}
-      >
-        <SafeAreaView style={[styles.modalContainer, { backgroundColor: currentColors.background }]} edges={['top', 'bottom']}>
-          {/* Modal Header */}
-          <View style={[styles.modalHeader, { borderBottomColor: currentColors.separator }]}>
-            <Pressable onPress={() => setShowCitySelectorModal(false)} style={styles.backButton}>
-              <IconSymbol name="xmark" color={currentColors.textSecondary} size={isTablet ? 28 : 24} />
-            </Pressable>
-            <Text style={[styles.modalTitle, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
-              {t('selectCity')}
-            </Text>
-            <View style={styles.placeholder} />
-          </View>
-
-          {/* Cities List */}
-          <ScrollView 
-            style={styles.citiesList}
-            contentContainerStyle={[styles.citiesContent, { paddingHorizontal: isTablet ? 40 : 16 }]}
-            showsVerticalScrollIndicator={false}
-          >
-            {orderedCities.map((city) => (
-              <Pressable
-                key={city.name}
-                style={[
-                  styles.citySelectCard, 
-                  { 
-                    backgroundColor: currentColors.backgroundSecondary,
-                    borderColor: selectedCity.name === city.name ? currentColors.primary : 'transparent',
-                    borderWidth: selectedCity.name === city.name ? 2 : 0,
-                  }
-                ]}
-                onPress={() => handleCitySelect(city)}
+            {selectedCity ? (
+              <ScrollView 
+                style={styles.sidebarContent}
+                showsVerticalScrollIndicator={false}
               >
-                <Image
-                  source={{ uri: city.imageUrl }}
-                  style={[styles.citySelectImage, { width: isTablet ? 100 : 80, height: isTablet ? 100 : 80, borderRadius: isTablet ? 16 : 12 }]}
-                  resizeMode="cover"
-                />
-                <View style={styles.citySelectInfo}>
-                  <Text style={[styles.citySelectName, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
-                    {t(city.nameKey)}
+                {/* City Image */}
+                <View style={styles.sidebarImageContainer}>
+                  <Image
+                    source={{ uri: selectedCity.imageUrl }}
+                    style={styles.sidebarImage}
+                    resizeMode="cover"
+                  />
+                </View>
+
+                {/* City Info */}
+                <View style={styles.sidebarInfo}>
+                  <Text style={[styles.sidebarCityName, { color: currentColors.text }]}>
+                    {t(selectedCity.nameKey)}
                   </Text>
-                  <Text style={[styles.citySelectProvince, { color: currentColors.textSecondary, fontSize: isTablet ? 17 : 14 }]}>
-                    {t(city.provinceKey)}
+                  <Text style={[styles.sidebarProvince, { color: currentColors.textSecondary }]}>
+                    {t(selectedCity.provinceKey)}
                   </Text>
                 </View>
-                {selectedCity.name === city.name && (
-                  <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={isTablet ? 36 : 28} />
-                )}
-              </Pressable>
-            ))}
-          </ScrollView>
-        </SafeAreaView>
-      </Modal>
 
-      {/* City Attractions Modal */}
-      <Modal
-        visible={showCityModal}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={handleCloseModal}
-      >
-        <SafeAreaView style={[styles.modalContainer, { backgroundColor: currentColors.background }]} edges={['top', 'bottom']}>
-          {/* Modal Header */}
-          <View style={[styles.modalHeader, { borderBottomColor: currentColors.separator }]}>
-            <Pressable onPress={handleCloseModal} style={styles.backButton}>
-              <IconSymbol name="chevron.left" color={currentColors.primary} size={isTablet ? 32 : 28} />
-            </Pressable>
-            <Text style={[styles.modalTitle, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
-              {t(selectedCity?.nameKey)}
-            </Text>
-            <View style={styles.placeholder} />
-          </View>
-
-          {/* Search Bar */}
-          <View style={[styles.searchSection, { paddingHorizontal: isTablet ? 40 : 16 }]}>
-            <View style={[styles.searchContainer, { 
-              backgroundColor: currentColors.backgroundSecondary,
-              borderColor: currentColors.border 
-            }]}>
-              <IconSymbol name="magnifyingglass" color={currentColors.textSecondary} size={isTablet ? 24 : 20} />
-              <TextInput
-                style={[styles.searchInput, { color: currentColors.text, fontSize: isTablet ? 18 : 16 }]}
-                placeholder={t('searchAttractions')}
-                placeholderTextColor={currentColors.textSecondary}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-              {searchQuery.length > 0 && (
-                <Pressable onPress={() => setSearchQuery('')}>
-                  <IconSymbol name="xmark.circle.fill" color={currentColors.textSecondary} size={isTablet ? 24 : 20} />
-                </Pressable>
-              )}
-            </View>
-          </View>
-
-          {/* Attractions List */}
-          <ScrollView 
-            style={styles.attractionsList}
-            contentContainerStyle={[styles.attractionsContent, { paddingHorizontal: isTablet ? 40 : 16 }]}
-            showsVerticalScrollIndicator={false}
-          >
-            {filteredAttractions.length > 0 ? (
-              filteredAttractions.map((attraction) => (
-                <Pressable
-                  key={attraction.id}
-                  style={[styles.attractionCard, { backgroundColor: currentColors.backgroundSecondary }]}
-                  onPress={() => console.log('Attraction pressed:', attraction.name)}
-                >
-                  <View style={[styles.attractionIcon, { backgroundColor: currentColors.primary + '15', width: isTablet ? 72 : 56, height: isTablet ? 72 : 56, borderRadius: isTablet ? 36 : 28 }]}>
-                    <IconSymbol name="mappin.circle.fill" color={currentColors.primary} size={isTablet ? 36 : 28} />
+                {/* Search Bar */}
+                <View style={styles.sidebarSearchSection}>
+                  <View style={[styles.sidebarSearchContainer, { 
+                    backgroundColor: currentColors.background,
+                    borderColor: currentColors.border 
+                  }]}>
+                    <IconSymbol name="magnifyingglass" color={currentColors.textSecondary} size={18} />
+                    <TextInput
+                      style={[styles.sidebarSearchInput, { color: currentColors.text }]}
+                      placeholder={t('searchAttractions')}
+                      placeholderTextColor={currentColors.textSecondary}
+                      value={searchQuery}
+                      onChangeText={setSearchQuery}
+                    />
+                    {searchQuery.length > 0 && (
+                      <Pressable onPress={() => setSearchQuery('')}>
+                        <IconSymbol name="xmark.circle.fill" color={currentColors.textSecondary} size={18} />
+                      </Pressable>
+                    )}
                   </View>
-                  <View style={styles.attractionInfo}>
-                    <Text style={[styles.attractionName, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
-                      {attraction.name}
-                    </Text>
-                    <Text style={[styles.attractionCategory, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
-                      {attraction.category}
-                    </Text>
-                    <Text style={[styles.attractionDescription, { color: currentColors.textTertiary, fontSize: isTablet ? 16 : 13 }]}>
-                      {attraction.description}
-                    </Text>
-                  </View>
-                  <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={isTablet ? 24 : 20} />
-                </Pressable>
-              ))
+                </View>
+
+                {/* Attractions List */}
+                <View style={styles.sidebarAttractions}>
+                  <Text style={[styles.sidebarSectionTitle, { color: currentColors.text }]}>
+                    {t('attractions')} ({filteredAttractions.length})
+                  </Text>
+                  
+                  {filteredAttractions.length > 0 ? (
+                    filteredAttractions.map((attraction) => (
+                      <Pressable
+                        key={attraction.id}
+                        style={[styles.sidebarAttractionCard, { backgroundColor: currentColors.background }]}
+                        onPress={() => console.log('Attraction pressed:', attraction.name)}
+                      >
+                        <View style={[styles.sidebarAttractionIcon, { backgroundColor: currentColors.primary + '15' }]}>
+                          <IconSymbol name="mappin.circle.fill" color={currentColors.primary} size={20} />
+                        </View>
+                        <View style={styles.sidebarAttractionInfo}>
+                          <Text style={[styles.sidebarAttractionName, { color: currentColors.text }]}>
+                            {attraction.name}
+                          </Text>
+                          <Text style={[styles.sidebarAttractionCategory, { color: currentColors.textSecondary }]}>
+                            {attraction.category}
+                          </Text>
+                          <Text style={[styles.sidebarAttractionDescription, { color: currentColors.textTertiary }]} numberOfLines={2}>
+                            {attraction.description}
+                          </Text>
+                        </View>
+                      </Pressable>
+                    ))
+                  ) : (
+                    <View style={styles.sidebarNoResults}>
+                      <IconSymbol name="magnifyingglass" color={currentColors.textTertiary} size={40} />
+                      <Text style={[styles.sidebarNoResultsText, { color: currentColors.textSecondary }]}>
+                        {searchQuery ? t('noAttractionsFound') : t('noAttractionsAvailable')}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </ScrollView>
             ) : (
-              <View style={styles.noResults}>
-                <IconSymbol name="magnifyingglass" color={currentColors.textTertiary} size={isTablet ? 64 : 48} />
-                <Text style={[styles.noResultsText, { color: currentColors.textSecondary, fontSize: isTablet ? 20 : 16 }]}>
-                  {searchQuery ? t('noAttractionsFound') : t('noAttractionsAvailable')}
+              <View style={styles.sidebarEmptyState}>
+                <IconSymbol name="map.fill" color={currentColors.textTertiary} size={64} />
+                <Text style={[styles.sidebarEmptyText, { color: currentColors.textSecondary }]}>
+                  {t('selectCityToViewInfo')}
                 </Text>
               </View>
             )}
+          </View>
+        )}
+
+        {/* Main Content */}
+        <View style={[styles.contentContainer, { width: contentWidth }]}>
+          <ScrollView 
+            contentContainerStyle={[styles.scrollContent, { paddingHorizontal: horizontalPadding }]}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Header with City Selector */}
+            <View style={styles.headerContainer}>
+              <Text style={[styles.title, { color: currentColors.text, fontSize: isTablet ? 42 : 34 }]}>
+                {language === 'mn' ? 'Хот' : 'Cities'}
+              </Text>
+              {!isTablet && (
+                <Pressable 
+                  style={styles.citySelectorButton}
+                  onPress={() => setShowCitySelectorModal(true)}
+                >
+                  <IconSymbol 
+                    name="chevron.down" 
+                    color={currentColors.primary} 
+                    size={24} 
+                  />
+                </Pressable>
+              )}
+            </View>
+            
+            <View style={styles.grid}>
+              {orderedCities.map((city, index) => (
+                <Pressable
+                  key={city.name}
+                  style={[
+                    styles.cityCard, 
+                    { 
+                      width: cardWidth,
+                      borderColor: selectedCity?.name === city.name && isTablet ? currentColors.primary : 'transparent',
+                      borderWidth: selectedCity?.name === city.name && isTablet ? 2 : 0,
+                    }
+                  ]}
+                  onPress={() => handleCityPress(city)}
+                >
+                  <View style={styles.imageContainer}>
+                    <Image
+                      source={{ uri: city.imageUrl }}
+                      style={styles.cityImage}
+                      resizeMode="cover"
+                    />
+                    <View style={[styles.overlay, { backgroundColor: currentColors.overlayLight }]} />
+                  </View>
+                  <View style={[styles.cityNameContainer, { backgroundColor: currentColors.backgroundSecondary }]}>
+                    <Text style={[styles.cityName, { color: currentColors.text, fontSize: isTablet ? 18 : 17 }]}>
+                      {t(city.nameKey)}
+                    </Text>
+                    <Text style={[styles.attractionCount, { color: currentColors.textSecondary, fontSize: isTablet ? 14 : 13 }]}>
+                      {city.attractions.length} {t('attractions')}
+                    </Text>
+                  </View>
+                </Pressable>
+              ))}
+            </View>
           </ScrollView>
-        </SafeAreaView>
-      </Modal>
+        </View>
+      </View>
+
+      {/* City Selector Modal - Only for phone */}
+      {!isTablet && (
+        <Modal
+          visible={showCitySelectorModal}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setShowCitySelectorModal(false)}
+        >
+          <SafeAreaView style={[styles.modalContainer, { backgroundColor: currentColors.background }]} edges={['top', 'bottom']}>
+            {/* Modal Header */}
+            <View style={[styles.modalHeader, { borderBottomColor: currentColors.separator }]}>
+              <Pressable onPress={() => setShowCitySelectorModal(false)} style={styles.backButton}>
+                <IconSymbol name="xmark" color={currentColors.textSecondary} size={24} />
+              </Pressable>
+              <Text style={[styles.modalTitle, { color: currentColors.text }]}>
+                {t('selectCity')}
+              </Text>
+              <View style={styles.placeholder} />
+            </View>
+
+            {/* Cities List */}
+            <ScrollView 
+              style={styles.citiesList}
+              contentContainerStyle={styles.citiesContent}
+              showsVerticalScrollIndicator={false}
+            >
+              {orderedCities.map((city) => (
+                <Pressable
+                  key={city.name}
+                  style={[
+                    styles.citySelectCard, 
+                    { 
+                      backgroundColor: currentColors.backgroundSecondary,
+                      borderColor: selectedCity?.name === city.name ? currentColors.primary : 'transparent',
+                      borderWidth: selectedCity?.name === city.name ? 2 : 0,
+                    }
+                  ]}
+                  onPress={() => handleCitySelect(city)}
+                >
+                  <Image
+                    source={{ uri: city.imageUrl }}
+                    style={styles.citySelectImage}
+                    resizeMode="cover"
+                  />
+                  <View style={styles.citySelectInfo}>
+                    <Text style={[styles.citySelectName, { color: currentColors.text }]}>
+                      {t(city.nameKey)}
+                    </Text>
+                    <Text style={[styles.citySelectProvince, { color: currentColors.textSecondary }]}>
+                      {t(city.provinceKey)}
+                    </Text>
+                  </View>
+                  {selectedCity?.name === city.name && (
+                    <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={28} />
+                  )}
+                </Pressable>
+              ))}
+            </ScrollView>
+          </SafeAreaView>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  mainContainer: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  sidebar: {
+    borderRightWidth: StyleSheet.hairlineWidth,
+  },
+  sidebarHeader: {
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  sidebarTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  sidebarContent: {
+    flex: 1,
+  },
+  sidebarImageContainer: {
+    width: '100%',
+    aspectRatio: 1.5,
+    overflow: 'hidden',
+  },
+  sidebarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  sidebarInfo: {
+    padding: 20,
+  },
+  sidebarCityName: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 4,
+    letterSpacing: -0.5,
+  },
+  sidebarProvince: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  sidebarSearchSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+  },
+  sidebarSearchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  sidebarSearchInput: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '400',
+  },
+  sidebarAttractions: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  sidebarSectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12,
+    letterSpacing: -0.3,
+  },
+  sidebarAttractionCard: {
+    flexDirection: 'row',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 10,
+    gap: 12,
+    boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.05)',
+    elevation: 1,
+  },
+  sidebarAttractionIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sidebarAttractionInfo: {
+    flex: 1,
+  },
+  sidebarAttractionName: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 2,
+    letterSpacing: -0.2,
+  },
+  sidebarAttractionCategory: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  sidebarAttractionDescription: {
+    fontSize: 12,
+    fontWeight: '400',
+    lineHeight: 16,
+  },
+  sidebarNoResults: {
+    paddingVertical: 40,
+    alignItems: 'center',
+    gap: 12,
+  },
+  sidebarNoResultsText: {
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  sidebarEmptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    gap: 16,
+  },
+  sidebarEmptyText: {
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  contentContainer: {
     flex: 1,
   },
   scrollContent: {
@@ -374,7 +545,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: isTablet ? 32 : 24,
+    marginBottom: 24,
   },
   title: {
     fontWeight: '700',
@@ -387,10 +558,10 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: isTablet ? 20 : 16,
+    gap: 20,
   },
   cityCard: {
-    borderRadius: isTablet ? 20 : 16,
+    borderRadius: 16,
     overflow: 'hidden',
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
     elevation: 3,
@@ -412,7 +583,7 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   cityNameContainer: {
-    padding: isTablet ? 16 : 12,
+    padding: 12,
   },
   cityName: {
     fontWeight: '600',
@@ -431,8 +602,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: isTablet ? 24 : 16,
-    paddingVertical: isTablet ? 16 : 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backButton: {
@@ -440,6 +611,7 @@ const styles = StyleSheet.create({
     width: 40,
   },
   modalTitle: {
+    fontSize: 20,
     fontWeight: '700',
     letterSpacing: -0.5,
   },
@@ -450,89 +622,36 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   citiesContent: {
-    paddingVertical: isTablet ? 24 : 16,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     paddingBottom: 20,
   },
   citySelectCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: isTablet ? 20 : 12,
-    borderRadius: isTablet ? 20 : 16,
-    marginBottom: isTablet ? 16 : 12,
-    gap: isTablet ? 16 : 12,
+    padding: 12,
+    borderRadius: 16,
+    marginBottom: 12,
+    gap: 12,
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
     elevation: 2,
   },
-  citySelectImage: {},
+  citySelectImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+  },
   citySelectInfo: {
     flex: 1,
   },
   citySelectName: {
+    fontSize: 20,
     fontWeight: '700',
     marginBottom: 4,
     letterSpacing: -0.5,
   },
   citySelectProvince: {
-    fontWeight: '500',
-  },
-  searchSection: {
-    paddingVertical: isTablet ? 16 : 12,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: isTablet ? 16 : 12,
-    borderWidth: 1,
-    paddingHorizontal: isTablet ? 16 : 12,
-    paddingVertical: isTablet ? 14 : 10,
-    gap: isTablet ? 12 : 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontWeight: '400',
-  },
-  attractionsList: {
-    flex: 1,
-  },
-  attractionsContent: {
-    paddingBottom: 20,
-  },
-  attractionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: isTablet ? 20 : 16,
-    borderRadius: isTablet ? 20 : 16,
-    marginBottom: isTablet ? 16 : 12,
-    gap: isTablet ? 16 : 12,
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
-    elevation: 2,
-  },
-  attractionIcon: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  attractionInfo: {
-    flex: 1,
-  },
-  attractionName: {
-    fontWeight: '600',
-    marginBottom: 4,
-    letterSpacing: -0.3,
-  },
-  attractionCategory: {
-    fontWeight: '500',
-    marginBottom: 2,
-  },
-  attractionDescription: {
-    fontWeight: '400',
-    lineHeight: isTablet ? 22 : 18,
-  },
-  noResults: {
-    paddingVertical: isTablet ? 80 : 60,
-    alignItems: 'center',
-    gap: isTablet ? 20 : 16,
-  },
-  noResultsText: {
+    fontSize: 14,
     fontWeight: '500',
   },
 });
