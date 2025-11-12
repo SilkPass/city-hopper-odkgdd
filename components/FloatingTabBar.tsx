@@ -12,7 +12,7 @@ import { IconSymbol } from '@/components/IconSymbol';
 import React, { useEffect, useMemo } from 'react';
 import { BlurView } from 'expo-blur';
 import { colors, darkColors } from '@/styles/commonStyles';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@react-navigation/native';
 import { useThemeMode } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -48,7 +48,7 @@ export default function FloatingTabBar({
   tabs,
   containerWidth = isTablet ? Math.min(screenWidth - 64, 600) : screenWidth - 32,
   borderRadius = 28,
-  bottomMargin = isTablet ? 24 : 16,
+  bottomMargin,
 }: FloatingTabBarProps) {
   const theme = useTheme();
   const { isDark } = useThemeMode();
@@ -56,6 +56,17 @@ export default function FloatingTabBar({
   const currentColors = isDark ? darkColors : colors;
   const router = useRouter();
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
+
+  // Calculate bottom margin based on safe area insets
+  // For devices without home button (like iPhone 14), insets.bottom will be around 34
+  // For devices with home button, it will be 0
+  // We add extra spacing to ensure the tab bar doesn't sit too close to the edge
+  const calculatedBottomMargin = bottomMargin !== undefined 
+    ? bottomMargin 
+    : isTablet 
+      ? 24 
+      : Math.max(12, insets.bottom > 0 ? 8 : 16);
 
   // Determine active tab index based on current pathname
   const getActiveIndex = () => {
@@ -256,7 +267,7 @@ export default function FloatingTabBar({
       style={[
         styles.safeArea,
         {
-          bottom: bottomMargin,
+          bottom: calculatedBottomMargin,
         },
       ]}
       pointerEvents="box-none"
