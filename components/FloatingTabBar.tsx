@@ -138,7 +138,7 @@ export default function FloatingTabBar({
 
   const animatedIndicatorStyle = useAnimatedStyle(() => {
     // Container padding on both sides
-    const containerPadding = isTablet ? 12 : 8;
+    const containerPadding = isTablet ? 6 : 8;
     
     // Total available width for tabs
     const availableWidth = containerWidth - (containerPadding * 2);
@@ -147,7 +147,7 @@ export default function FloatingTabBar({
     const tabWidth = availableWidth / tabs.length;
     
     // Padding inside each tab slot for the indicator
-    const indicatorPadding = isTablet ? 6 : 4;
+    const indicatorPadding = isTablet ? 4 : 4;
     
     // Actual indicator width (tab width minus padding on both sides)
     const indicatorWidth = tabWidth - (indicatorPadding * 2);
@@ -174,8 +174,82 @@ export default function FloatingTabBar({
     };
   });
 
-  const tabWidth = (containerWidth - (isTablet ? 24 : 16)) / tabs.length;
+  const tabWidth = (containerWidth - (isTablet ? 12 : 16)) / tabs.length;
 
+  // iPad-specific top bar styling
+  if (isTablet) {
+    return (
+      <SafeAreaView
+        edges={['top']}
+        style={[
+          styles.safeAreaTop,
+          {
+            top: 0,
+          },
+        ]}
+        pointerEvents="box-none"
+      >
+        <BlurView
+          intensity={Platform.OS === 'ios' ? 80 : 85}
+          tint={isDark ? 'dark' : 'light'}
+          style={[
+            styles.containerTop,
+            {
+              width: containerWidth,
+              borderRadius: 20,
+              backgroundColor: isDark 
+                ? 'rgba(44, 44, 46, 0.92)' 
+                : 'rgba(242, 242, 247, 0.94)',
+              borderColor: isDark 
+                ? 'rgba(84, 84, 88, 0.28)' 
+                : 'rgba(0, 0, 0, 0.06)',
+              paddingVertical: 6,
+              paddingHorizontal: 6,
+            },
+          ]}
+        >
+          {/* Native iOS-style rounded pill indicator */}
+          <Animated.View
+            style={[
+              styles.indicatorTop,
+              animatedIndicatorStyle,
+              {
+                backgroundColor: isDark
+                  ? 'rgba(58, 58, 60, 1)'
+                  : 'rgba(255, 255, 255, 1)',
+                boxShadow: isDark
+                  ? '0px 2px 8px rgba(0, 0, 0, 0.4)'
+                  : '0px 2px 8px rgba(0, 0, 0, 0.12)',
+                height: '86%',
+                top: '7%',
+              },
+            ]}
+          />
+
+          {/* Tab buttons */}
+          {tabs.map((tab, index) => {
+            const isActive = index === activeIndex;
+
+            return (
+              <TabButtonTop
+                key={tab.route}
+                tab={tab}
+                index={index}
+                isActive={isActive}
+                tabWidth={tabWidth}
+                currentColors={currentColors}
+                isDark={isDark}
+                onPress={handleTabPress}
+                t={t}
+              />
+            );
+          })}
+        </BlurView>
+      </SafeAreaView>
+    );
+  }
+
+  // Default bottom bar for phones
   return (
     <SafeAreaView
       edges={['bottom']}
@@ -201,8 +275,8 @@ export default function FloatingTabBar({
             borderColor: isDark 
               ? 'rgba(84, 84, 88, 0.28)' 
               : 'rgba(0, 0, 0, 0.06)',
-            paddingVertical: isTablet ? 12 : 8,
-            paddingHorizontal: isTablet ? 12 : 8,
+            paddingVertical: 8,
+            paddingHorizontal: 8,
           },
         ]}
       >
@@ -218,8 +292,8 @@ export default function FloatingTabBar({
               boxShadow: isDark
                 ? '0px 2px 8px rgba(0, 0, 0, 0.4)'
                 : '0px 2px 8px rgba(0, 0, 0, 0.12)',
-              height: isTablet ? '86%' : '84%',
-              top: isTablet ? '7%' : '8%',
+              height: '84%',
+              top: '8%',
             },
           ]}
         />
@@ -247,7 +321,7 @@ export default function FloatingTabBar({
   );
 }
 
-// Separate component for individual tab buttons with optimized animations
+// Separate component for individual tab buttons with optimized animations (bottom bar)
 interface TabButtonProps {
   tab: TabBarItem;
   index: number;
@@ -328,8 +402,8 @@ const TabButton = React.memo(({
       ? 'rgba(235, 235, 245, 0.55)' 
       : 'rgba(60, 60, 67, 0.55)';
 
-  const iconSize = isTablet ? 28 : 24;
-  const fontSize = isTablet ? 11 : 10;
+  const iconSize = 24;
+  const fontSize = 10;
 
   return (
     <Pressable
@@ -374,6 +448,94 @@ const TabButton = React.memo(({
   );
 });
 
+// Separate component for iPad top bar tabs (horizontal layout, no labels)
+const TabButtonTop = React.memo(({
+  tab,
+  index,
+  isActive,
+  tabWidth,
+  currentColors,
+  isDark,
+  onPress,
+  t,
+}: TabButtonProps) => {
+  const iconScale = useSharedValue(1);
+  const pressScale = useSharedValue(1);
+
+  useEffect(() => {
+    if (isActive) {
+      // Subtle bounce animation when tab becomes active
+      iconScale.value = withSpring(1.08, {
+        damping: 15,
+        stiffness: 350,
+      }, () => {
+        iconScale.value = withSpring(1, {
+          damping: 18,
+          stiffness: 400,
+        });
+      });
+    } else {
+      iconScale.value = withSpring(1, {
+        damping: 18,
+        stiffness: 400,
+      });
+    }
+  }, [isActive, iconScale]);
+
+  const animatedTabStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scale: pressScale.value },
+      ],
+    };
+  });
+
+  const animatedIconStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scale: iconScale.value },
+      ],
+    };
+  });
+
+  const iconColor = isActive 
+    ? currentColors.primary 
+    : isDark 
+      ? 'rgba(235, 235, 245, 0.55)' 
+      : 'rgba(60, 60, 67, 0.55)';
+
+  const iconSize = 22;
+
+  return (
+    <Pressable
+      style={[styles.tabTop, { width: tabWidth }]}
+      onPress={() => onPress(tab.route, index)}
+      onPressIn={() => {
+        pressScale.value = withSpring(0.92, {
+          damping: 15,
+          stiffness: 400,
+        });
+      }}
+      onPressOut={() => {
+        pressScale.value = withSpring(1, {
+          damping: 15,
+          stiffness: 400,
+        });
+      }}
+    >
+      <Animated.View style={[styles.tabContentTop, animatedTabStyle]}>
+        <Animated.View style={[styles.iconContainer, animatedIconStyle]}>
+          <IconSymbol
+            name={tab.icon as any}
+            size={iconSize}
+            color={iconColor}
+          />
+        </Animated.View>
+      </Animated.View>
+    </Pressable>
+  );
+});
+
 const styles = StyleSheet.create({
   safeArea: {
     position: 'absolute',
@@ -382,6 +544,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1000,
     pointerEvents: 'box-none',
+  },
+  safeAreaTop: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 1000,
+    pointerEvents: 'box-none',
+    paddingTop: 12,
   },
   container: {
     flexDirection: 'row',
@@ -396,21 +567,50 @@ const styles = StyleSheet.create({
     elevation: 10,
     overflow: 'hidden',
   },
+  containerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    borderWidth: StyleSheet.hairlineWidth,
+    boxShadow: Platform.select({
+      ios: '0px 4px 16px rgba(0, 0, 0, 0.1)',
+      android: '0px 2px 12px rgba(0, 0, 0, 0.12)',
+      default: '0px 4px 16px rgba(0, 0, 0, 0.1)',
+    }),
+    elevation: 8,
+    overflow: 'hidden',
+  },
   indicator: {
     position: 'absolute',
     borderRadius: 20,
     elevation: 2,
   },
+  indicatorTop: {
+    position: 'absolute',
+    borderRadius: 16,
+    elevation: 2,
+  },
   tab: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: isTablet ? 10 : 8,
+    paddingVertical: 8,
+    zIndex: 1,
+  },
+  tabTop: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 4,
     zIndex: 1,
   },
   tabContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    gap: isTablet ? 4 : 3,
+    gap: 3,
+  },
+  tabContentTop: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   iconContainer: {
     alignItems: 'center',
