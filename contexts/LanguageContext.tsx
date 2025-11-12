@@ -169,7 +169,7 @@ const translations = {
     noAttractionsAvailable: 'Үзвэрийн газар байхгүй байна',
     beijing: 'Бээжин',
     shanghai: 'Шанхай',
-    hongKong: 'Хонг Конг',
+    hongKong: 'Хонконг',
     hohhot: 'Хөх хот',
     ordos: 'Ордос',
     macau: 'Макао',
