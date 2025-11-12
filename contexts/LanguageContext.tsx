@@ -611,12 +611,12 @@ const translations = {
     hohhot: 'Хух-Хото',
     ordos: 'Ордос',
     macao: 'Макао',
-    // Dative case (for titles)
-    beijingDative: 'Пекін',
-    shanghaiDative: 'Шанхай',
-    hongKongDative: 'Гонконг',
+    // Genitive case (for titles) - Updated to use genitive instead of dative
+    beijingDative: 'Пекіна',
+    shanghaiDative: 'Шанхая',
+    hongKongDative: 'Гонконга',
     hohhotDative: 'Хух-Хото',
-    ordosDative: 'Ордос',
+    ordosDative: 'Ордоса',
     macaoDative: 'Макао',
     servicesDescription: 'Доступ до основних послуг для вашої подорожі',
     essentialServices: 'Основні послуги',
