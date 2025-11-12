@@ -15,23 +15,23 @@ interface LanguageOption {
   code: SupportedLanguage;
   name: string;
   nativeName: string;
-  flag: string;
 }
 
 const LANGUAGE_OPTIONS: LanguageOption[] = [
-  { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
-  { code: 'mn', name: 'Mongolian', nativeName: 'Монголоор', flag: '🇲🇳' },
-  { code: 'uz', name: 'Uzbek', nativeName: 'Oʻzbekcha', flag: '🇺🇿' },
-  { code: 'kk', name: 'Kazakh', nativeName: 'Қазақша', flag: '🇰🇿' },
-  { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' },
+  { code: 'en', name: 'English', nativeName: 'English' },
+  { code: 'mn', name: 'Mongolian', nativeName: 'Монголоор' },
+  { code: 'uz', name: 'Uzbek', nativeName: 'Oʻzbekcha' },
+  { code: 'kk', name: 'Kazakh', nativeName: 'Қазақша' },
+  { code: 'ru', name: 'Russian', nativeName: 'Русский' },
 ];
 
 export default function ProfileScreen() {
   const theme = useTheme();
-  const { isDark } = useThemeMode();
+  const { isDark, themeMode, setThemeMode } = useThemeMode();
   const { t, language, setLanguage } = useLanguage();
   const currentColors = isDark ? darkColors : colors;
   const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [showThemeModal, setShowThemeModal] = useState(false);
 
   const handleMenuPress = (item: string) => {
     console.log('Menu item pressed:', item);
@@ -41,15 +41,38 @@ export default function ProfileScreen() {
     setShowLanguageModal(true);
   };
 
+  const handleThemePress = () => {
+    setShowThemeModal(true);
+  };
+
   const handleLanguageSelect = (langCode: SupportedLanguage) => {
     console.log('Switching language to:', langCode);
     setLanguage(langCode);
     setShowLanguageModal(false);
   };
 
+  const handleThemeSelect = (mode: 'light' | 'dark' | 'auto') => {
+    console.log('Switching theme to:', mode);
+    setThemeMode(mode);
+    setShowThemeModal(false);
+  };
+
   const getCurrentLanguageName = () => {
     const currentLang = LANGUAGE_OPTIONS.find(lang => lang.code === language);
-    return currentLang ? `${currentLang.flag} ${currentLang.nativeName}` : 'English';
+    return currentLang ? currentLang.nativeName : 'English';
+  };
+
+  const getThemeLabel = () => {
+    switch (themeMode) {
+      case 'light':
+        return t('lightTheme') || 'Light';
+      case 'dark':
+        return t('darkTheme') || 'Dark';
+      case 'auto':
+        return t('autoTheme') || 'Auto';
+      default:
+        return 'Auto';
+    }
   };
 
   return (
@@ -139,7 +162,7 @@ export default function ProfileScreen() {
             {t('preferences')}
           </Text>
 
-          <Pressable onPress={() => handleMenuPress('Dark Mode')}>
+          <Pressable onPress={handleThemePress}>
             <GlassView 
               style={[
                 styles.card,
@@ -152,13 +175,14 @@ export default function ProfileScreen() {
                   <IconSymbol name="moon.fill" size={20} color={currentColors.warning} />
                 </View>
                 <Text style={[styles.menuItemText, { color: currentColors.text }]}>
-                  {t('darkMode')}
+                  {t('theme') || 'Theme'}
                 </Text>
-                <View style={[styles.badge, { backgroundColor: isDark ? currentColors.primary : currentColors.separator }]}>
-                  <Text style={[styles.badgeText, { color: isDark ? '#FFFFFF' : currentColors.textSecondary }]}>
-                    {isDark ? 'On' : 'Off'}
+                <View style={[styles.badge, { backgroundColor: currentColors.primary + '15' }]}>
+                  <Text style={[styles.badgeText, { color: currentColors.primary }]}>
+                    {getThemeLabel()}
                   </Text>
                 </View>
+                <IconSymbol name="chevron.right" size={20} color={currentColors.textSecondary} />
               </View>
             </GlassView>
           </Pressable>
@@ -252,9 +276,6 @@ export default function ProfileScreen() {
                 ]}
                 onPress={() => handleLanguageSelect(lang.code)}
               >
-                <View style={styles.languageFlag}>
-                  <Text style={styles.flagEmoji}>{lang.flag}</Text>
-                </View>
                 <View style={styles.languageInfo}>
                   <Text style={[styles.languageName, { color: currentColors.text }]}>
                     {lang.nativeName}
@@ -268,6 +289,118 @@ export default function ProfileScreen() {
                 )}
               </Pressable>
             ))}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Theme Selection Modal */}
+      <Modal
+        visible={showThemeModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowThemeModal(false)}
+      >
+        <SafeAreaView 
+          style={[styles.modalContainer, { backgroundColor: currentColors.background }]} 
+          edges={['top', 'bottom']}
+        >
+          {/* Modal Header */}
+          <View style={[styles.modalHeader, { borderBottomColor: currentColors.separator }]}>
+            <Pressable onPress={() => setShowThemeModal(false)} style={styles.backButton}>
+              <IconSymbol name="xmark" color={currentColors.textSecondary} size={24} />
+            </Pressable>
+            <Text style={[styles.modalTitle, { color: currentColors.text }]}>
+              {t('theme') || 'Theme'}
+            </Text>
+            <View style={styles.placeholder} />
+          </View>
+
+          {/* Theme Options */}
+          <ScrollView 
+            style={styles.languageList}
+            contentContainerStyle={styles.languageContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <Pressable
+              style={[
+                styles.themeCard, 
+                { 
+                  backgroundColor: currentColors.backgroundSecondary,
+                  borderColor: themeMode === 'auto' ? currentColors.primary : 'transparent',
+                  borderWidth: themeMode === 'auto' ? 2 : 0,
+                }
+              ]}
+              onPress={() => handleThemeSelect('auto')}
+            >
+              <View style={[styles.themeIconContainer, { backgroundColor: currentColors.warning + '15' }]}>
+                <IconSymbol name="moon.stars.fill" size={32} color={currentColors.warning} />
+              </View>
+              <View style={styles.themeInfo}>
+                <Text style={[styles.themeName, { color: currentColors.text }]}>
+                  {t('autoTheme') || 'Auto'}
+                </Text>
+                <Text style={[styles.themeDescription, { color: currentColors.textSecondary }]}>
+                  {t('autoThemeDescription') || 'Light during day, dark at night'}
+                </Text>
+              </View>
+              {themeMode === 'auto' && (
+                <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={28} />
+              )}
+            </Pressable>
+
+            <Pressable
+              style={[
+                styles.themeCard, 
+                { 
+                  backgroundColor: currentColors.backgroundSecondary,
+                  borderColor: themeMode === 'light' ? currentColors.primary : 'transparent',
+                  borderWidth: themeMode === 'light' ? 2 : 0,
+                }
+              ]}
+              onPress={() => handleThemeSelect('light')}
+            >
+              <View style={[styles.themeIconContainer, { backgroundColor: '#FFD700' + '15' }]}>
+                <IconSymbol name="sun.max.fill" size={32} color="#FFD700" />
+              </View>
+              <View style={styles.themeInfo}>
+                <Text style={[styles.themeName, { color: currentColors.text }]}>
+                  {t('lightTheme') || 'Light'}
+                </Text>
+                <Text style={[styles.themeDescription, { color: currentColors.textSecondary }]}>
+                  {t('lightThemeDescription') || 'Always use light theme'}
+                </Text>
+              </View>
+              {themeMode === 'light' && (
+                <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={28} />
+              )}
+            </Pressable>
+
+            <Pressable
+              style={[
+                styles.themeCard, 
+                { 
+                  backgroundColor: currentColors.backgroundSecondary,
+                  borderColor: themeMode === 'dark' ? currentColors.primary : 'transparent',
+                  borderWidth: themeMode === 'dark' ? 2 : 0,
+                }
+              ]}
+              onPress={() => handleThemeSelect('dark')}
+            >
+              <View style={[styles.themeIconContainer, { backgroundColor: '#4A5568' + '15' }]}>
+                <IconSymbol name="moon.fill" size={32} color="#4A5568" />
+              </View>
+              <View style={styles.themeInfo}>
+                <Text style={[styles.themeName, { color: currentColors.text }]}>
+                  {t('darkTheme') || 'Dark'}
+                </Text>
+                <Text style={[styles.themeDescription, { color: currentColors.textSecondary }]}>
+                  {t('darkThemeDescription') || 'Always use dark theme'}
+                </Text>
+              </View>
+              {themeMode === 'dark' && (
+                <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={28} />
+              )}
+            </Pressable>
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -401,17 +534,6 @@ const styles = StyleSheet.create({
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
     elevation: 2,
   },
-  languageFlag: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(128, 128, 128, 0.1)',
-  },
-  flagEmoji: {
-    fontSize: 32,
-  },
   languageInfo: {
     flex: 1,
   },
@@ -422,6 +544,36 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   languageEnglishName: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  themeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
+    gap: 12,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
+    elevation: 2,
+  },
+  themeIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  themeInfo: {
+    flex: 1,
+  },
+  themeName: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 4,
+    letterSpacing: -0.5,
+  },
+  themeDescription: {
     fontSize: 14,
     fontWeight: '500',
   },
