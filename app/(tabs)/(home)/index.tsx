@@ -21,7 +21,8 @@ import { useThemeMode } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+const isTablet = width >= 768;
 
 interface City {
   name: string;
@@ -233,6 +234,9 @@ export default function HomeScreen() {
     );
   }
 
+  const cardWidth = isTablet ? (width - 80) / 2 : (width - 52) / 2;
+  const horizontalPadding = isTablet ? 40 : 20;
+
   return (
     <>
       {Platform.OS === 'ios' && (
@@ -250,7 +254,7 @@ export default function HomeScreen() {
       
       <ScrollView 
         style={[styles.container, { backgroundColor: currentColors.background }]}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingHorizontal: horizontalPadding }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Header with City Selector and Weather */}
@@ -263,21 +267,21 @@ export default function HomeScreen() {
               >
                 {language === 'mn' && (
                   <>
-                    <Text style={[styles.smallText, { color: currentColors.textSecondary }]}>
+                    <Text style={[styles.smallText, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 16 }]}>
                       {t('welcome')}
                     </Text>
                     <View style={styles.middleRow}>
-                      <Text style={[styles.largeText, { color: currentColors.text }]}>
+                      <Text style={[styles.largeText, { color: currentColors.text, fontSize: isTablet ? 42 : 34 }]}>
                         {selectedCity ? t(`${selectedCity.nameKey}Dative`) : 'Хотод'}
                       </Text>
                       <IconSymbol 
                         name="chevron.down" 
                         color={currentColors.primary} 
-                        size={24} 
+                        size={isTablet ? 32 : 24} 
                         style={styles.arrowIcon}
                       />
                     </View>
-                    <Text style={[styles.smallText, { color: currentColors.textSecondary }]}>
+                    <Text style={[styles.smallText, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 16 }]}>
                       {t('welcomeSmall')}
                     </Text>
                   </>
@@ -285,17 +289,17 @@ export default function HomeScreen() {
                 {(language === 'kk' || language === 'uz') && (
                   <>
                     <View style={styles.middleRow}>
-                      <Text style={[styles.largeText, { color: currentColors.text }]}>
+                      <Text style={[styles.largeText, { color: currentColors.text, fontSize: isTablet ? 42 : 34 }]}>
                         {selectedCity ? t(`${selectedCity.nameKey}Dative`) : (language === 'kk' ? 'Қалада' : 'Shaharda')}
                       </Text>
                       <IconSymbol 
                         name="chevron.down" 
                         color={currentColors.primary} 
-                        size={24} 
+                        size={isTablet ? 32 : 24} 
                         style={styles.arrowIcon}
                       />
                     </View>
-                    <Text style={[styles.smallText, { color: currentColors.textSecondary }]}>
+                    <Text style={[styles.smallText, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 16 }]}>
                       {t('welcomeSmall')}
                     </Text>
                   </>
@@ -303,20 +307,20 @@ export default function HomeScreen() {
               </Pressable>
             ) : (
               <>
-                <Text style={[styles.greeting, { color: currentColors.textSecondary }]}>
+                <Text style={[styles.greeting, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 15 }]}>
                   {t('welcome')}
                 </Text>
                 <Pressable 
                   style={styles.citySelector}
                   onPress={() => setShowCitySelector(true)}
                 >
-                  <Text style={[styles.title, { color: currentColors.text }]}>
+                  <Text style={[styles.title, { color: currentColors.text, fontSize: isTablet ? 42 : 34 }]}>
                     {selectedCity ? (language === 'uk' ? t(`${selectedCity.nameKey}Dative`) : t(selectedCity.nameKey)) : 'Your City'}
                   </Text>
                   <IconSymbol 
                     name="chevron.down" 
                     color={currentColors.primary} 
-                    size={28} 
+                    size={isTablet ? 36 : 28} 
                     style={styles.chevronIcon}
                   />
                 </Pressable>
@@ -334,9 +338,9 @@ export default function HomeScreen() {
                   <IconSymbol 
                     name={weather.icon} 
                     color={currentColors.primary} 
-                    size={32} 
+                    size={isTablet ? 40 : 32} 
                   />
-                  <Text style={[styles.temperature, { color: currentColors.text }]}>
+                  <Text style={[styles.temperature, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
                     {weather.temperature}°
                   </Text>
                 </>
@@ -352,12 +356,12 @@ export default function HomeScreen() {
             onPress={() => handleServicePress('Map')}
           >
             <View style={styles.mapPlaceholder}>
-              <IconSymbol name="map.fill" color={currentColors.primary} size={56} />
-              <Text style={[styles.mapPlaceholderText, { color: currentColors.textSecondary }]}>
+              <IconSymbol name="map.fill" color={currentColors.primary} size={isTablet ? 72 : 56} />
+              <Text style={[styles.mapPlaceholderText, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 15 }]}>
                 {t('mapsNotSupported')}
               </Text>
               {selectedCity && (
-                <Text style={[styles.mapPlaceholderSubtext, { color: currentColors.textTertiary }]}>
+                <Text style={[styles.mapPlaceholderSubtext, { color: currentColors.textTertiary, fontSize: isTablet ? 16 : 13 }]}>
                   {t(selectedCity.provinceKey)}
                 </Text>
               )}
@@ -370,64 +374,64 @@ export default function HomeScreen() {
           <View style={styles.servicesGrid}>
             {/* eSIM Service - Line 1 */}
             <Pressable 
-              style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary }]}
+              style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary, width: cardWidth }]}
               onPress={() => handleServicePress('eSIM')}
             >
-              <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.accent + '15' }]}>
-                <IconSymbol name="antenna.radiowaves.left.and.right" color={currentColors.accent} size={32} />
+              <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.accent + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
+                <IconSymbol name="antenna.radiowaves.left.and.right" color={currentColors.accent} size={isTablet ? 40 : 32} />
               </View>
-              <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
+              <Text style={[styles.serviceTitle, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
                 {t('eSIM')}
               </Text>
-              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
+              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
                 {t('stayConnected')}
               </Text>
             </Pressable>
 
             {/* Payment Service - Line 1 */}
             <Pressable 
-              style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary }]}
+              style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary, width: cardWidth }]}
               onPress={() => handleServicePress('Payment')}
             >
-              <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.secondary + '15' }]}>
-                <IconSymbol name="creditcard.fill" color={currentColors.secondary} size={32} />
+              <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.secondary + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
+                <IconSymbol name="creditcard.fill" color={currentColors.secondary} size={isTablet ? 40 : 32} />
               </View>
-              <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
+              <Text style={[styles.serviceTitle, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
                 {t('payment')}
               </Text>
-              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
+              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
                 {t('securePayment')}
               </Text>
             </Pressable>
 
             {/* Guide Service - Line 2 */}
             <Pressable 
-              style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary }]}
+              style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary, width: cardWidth }]}
               onPress={() => handleServicePress('Travel Guide')}
             >
-              <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.primary + '15' }]}>
-                <IconSymbol name="book.fill" color={currentColors.primary} size={32} />
+              <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.primary + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
+                <IconSymbol name="book.fill" color={currentColors.primary} size={isTablet ? 40 : 32} />
               </View>
-              <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
+              <Text style={[styles.serviceTitle, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
                 {t('guide')}
               </Text>
-              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
+              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
                 {t('exploreLocal')}
               </Text>
             </Pressable>
 
             {/* Emergency Service - Line 2 */}
             <Pressable 
-              style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary }]}
+              style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary, width: cardWidth }]}
               onPress={() => handleServicePress('Emergency')}
             >
-              <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.error + '15' }]}>
-                <IconSymbol name="phone.fill" color={currentColors.error} size={32} />
+              <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.error + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
+                <IconSymbol name="phone.fill" color={currentColors.error} size={isTablet ? 40 : 32} />
               </View>
-              <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
+              <Text style={[styles.serviceTitle, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
                 {t('emergency')}
               </Text>
-              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
+              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
                 {t('quickEmergency')}
               </Text>
             </Pressable>
@@ -436,7 +440,7 @@ export default function HomeScreen() {
 
         {/* Quick Actions */}
         <View style={[styles.section, { paddingBottom: Platform.OS === 'android' ? 100 : 20 }]}>
-          <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
+          <Text style={[styles.sectionTitle, { color: currentColors.text, fontSize: isTablet ? 26 : 22 }]}>
             {t('quickActions')}
           </Text>
           
@@ -444,54 +448,54 @@ export default function HomeScreen() {
             style={[styles.actionCard, { backgroundColor: currentColors.backgroundSecondary }]}
             onPress={() => handleServicePress('Weather')}
           >
-            <View style={[styles.actionIcon, { backgroundColor: currentColors.info + '15' }]}>
-              <IconSymbol name="cloud.sun.fill" color={currentColors.info} size={24} />
+            <View style={[styles.actionIcon, { backgroundColor: currentColors.info + '15', width: isTablet ? 60 : 48, height: isTablet ? 60 : 48, borderRadius: isTablet ? 30 : 24 }]}>
+              <IconSymbol name="cloud.sun.fill" color={currentColors.info} size={isTablet ? 30 : 24} />
             </View>
             <View style={styles.actionContent}>
-              <Text style={[styles.actionTitle, { color: currentColors.text }]}>
+              <Text style={[styles.actionTitle, { color: currentColors.text, fontSize: isTablet ? 20 : 17 }]}>
                 {t('weatherForecast')}
               </Text>
-              <Text style={[styles.actionSubtitle, { color: currentColors.textSecondary }]}>
+              <Text style={[styles.actionSubtitle, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
                 {t('checkLocalWeather')}
               </Text>
             </View>
-            <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={20} />
+            <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={isTablet ? 24 : 20} />
           </Pressable>
 
           <Pressable 
             style={[styles.actionCard, { backgroundColor: currentColors.backgroundSecondary }]}
             onPress={() => handleServicePress('Transportation')}
           >
-            <View style={[styles.actionIcon, { backgroundColor: currentColors.success + '15' }]}>
-              <IconSymbol name="car.fill" color={currentColors.success} size={24} />
+            <View style={[styles.actionIcon, { backgroundColor: currentColors.success + '15', width: isTablet ? 60 : 48, height: isTablet ? 60 : 48, borderRadius: isTablet ? 30 : 24 }]}>
+              <IconSymbol name="car.fill" color={currentColors.success} size={isTablet ? 30 : 24} />
             </View>
             <View style={styles.actionContent}>
-              <Text style={[styles.actionTitle, { color: currentColors.text }]}>
+              <Text style={[styles.actionTitle, { color: currentColors.text, fontSize: isTablet ? 20 : 17 }]}>
                 {t('transportation')}
               </Text>
-              <Text style={[styles.actionSubtitle, { color: currentColors.textSecondary }]}>
+              <Text style={[styles.actionSubtitle, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
                 {t('findNearbyTransit')}
               </Text>
             </View>
-            <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={20} />
+            <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={isTablet ? 24 : 20} />
           </Pressable>
 
           <Pressable 
             style={[styles.actionCard, { backgroundColor: currentColors.backgroundSecondary }]}
             onPress={() => handleServicePress('Language')}
           >
-            <View style={[styles.actionIcon, { backgroundColor: currentColors.warning + '15' }]}>
-              <IconSymbol name="globe" color={currentColors.warning} size={24} />
+            <View style={[styles.actionIcon, { backgroundColor: currentColors.warning + '15', width: isTablet ? 60 : 48, height: isTablet ? 60 : 48, borderRadius: isTablet ? 30 : 24 }]}>
+              <IconSymbol name="globe" color={currentColors.warning} size={isTablet ? 30 : 24} />
             </View>
             <View style={styles.actionContent}>
-              <Text style={[styles.actionTitle, { color: currentColors.text }]}>
+              <Text style={[styles.actionTitle, { color: currentColors.text, fontSize: isTablet ? 20 : 17 }]}>
                 {t('languageAssistant')}
               </Text>
-              <Text style={[styles.actionSubtitle, { color: currentColors.textSecondary }]}>
+              <Text style={[styles.actionSubtitle, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
                 {t('translateEasily')}
               </Text>
             </View>
-            <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={20} />
+            <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={isTablet ? 24 : 20} />
           </Pressable>
         </View>
       </ScrollView>
@@ -510,9 +514,9 @@ export default function HomeScreen() {
           {/* Modal Header */}
           <View style={[styles.modalHeader, { borderBottomColor: currentColors.separator }]}>
             <Pressable onPress={() => setShowCitySelector(false)} style={styles.backButton}>
-              <IconSymbol name="xmark" color={currentColors.textSecondary} size={24} />
+              <IconSymbol name="xmark" color={currentColors.textSecondary} size={isTablet ? 28 : 24} />
             </Pressable>
-            <Text style={[styles.modalTitle, { color: currentColors.text }]}>
+            <Text style={[styles.modalTitle, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
               {t('selectCity')}
             </Text>
             <View style={styles.placeholder} />
@@ -521,7 +525,7 @@ export default function HomeScreen() {
           {/* Cities List */}
           <ScrollView 
             style={styles.citiesList}
-            contentContainerStyle={styles.citiesContent}
+            contentContainerStyle={[styles.citiesContent, { paddingHorizontal: isTablet ? 40 : 16 }]}
             showsVerticalScrollIndicator={false}
           >
             {orderedCities.map((city) => (
@@ -537,19 +541,19 @@ export default function HomeScreen() {
                 ]}
                 onPress={() => handleCitySelect(city)}
               >
-                <View style={[styles.cityIconContainer, { backgroundColor: currentColors.primary + '15' }]}>
-                  <IconSymbol name="building.2.fill" color={currentColors.primary} size={32} />
+                <View style={[styles.cityIconContainer, { backgroundColor: currentColors.primary + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
+                  <IconSymbol name="building.2.fill" color={currentColors.primary} size={isTablet ? 40 : 32} />
                 </View>
                 <View style={styles.citySelectInfo}>
-                  <Text style={[styles.citySelectName, { color: currentColors.text }]}>
+                  <Text style={[styles.citySelectName, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
                     {t(city.nameKey)}
                   </Text>
-                  <Text style={[styles.citySelectProvince, { color: currentColors.textSecondary }]}>
+                  <Text style={[styles.citySelectProvince, { color: currentColors.textSecondary, fontSize: isTablet ? 17 : 14 }]}>
                     {t(city.provinceKey)}
                   </Text>
                 </View>
                 {selectedCity?.name === city.name && (
-                  <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={28} />
+                  <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={isTablet ? 36 : 28} />
                 )}
               </Pressable>
             ))}
@@ -565,20 +569,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
     paddingTop: 16,
   },
   headerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 24,
+    marginBottom: isTablet ? 32 : 24,
   },
   headerLeft: {
     flex: 1,
   },
   greeting: {
-    fontSize: 15,
     fontWeight: '500',
     marginBottom: 4,
     textTransform: 'uppercase',
@@ -590,7 +592,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    fontSize: 34,
     fontWeight: '700',
     letterSpacing: -1,
   },
@@ -601,7 +602,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   smallText: {
-    fontSize: 16,
     fontWeight: '500',
     letterSpacing: -0.3,
     marginBottom: 2,
@@ -612,7 +612,6 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   largeText: {
-    fontSize: 34,
     fontWeight: '700',
     letterSpacing: -0.8,
     marginRight: 8,
@@ -627,23 +626,21 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   temperature: {
-    fontSize: 20,
     fontWeight: '700',
     letterSpacing: -0.5,
   },
   section: {
-    marginBottom: 32,
+    marginBottom: isTablet ? 40 : 32,
   },
   sectionTitle: {
-    fontSize: 22,
     fontWeight: '700',
-    marginBottom: 16,
+    marginBottom: isTablet ? 20 : 16,
     letterSpacing: -0.5,
   },
   mapCard: {
     width: '100%',
     aspectRatio: 1,
-    borderRadius: 16,
+    borderRadius: isTablet ? 24 : 16,
     overflow: 'hidden',
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
     elevation: 2,
@@ -652,64 +649,53 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: isTablet ? 32 : 20,
   },
   mapPlaceholderText: {
     marginTop: 12,
-    fontSize: 15,
     textAlign: 'center',
     fontWeight: '500',
   },
   mapPlaceholderSubtext: {
     marginTop: 6,
-    fontSize: 13,
     textAlign: 'center',
   },
   servicesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: isTablet ? 16 : 12,
   },
   serviceCard: {
-    width: (width - 52) / 2,
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: isTablet ? 20 : 16,
+    padding: isTablet ? 28 : 20,
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
     elevation: 2,
   },
   serviceIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: isTablet ? 20 : 16,
   },
   serviceTitle: {
-    fontSize: 18,
     fontWeight: '700',
     marginBottom: 6,
     letterSpacing: -0.3,
   },
   serviceDescription: {
-    fontSize: 13,
-    lineHeight: 18,
+    lineHeight: isTablet ? 22 : 18,
     fontWeight: '400',
   },
   actionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
-    gap: 12,
+    padding: isTablet ? 20 : 16,
+    borderRadius: isTablet ? 20 : 16,
+    marginBottom: isTablet ? 16 : 12,
+    gap: isTablet ? 16 : 12,
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
     elevation: 2,
   },
   actionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -717,18 +703,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionTitle: {
-    fontSize: 17,
     fontWeight: '600',
     marginBottom: 2,
     letterSpacing: -0.3,
   },
   actionSubtitle: {
-    fontSize: 13,
     fontWeight: '400',
   },
   loadingText: {
     marginTop: 16,
-    fontSize: 17,
+    fontSize: isTablet ? 20 : 17,
   },
   modalContainer: {
     flex: 1,
@@ -737,8 +721,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: isTablet ? 24 : 16,
+    paddingVertical: isTablet ? 16 : 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backButton: {
@@ -746,7 +730,6 @@ const styles = StyleSheet.create({
     width: 40,
   },
   modalTitle: {
-    fontSize: 20,
     fontWeight: '700',
     letterSpacing: -0.5,
   },
@@ -757,24 +740,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   citiesContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: isTablet ? 24 : 16,
     paddingBottom: 20,
   },
   citySelectCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
-    gap: 12,
+    padding: isTablet ? 20 : 16,
+    borderRadius: isTablet ? 20 : 16,
+    marginBottom: isTablet ? 16 : 12,
+    gap: isTablet ? 16 : 12,
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
     elevation: 2,
   },
   cityIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -782,13 +761,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   citySelectName: {
-    fontSize: 20,
     fontWeight: '700',
     marginBottom: 4,
     letterSpacing: -0.5,
   },
   citySelectProvince: {
-    fontSize: 14,
     fontWeight: '500',
   },
 });

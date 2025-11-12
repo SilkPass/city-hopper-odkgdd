@@ -18,6 +18,7 @@ import { useThemeMode } from '@/contexts/ThemeContext';
 import { Stack } from 'expo-router';
 
 const { width } = Dimensions.get('window');
+const isTablet = width >= 768;
 
 interface ServiceModule {
   id: string;
@@ -183,8 +184,9 @@ export default function ServicesScreen() {
     return SERVICES.filter(service => service.category === category);
   };
 
-  const cardWidth = (width - 52) / 2;
-  const fullWidth = width - 40;
+  const cardWidth = isTablet ? (width - 112) / 3 : (width - 52) / 2;
+  const fullWidth = isTablet ? width - 80 : width - 40;
+  const horizontalPadding = isTablet ? 40 : 20;
 
   return (
     <>
@@ -208,16 +210,16 @@ export default function ServicesScreen() {
       >
         <ScrollView
           style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { paddingHorizontal: horizontalPadding }]}
           showsVerticalScrollIndicator={false}
         >
           {/* Header */}
           {Platform.OS === 'android' && (
             <View style={styles.header}>
-              <Text style={[styles.headerTitle, { color: currentColors.text }]}>
+              <Text style={[styles.headerTitle, { color: currentColors.text, fontSize: isTablet ? 42 : 34 }]}>
                 {t('services')}
               </Text>
-              <Text style={[styles.headerSubtitle, { color: currentColors.textSecondary }]}>
+              <Text style={[styles.headerSubtitle, { color: currentColors.textSecondary, fontSize: isTablet ? 20 : 17 }]}>
                 {t('servicesDescription')}
               </Text>
             </View>
@@ -239,13 +241,13 @@ export default function ServicesScreen() {
                   ]}
                   onPress={() => handleServicePress(module.id)}
                 >
-                  <View style={[styles.moduleIconContainer, { backgroundColor: module.color + '15' }]}>
-                    <IconSymbol name={module.icon} color={module.color} size={module.span === 2 ? 40 : 32} />
+                  <View style={[styles.moduleIconContainer, { backgroundColor: module.color + '15', width: isTablet ? 88 : 72, height: isTablet ? 88 : 72, borderRadius: isTablet ? 44 : 36 }]}>
+                    <IconSymbol name={module.icon} color={module.color} size={module.span === 2 ? (isTablet ? 48 : 40) : (isTablet ? 40 : 32)} />
                   </View>
-                  <Text style={[styles.moduleTitle, { color: currentColors.text }]}>
+                  <Text style={[styles.moduleTitle, { color: currentColors.text, fontSize: isTablet ? 26 : 22 }]}>
                     {t(module.titleKey)}
                   </Text>
-                  <Text style={[styles.moduleDescription, { color: currentColors.textSecondary }]}>
+                  <Text style={[styles.moduleDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 15 }]}>
                     {t(module.descriptionKey)}
                   </Text>
                 </Pressable>
@@ -255,23 +257,23 @@ export default function ServicesScreen() {
 
           {/* Essential Services */}
           <View style={styles.categorySection}>
-            <Text style={[styles.categoryTitle, { color: currentColors.text }]}>
+            <Text style={[styles.categoryTitle, { color: currentColors.text, fontSize: isTablet ? 26 : 22 }]}>
               {getCategoryTitle('essential')}
             </Text>
             <View style={styles.servicesGrid}>
               {getServicesByCategory('essential').map((service) => (
                 <Pressable
                   key={service.id}
-                  style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary }]}
+                  style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary, width: cardWidth }]}
                   onPress={() => handleServicePress(service.id)}
                 >
-                  <View style={[styles.serviceIconContainer, { backgroundColor: service.color + '15' }]}>
-                    <IconSymbol name={service.icon} color={service.color} size={32} />
+                  <View style={[styles.serviceIconContainer, { backgroundColor: service.color + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
+                    <IconSymbol name={service.icon} color={service.color} size={isTablet ? 40 : 32} />
                   </View>
-                  <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
+                  <Text style={[styles.serviceTitle, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
                     {t(service.titleKey)}
                   </Text>
-                  <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
+                  <Text style={[styles.serviceDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
                     {t(service.descriptionKey)}
                   </Text>
                 </Pressable>
@@ -281,23 +283,23 @@ export default function ServicesScreen() {
 
           {/* Convenience Services */}
           <View style={styles.categorySection}>
-            <Text style={[styles.categoryTitle, { color: currentColors.text }]}>
+            <Text style={[styles.categoryTitle, { color: currentColors.text, fontSize: isTablet ? 26 : 22 }]}>
               {getCategoryTitle('convenience')}
             </Text>
             <View style={styles.servicesGrid}>
               {getServicesByCategory('convenience').map((service) => (
                 <Pressable
                   key={service.id}
-                  style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary }]}
+                  style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary, width: cardWidth }]}
                   onPress={() => handleServicePress(service.id)}
                 >
-                  <View style={[styles.serviceIconContainer, { backgroundColor: service.color + '15' }]}>
-                    <IconSymbol name={service.icon} color={service.color} size={32} />
+                  <View style={[styles.serviceIconContainer, { backgroundColor: service.color + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
+                    <IconSymbol name={service.icon} color={service.color} size={isTablet ? 40 : 32} />
                   </View>
-                  <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
+                  <Text style={[styles.serviceTitle, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
                     {t(service.titleKey)}
                   </Text>
-                  <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
+                  <Text style={[styles.serviceDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
                     {t(service.descriptionKey)}
                   </Text>
                 </Pressable>
@@ -307,23 +309,23 @@ export default function ServicesScreen() {
 
           {/* Support Services */}
           <View style={[styles.categorySection, { paddingBottom: Platform.OS === 'android' ? 100 : 20 }]}>
-            <Text style={[styles.categoryTitle, { color: currentColors.text }]}>
+            <Text style={[styles.categoryTitle, { color: currentColors.text, fontSize: isTablet ? 26 : 22 }]}>
               {getCategoryTitle('support')}
             </Text>
             <View style={styles.servicesGrid}>
               {getServicesByCategory('support').map((service) => (
                 <Pressable
                   key={service.id}
-                  style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary }]}
+                  style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary, width: cardWidth }]}
                   onPress={() => handleServicePress(service.id)}
                 >
-                  <View style={[styles.serviceIconContainer, { backgroundColor: service.color + '15' }]}>
-                    <IconSymbol name={service.icon} color={service.color} size={32} />
+                  <View style={[styles.serviceIconContainer, { backgroundColor: service.color + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
+                    <IconSymbol name={service.icon} color={service.color} size={isTablet ? 40 : 32} />
                   </View>
-                  <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
+                  <Text style={[styles.serviceTitle, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
                     {t(service.titleKey)}
                   </Text>
-                  <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
+                  <Text style={[styles.serviceDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
                     {t(service.descriptionKey)}
                   </Text>
                 </Pressable>
@@ -344,95 +346,80 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
     paddingTop: Platform.OS === 'android' ? 16 : 0,
   },
   header: {
-    marginBottom: 24,
+    marginBottom: isTablet ? 32 : 24,
   },
   headerTitle: {
-    fontSize: 34,
     fontWeight: '700',
     letterSpacing: -1,
     marginBottom: 8,
   },
   headerSubtitle: {
-    fontSize: 17,
     fontWeight: '400',
-    lineHeight: 24,
+    lineHeight: isTablet ? 28 : 24,
   },
   modulesSection: {
-    marginBottom: 32,
+    marginBottom: isTablet ? 40 : 32,
   },
   modulesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: isTablet ? 16 : 12,
   },
   moduleCard: {
-    borderRadius: 20,
-    padding: 24,
+    borderRadius: isTablet ? 24 : 20,
+    padding: isTablet ? 32 : 24,
     boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.08)',
     elevation: 3,
     justifyContent: 'center',
   },
   moduleIconContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: isTablet ? 20 : 16,
   },
   moduleTitle: {
-    fontSize: 22,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: isTablet ? 12 : 8,
     letterSpacing: -0.5,
   },
   moduleDescription: {
-    fontSize: 15,
-    lineHeight: 20,
+    lineHeight: isTablet ? 24 : 20,
     fontWeight: '400',
   },
   categorySection: {
-    marginBottom: 32,
+    marginBottom: isTablet ? 40 : 32,
   },
   categoryTitle: {
-    fontSize: 22,
     fontWeight: '700',
-    marginBottom: 16,
+    marginBottom: isTablet ? 20 : 16,
     letterSpacing: -0.5,
   },
   servicesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: isTablet ? 16 : 12,
   },
   serviceCard: {
-    width: (width - 52) / 2,
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: isTablet ? 20 : 16,
+    padding: isTablet ? 28 : 20,
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
     elevation: 2,
   },
   serviceIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: isTablet ? 20 : 16,
   },
   serviceTitle: {
-    fontSize: 18,
     fontWeight: '700',
     marginBottom: 6,
     letterSpacing: -0.3,
   },
   serviceDescription: {
-    fontSize: 13,
-    lineHeight: 18,
+    lineHeight: isTablet ? 22 : 18,
     fontWeight: '400',
   },
 });

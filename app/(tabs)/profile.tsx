@@ -1,5 +1,5 @@
 
-import { View, Text, StyleSheet, ScrollView, Platform, Pressable, Modal } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Platform, Pressable, Modal, Dimensions } from "react-native";
 import React, { useState } from "react";
 import { GlassView } from "expo-glass-effect";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -8,6 +8,9 @@ import { useTheme } from "@react-navigation/native";
 import { colors, darkColors } from "@/styles/commonStyles";
 import { useThemeMode } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+
+const { width } = Dimensions.get('window');
+const isTablet = width >= 768;
 
 type SupportedLanguage = 'en' | 'mn' | 'ru' | 'kk' | 'uz' | 'uk' | 'fa';
 
@@ -77,24 +80,26 @@ export default function ProfileScreen() {
     }
   };
 
+  const horizontalPadding = isTablet ? 40 : 16;
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: currentColors.background }]} edges={['top']}>
       <ScrollView 
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingHorizontal: horizontalPadding }]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
           <View style={styles.avatarContainer}>
-            <View style={[styles.profilePicture, { backgroundColor: currentColors.primary }]}>
-              <IconSymbol name="person.fill" size={60} color="#FFFFFF" />
+            <View style={[styles.profilePicture, { backgroundColor: currentColors.primary, width: isTablet ? 120 : 100, height: isTablet ? 120 : 100, borderRadius: isTablet ? 60 : 50 }]}>
+              <IconSymbol name="person.fill" size={isTablet ? 72 : 60} color="#FFFFFF" />
             </View>
           </View>
-          <Text style={[styles.username, { color: currentColors.text }]}>Jerry Chen</Text>
-          <Text style={[styles.email, { color: currentColors.textSecondary }]}>jerry@example.com</Text>
+          <Text style={[styles.username, { color: currentColors.text, fontSize: isTablet ? 28 : 24 }]}>Jerry Chen</Text>
+          <Text style={[styles.email, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 15 }]}>jerry@example.com</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
+          <Text style={[styles.sectionTitle, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
             {t('accountSettings')}
           </Text>
           
@@ -107,13 +112,13 @@ export default function ProfileScreen() {
               glassEffectStyle="regular"
             >
               <View style={styles.menuItem}>
-                <View style={[styles.iconContainer, { backgroundColor: currentColors.primary + '15' }]}>
-                  <IconSymbol name="person.fill" size={20} color={currentColors.primary} />
+                <View style={[styles.iconContainer, { backgroundColor: currentColors.primary + '15', width: isTablet ? 44 : 36, height: isTablet ? 44 : 36, borderRadius: isTablet ? 22 : 18 }]}>
+                  <IconSymbol name="person.fill" size={isTablet ? 24 : 20} color={currentColors.primary} />
                 </View>
-                <Text style={[styles.menuItemText, { color: currentColors.text }]}>
+                <Text style={[styles.menuItemText, { color: currentColors.text, fontSize: isTablet ? 19 : 16 }]}>
                   {t('editProfile')}
                 </Text>
-                <IconSymbol name="chevron.right" size={20} color={currentColors.textSecondary} />
+                <IconSymbol name="chevron.right" size={isTablet ? 24 : 20} color={currentColors.textSecondary} />
               </View>
             </GlassView>
           </Pressable>
@@ -127,13 +132,13 @@ export default function ProfileScreen() {
               glassEffectStyle="regular"
             >
               <View style={styles.menuItem}>
-                <View style={[styles.iconContainer, { backgroundColor: currentColors.info + '15' }]}>
-                  <IconSymbol name="bell.fill" size={20} color={currentColors.info} />
+                <View style={[styles.iconContainer, { backgroundColor: currentColors.info + '15', width: isTablet ? 44 : 36, height: isTablet ? 44 : 36, borderRadius: isTablet ? 22 : 18 }]}>
+                  <IconSymbol name="bell.fill" size={isTablet ? 24 : 20} color={currentColors.info} />
                 </View>
-                <Text style={[styles.menuItemText, { color: currentColors.text }]}>
+                <Text style={[styles.menuItemText, { color: currentColors.text, fontSize: isTablet ? 19 : 16 }]}>
                   {t('notifications')}
                 </Text>
-                <IconSymbol name="chevron.right" size={20} color={currentColors.textSecondary} />
+                <IconSymbol name="chevron.right" size={isTablet ? 24 : 20} color={currentColors.textSecondary} />
               </View>
             </GlassView>
           </Pressable>
@@ -147,20 +152,20 @@ export default function ProfileScreen() {
               glassEffectStyle="regular"
             >
               <View style={styles.menuItem}>
-                <View style={[styles.iconContainer, { backgroundColor: currentColors.accent + '15' }]}>
-                  <IconSymbol name="lock.fill" size={20} color={currentColors.accent} />
+                <View style={[styles.iconContainer, { backgroundColor: currentColors.accent + '15', width: isTablet ? 44 : 36, height: isTablet ? 44 : 36, borderRadius: isTablet ? 22 : 18 }]}>
+                  <IconSymbol name="lock.fill" size={isTablet ? 24 : 20} color={currentColors.accent} />
                 </View>
-                <Text style={[styles.menuItemText, { color: currentColors.text }]}>
+                <Text style={[styles.menuItemText, { color: currentColors.text, fontSize: isTablet ? 19 : 16 }]}>
                   {t('privacySecurity')}
                 </Text>
-                <IconSymbol name="chevron.right" size={20} color={currentColors.textSecondary} />
+                <IconSymbol name="chevron.right" size={isTablet ? 24 : 20} color={currentColors.textSecondary} />
               </View>
             </GlassView>
           </Pressable>
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
+          <Text style={[styles.sectionTitle, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
             {t('preferences')}
           </Text>
 
@@ -173,18 +178,18 @@ export default function ProfileScreen() {
               glassEffectStyle="regular"
             >
               <View style={styles.menuItem}>
-                <View style={[styles.iconContainer, { backgroundColor: currentColors.warning + '15' }]}>
-                  <IconSymbol name="moon.fill" size={20} color={currentColors.warning} />
+                <View style={[styles.iconContainer, { backgroundColor: currentColors.warning + '15', width: isTablet ? 44 : 36, height: isTablet ? 44 : 36, borderRadius: isTablet ? 22 : 18 }]}>
+                  <IconSymbol name="moon.fill" size={isTablet ? 24 : 20} color={currentColors.warning} />
                 </View>
-                <Text style={[styles.menuItemText, { color: currentColors.text }]}>
+                <Text style={[styles.menuItemText, { color: currentColors.text, fontSize: isTablet ? 19 : 16 }]}>
                   {t('theme') || 'Theme'}
                 </Text>
                 <View style={[styles.badge, { backgroundColor: currentColors.primary + '15' }]}>
-                  <Text style={[styles.badgeText, { color: currentColors.primary }]}>
+                  <Text style={[styles.badgeText, { color: currentColors.primary, fontSize: isTablet ? 15 : 13 }]}>
                     {getThemeLabel()}
                   </Text>
                 </View>
-                <IconSymbol name="chevron.right" size={20} color={currentColors.textSecondary} />
+                <IconSymbol name="chevron.right" size={isTablet ? 24 : 20} color={currentColors.textSecondary} />
               </View>
             </GlassView>
           </Pressable>
@@ -198,18 +203,18 @@ export default function ProfileScreen() {
               glassEffectStyle="regular"
             >
               <View style={styles.menuItem}>
-                <View style={[styles.iconContainer, { backgroundColor: currentColors.success + '15' }]}>
-                  <IconSymbol name="globe" size={20} color={currentColors.success} />
+                <View style={[styles.iconContainer, { backgroundColor: currentColors.success + '15', width: isTablet ? 44 : 36, height: isTablet ? 44 : 36, borderRadius: isTablet ? 22 : 18 }]}>
+                  <IconSymbol name="globe" size={isTablet ? 24 : 20} color={currentColors.success} />
                 </View>
-                <Text style={[styles.menuItemText, { color: currentColors.text }]}>
+                <Text style={[styles.menuItemText, { color: currentColors.text, fontSize: isTablet ? 19 : 16 }]}>
                   {t('language')}
                 </Text>
                 <View style={[styles.languageBadge, { backgroundColor: currentColors.primary + '15' }]}>
-                  <Text style={[styles.languageBadgeText, { color: currentColors.primary }]}>
+                  <Text style={[styles.languageBadgeText, { color: currentColors.primary, fontSize: isTablet ? 15 : 13 }]}>
                     {getCurrentLanguageName()}
                   </Text>
                 </View>
-                <IconSymbol name="chevron.right" size={20} color={currentColors.textSecondary} />
+                <IconSymbol name="chevron.right" size={isTablet ? 24 : 20} color={currentColors.textSecondary} />
               </View>
             </GlassView>
           </Pressable>
@@ -225,10 +230,10 @@ export default function ProfileScreen() {
               glassEffectStyle="regular"
             >
               <View style={styles.menuItem}>
-                <View style={[styles.iconContainer, { backgroundColor: currentColors.error + '15' }]}>
-                  <IconSymbol name="arrow.right.square.fill" size={20} color={currentColors.error} />
+                <View style={[styles.iconContainer, { backgroundColor: currentColors.error + '15', width: isTablet ? 44 : 36, height: isTablet ? 44 : 36, borderRadius: isTablet ? 22 : 18 }]}>
+                  <IconSymbol name="arrow.right.square.fill" size={isTablet ? 24 : 20} color={currentColors.error} />
                 </View>
-                <Text style={[styles.menuItemText, { color: currentColors.error }]}>
+                <Text style={[styles.menuItemText, { color: currentColors.error, fontSize: isTablet ? 19 : 16 }]}>
                   {t('signOut')}
                 </Text>
               </View>
@@ -251,9 +256,9 @@ export default function ProfileScreen() {
           {/* Modal Header */}
           <View style={[styles.modalHeader, { borderBottomColor: currentColors.separator }]}>
             <Pressable onPress={() => setShowLanguageModal(false)} style={styles.backButton}>
-              <IconSymbol name="xmark" color={currentColors.textSecondary} size={24} />
+              <IconSymbol name="xmark" color={currentColors.textSecondary} size={isTablet ? 28 : 24} />
             </Pressable>
-            <Text style={[styles.modalTitle, { color: currentColors.text }]}>
+            <Text style={[styles.modalTitle, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
               {t('language')}
             </Text>
             <View style={styles.placeholder} />
@@ -262,7 +267,7 @@ export default function ProfileScreen() {
           {/* Language Options */}
           <ScrollView 
             style={styles.languageList}
-            contentContainerStyle={styles.languageContent}
+            contentContainerStyle={[styles.languageContent, { paddingHorizontal: isTablet ? 40 : 16 }]}
             showsVerticalScrollIndicator={false}
           >
             {LANGUAGE_OPTIONS.map((lang) => (
@@ -279,15 +284,15 @@ export default function ProfileScreen() {
                 onPress={() => handleLanguageSelect(lang.code)}
               >
                 <View style={styles.languageInfo}>
-                  <Text style={[styles.languageName, { color: currentColors.text }]}>
+                  <Text style={[styles.languageName, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
                     {lang.nativeName}
                   </Text>
-                  <Text style={[styles.languageEnglishName, { color: currentColors.textSecondary }]}>
+                  <Text style={[styles.languageEnglishName, { color: currentColors.textSecondary, fontSize: isTablet ? 17 : 14 }]}>
                     {lang.name}
                   </Text>
                 </View>
                 {language === lang.code && (
-                  <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={28} />
+                  <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={isTablet ? 36 : 28} />
                 )}
               </Pressable>
             ))}
@@ -309,9 +314,9 @@ export default function ProfileScreen() {
           {/* Modal Header */}
           <View style={[styles.modalHeader, { borderBottomColor: currentColors.separator }]}>
             <Pressable onPress={() => setShowThemeModal(false)} style={styles.backButton}>
-              <IconSymbol name="xmark" color={currentColors.textSecondary} size={24} />
+              <IconSymbol name="xmark" color={currentColors.textSecondary} size={isTablet ? 28 : 24} />
             </Pressable>
-            <Text style={[styles.modalTitle, { color: currentColors.text }]}>
+            <Text style={[styles.modalTitle, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
               {t('theme') || 'Theme'}
             </Text>
             <View style={styles.placeholder} />
@@ -320,7 +325,7 @@ export default function ProfileScreen() {
           {/* Theme Options */}
           <ScrollView 
             style={styles.languageList}
-            contentContainerStyle={styles.languageContent}
+            contentContainerStyle={[styles.languageContent, { paddingHorizontal: isTablet ? 40 : 16 }]}
             showsVerticalScrollIndicator={false}
           >
             <Pressable
@@ -334,19 +339,19 @@ export default function ProfileScreen() {
               ]}
               onPress={() => handleThemeSelect('auto')}
             >
-              <View style={[styles.themeIconContainer, { backgroundColor: currentColors.warning + '15' }]}>
-                <IconSymbol name="moon.stars.fill" size={32} color={currentColors.warning} />
+              <View style={[styles.themeIconContainer, { backgroundColor: currentColors.warning + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
+                <IconSymbol name="moon.stars.fill" size={isTablet ? 40 : 32} color={currentColors.warning} />
               </View>
               <View style={styles.themeInfo}>
-                <Text style={[styles.themeName, { color: currentColors.text }]}>
+                <Text style={[styles.themeName, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
                   {t('autoTheme') || 'Auto'}
                 </Text>
-                <Text style={[styles.themeDescription, { color: currentColors.textSecondary }]}>
+                <Text style={[styles.themeDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 17 : 14 }]}>
                   {t('autoThemeDescription') || 'Light during day, dark at night'}
                 </Text>
               </View>
               {themeMode === 'auto' && (
-                <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={28} />
+                <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={isTablet ? 36 : 28} />
               )}
             </Pressable>
 
@@ -361,19 +366,19 @@ export default function ProfileScreen() {
               ]}
               onPress={() => handleThemeSelect('light')}
             >
-              <View style={[styles.themeIconContainer, { backgroundColor: '#FFD700' + '15' }]}>
-                <IconSymbol name="sun.max.fill" size={32} color="#FFD700" />
+              <View style={[styles.themeIconContainer, { backgroundColor: '#FFD700' + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
+                <IconSymbol name="sun.max.fill" size={isTablet ? 40 : 32} color="#FFD700" />
               </View>
               <View style={styles.themeInfo}>
-                <Text style={[styles.themeName, { color: currentColors.text }]}>
+                <Text style={[styles.themeName, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
                   {t('lightTheme') || 'Light'}
                 </Text>
-                <Text style={[styles.themeDescription, { color: currentColors.textSecondary }]}>
+                <Text style={[styles.themeDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 17 : 14 }]}>
                   {t('lightThemeDescription') || 'Always use light theme'}
                 </Text>
               </View>
               {themeMode === 'light' && (
-                <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={28} />
+                <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={isTablet ? 36 : 28} />
               )}
             </Pressable>
 
@@ -388,19 +393,19 @@ export default function ProfileScreen() {
               ]}
               onPress={() => handleThemeSelect('dark')}
             >
-              <View style={[styles.themeIconContainer, { backgroundColor: '#4A5568' + '15' }]}>
-                <IconSymbol name="moon.fill" size={32} color="#4A5568" />
+              <View style={[styles.themeIconContainer, { backgroundColor: '#4A5568' + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
+                <IconSymbol name="moon.fill" size={isTablet ? 40 : 32} color="#4A5568" />
               </View>
               <View style={styles.themeInfo}>
-                <Text style={[styles.themeName, { color: currentColors.text }]}>
+                <Text style={[styles.themeName, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
                   {t('darkTheme') || 'Dark'}
                 </Text>
-                <Text style={[styles.themeDescription, { color: currentColors.textSecondary }]}>
+                <Text style={[styles.themeDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 17 : 14 }]}>
                   {t('darkThemeDescription') || 'Always use dark theme'}
                 </Text>
               </View>
               {themeMode === 'dark' && (
-                <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={28} />
+                <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={isTablet ? 36 : 28} />
               )}
             </Pressable>
           </ScrollView>
@@ -414,85 +419,71 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollContent: {
-    paddingHorizontal: 16,
-  },
+  scrollContent: {},
   header: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: isTablet ? 40 : 32,
   },
   avatarContainer: {
-    marginBottom: 16,
+    marginBottom: isTablet ? 20 : 16,
   },
   profilePicture: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
   },
   username: {
-    fontSize: 24,
     fontWeight: '700',
     marginBottom: 4,
     letterSpacing: -0.5,
   },
   email: {
-    fontSize: 15,
     fontWeight: '400',
   },
   section: {
-    marginBottom: 24,
+    marginBottom: isTablet ? 32 : 24,
   },
   sectionTitle: {
-    fontSize: 18,
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: isTablet ? 16 : 12,
     paddingHorizontal: 4,
     letterSpacing: -0.3,
   },
   card: {
-    borderRadius: 12,
-    marginBottom: 8,
+    borderRadius: isTablet ? 16 : 12,
+    marginBottom: isTablet ? 12 : 8,
     overflow: 'hidden',
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    gap: 12,
+    padding: isTablet ? 20 : 16,
+    gap: isTablet ? 16 : 12,
   },
   iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
   menuItemText: {
     flex: 1,
-    fontSize: 16,
     fontWeight: '500',
     letterSpacing: -0.2,
   },
   badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: isTablet ? 12 : 10,
+    paddingVertical: isTablet ? 6 : 4,
+    borderRadius: isTablet ? 14 : 12,
   },
   badgeText: {
-    fontSize: 13,
     fontWeight: '600',
   },
   languageBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: isTablet ? 12 : 10,
+    paddingVertical: isTablet ? 6 : 4,
+    borderRadius: isTablet ? 14 : 12,
     marginRight: 4,
   },
   languageBadgeText: {
-    fontSize: 13,
     fontWeight: '600',
   },
   modalContainer: {
@@ -502,8 +493,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: isTablet ? 24 : 16,
+    paddingVertical: isTablet ? 16 : 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backButton: {
@@ -511,7 +502,6 @@ const styles = StyleSheet.create({
     width: 40,
   },
   modalTitle: {
-    fontSize: 20,
     fontWeight: '700',
     letterSpacing: -0.5,
   },
@@ -522,17 +512,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   languageContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: isTablet ? 24 : 16,
     paddingBottom: 20,
   },
   languageCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
-    gap: 12,
+    padding: isTablet ? 20 : 16,
+    borderRadius: isTablet ? 20 : 16,
+    marginBottom: isTablet ? 16 : 12,
+    gap: isTablet ? 16 : 12,
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
     elevation: 2,
   },
@@ -540,29 +529,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   languageName: {
-    fontSize: 20,
     fontWeight: '700',
     marginBottom: 4,
     letterSpacing: -0.5,
   },
   languageEnglishName: {
-    fontSize: 14,
     fontWeight: '500',
   },
   themeCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
-    gap: 12,
+    padding: isTablet ? 20 : 16,
+    borderRadius: isTablet ? 20 : 16,
+    marginBottom: isTablet ? 16 : 12,
+    gap: isTablet ? 16 : 12,
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
     elevation: 2,
   },
   themeIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -570,13 +554,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   themeName: {
-    fontSize: 20,
     fontWeight: '700',
     marginBottom: 4,
     letterSpacing: -0.5,
   },
   themeDescription: {
-    fontSize: 14,
     fontWeight: '500',
   },
 });

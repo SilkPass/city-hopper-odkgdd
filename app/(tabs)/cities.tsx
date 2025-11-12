@@ -106,7 +106,8 @@ const CITIES: City[] = [
 ];
 
 const { width } = Dimensions.get('window');
-const cardWidth = (width - 48) / 2;
+const isTablet = width >= 768;
+const cardWidth = isTablet ? (width - 96) / 3 : (width - 48) / 2;
 
 export default function CitiesScreen() {
   const theme = useTheme();
@@ -162,15 +163,17 @@ export default function CitiesScreen() {
       )
     : [];
 
+  const horizontalPadding = isTablet ? 32 : 16;
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: currentColors.background }]} edges={['top']}>
       <ScrollView 
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingHorizontal: horizontalPadding }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Header with City Selector */}
         <View style={styles.headerContainer}>
-          <Text style={[styles.title, { color: currentColors.text }]}>
+          <Text style={[styles.title, { color: currentColors.text, fontSize: isTablet ? 42 : 34 }]}>
             {language === 'mn' ? 'Хот' : 'Cities'}
           </Text>
           <Pressable 
@@ -180,7 +183,7 @@ export default function CitiesScreen() {
             <IconSymbol 
               name="chevron.down" 
               color={currentColors.primary} 
-              size={24} 
+              size={isTablet ? 32 : 24} 
             />
           </Pressable>
         </View>
@@ -201,10 +204,10 @@ export default function CitiesScreen() {
                 <View style={[styles.overlay, { backgroundColor: currentColors.overlayLight }]} />
               </View>
               <View style={[styles.cityNameContainer, { backgroundColor: currentColors.backgroundSecondary }]}>
-                <Text style={[styles.cityName, { color: currentColors.text }]}>
+                <Text style={[styles.cityName, { color: currentColors.text, fontSize: isTablet ? 20 : 17 }]}>
                   {t(city.nameKey)}
                 </Text>
-                <Text style={[styles.attractionCount, { color: currentColors.textSecondary }]}>
+                <Text style={[styles.attractionCount, { color: currentColors.textSecondary, fontSize: isTablet ? 15 : 13 }]}>
                   {city.attractions.length} {t('attractions')}
                 </Text>
               </View>
@@ -224,9 +227,9 @@ export default function CitiesScreen() {
           {/* Modal Header */}
           <View style={[styles.modalHeader, { borderBottomColor: currentColors.separator }]}>
             <Pressable onPress={() => setShowCitySelectorModal(false)} style={styles.backButton}>
-              <IconSymbol name="xmark" color={currentColors.textSecondary} size={24} />
+              <IconSymbol name="xmark" color={currentColors.textSecondary} size={isTablet ? 28 : 24} />
             </Pressable>
-            <Text style={[styles.modalTitle, { color: currentColors.text }]}>
+            <Text style={[styles.modalTitle, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
               {t('selectCity')}
             </Text>
             <View style={styles.placeholder} />
@@ -235,7 +238,7 @@ export default function CitiesScreen() {
           {/* Cities List */}
           <ScrollView 
             style={styles.citiesList}
-            contentContainerStyle={styles.citiesContent}
+            contentContainerStyle={[styles.citiesContent, { paddingHorizontal: isTablet ? 40 : 16 }]}
             showsVerticalScrollIndicator={false}
           >
             {orderedCities.map((city) => (
@@ -253,19 +256,19 @@ export default function CitiesScreen() {
               >
                 <Image
                   source={{ uri: city.imageUrl }}
-                  style={styles.citySelectImage}
+                  style={[styles.citySelectImage, { width: isTablet ? 100 : 80, height: isTablet ? 100 : 80, borderRadius: isTablet ? 16 : 12 }]}
                   resizeMode="cover"
                 />
                 <View style={styles.citySelectInfo}>
-                  <Text style={[styles.citySelectName, { color: currentColors.text }]}>
+                  <Text style={[styles.citySelectName, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
                     {t(city.nameKey)}
                   </Text>
-                  <Text style={[styles.citySelectProvince, { color: currentColors.textSecondary }]}>
+                  <Text style={[styles.citySelectProvince, { color: currentColors.textSecondary, fontSize: isTablet ? 17 : 14 }]}>
                     {t(city.provinceKey)}
                   </Text>
                 </View>
                 {selectedCity.name === city.name && (
-                  <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={28} />
+                  <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={isTablet ? 36 : 28} />
                 )}
               </Pressable>
             ))}
@@ -284,23 +287,23 @@ export default function CitiesScreen() {
           {/* Modal Header */}
           <View style={[styles.modalHeader, { borderBottomColor: currentColors.separator }]}>
             <Pressable onPress={handleCloseModal} style={styles.backButton}>
-              <IconSymbol name="chevron.left" color={currentColors.primary} size={28} />
+              <IconSymbol name="chevron.left" color={currentColors.primary} size={isTablet ? 32 : 28} />
             </Pressable>
-            <Text style={[styles.modalTitle, { color: currentColors.text }]}>
+            <Text style={[styles.modalTitle, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
               {t(selectedCity?.nameKey)}
             </Text>
             <View style={styles.placeholder} />
           </View>
 
           {/* Search Bar */}
-          <View style={styles.searchSection}>
+          <View style={[styles.searchSection, { paddingHorizontal: isTablet ? 40 : 16 }]}>
             <View style={[styles.searchContainer, { 
               backgroundColor: currentColors.backgroundSecondary,
               borderColor: currentColors.border 
             }]}>
-              <IconSymbol name="magnifyingglass" color={currentColors.textSecondary} size={20} />
+              <IconSymbol name="magnifyingglass" color={currentColors.textSecondary} size={isTablet ? 24 : 20} />
               <TextInput
-                style={[styles.searchInput, { color: currentColors.text }]}
+                style={[styles.searchInput, { color: currentColors.text, fontSize: isTablet ? 18 : 16 }]}
                 placeholder={t('searchAttractions')}
                 placeholderTextColor={currentColors.textSecondary}
                 value={searchQuery}
@@ -308,7 +311,7 @@ export default function CitiesScreen() {
               />
               {searchQuery.length > 0 && (
                 <Pressable onPress={() => setSearchQuery('')}>
-                  <IconSymbol name="xmark.circle.fill" color={currentColors.textSecondary} size={20} />
+                  <IconSymbol name="xmark.circle.fill" color={currentColors.textSecondary} size={isTablet ? 24 : 20} />
                 </Pressable>
               )}
             </View>
@@ -317,7 +320,7 @@ export default function CitiesScreen() {
           {/* Attractions List */}
           <ScrollView 
             style={styles.attractionsList}
-            contentContainerStyle={styles.attractionsContent}
+            contentContainerStyle={[styles.attractionsContent, { paddingHorizontal: isTablet ? 40 : 16 }]}
             showsVerticalScrollIndicator={false}
           >
             {filteredAttractions.length > 0 ? (
@@ -327,27 +330,27 @@ export default function CitiesScreen() {
                   style={[styles.attractionCard, { backgroundColor: currentColors.backgroundSecondary }]}
                   onPress={() => console.log('Attraction pressed:', attraction.name)}
                 >
-                  <View style={[styles.attractionIcon, { backgroundColor: currentColors.primary + '15' }]}>
-                    <IconSymbol name="mappin.circle.fill" color={currentColors.primary} size={28} />
+                  <View style={[styles.attractionIcon, { backgroundColor: currentColors.primary + '15', width: isTablet ? 72 : 56, height: isTablet ? 72 : 56, borderRadius: isTablet ? 36 : 28 }]}>
+                    <IconSymbol name="mappin.circle.fill" color={currentColors.primary} size={isTablet ? 36 : 28} />
                   </View>
                   <View style={styles.attractionInfo}>
-                    <Text style={[styles.attractionName, { color: currentColors.text }]}>
+                    <Text style={[styles.attractionName, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
                       {attraction.name}
                     </Text>
-                    <Text style={[styles.attractionCategory, { color: currentColors.textSecondary }]}>
+                    <Text style={[styles.attractionCategory, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
                       {attraction.category}
                     </Text>
-                    <Text style={[styles.attractionDescription, { color: currentColors.textTertiary }]}>
+                    <Text style={[styles.attractionDescription, { color: currentColors.textTertiary, fontSize: isTablet ? 16 : 13 }]}>
                       {attraction.description}
                     </Text>
                   </View>
-                  <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={20} />
+                  <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={isTablet ? 24 : 20} />
                 </Pressable>
               ))
             ) : (
               <View style={styles.noResults}>
-                <IconSymbol name="magnifyingglass" color={currentColors.textTertiary} size={48} />
-                <Text style={[styles.noResultsText, { color: currentColors.textSecondary }]}>
+                <IconSymbol name="magnifyingglass" color={currentColors.textTertiary} size={isTablet ? 64 : 48} />
+                <Text style={[styles.noResultsText, { color: currentColors.textSecondary, fontSize: isTablet ? 20 : 16 }]}>
                   {searchQuery ? t('noAttractionsFound') : t('noAttractionsAvailable')}
                 </Text>
               </View>
@@ -364,7 +367,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: Platform.OS === 'android' ? 100 : 20,
   },
@@ -372,10 +374,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: isTablet ? 32 : 24,
   },
   title: {
-    fontSize: 34,
     fontWeight: '700',
     letterSpacing: -1,
   },
@@ -386,10 +387,10 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 16,
+    gap: isTablet ? 20 : 16,
   },
   cityCard: {
-    borderRadius: 16,
+    borderRadius: isTablet ? 20 : 16,
     overflow: 'hidden',
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
     elevation: 3,
@@ -411,17 +412,15 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   cityNameContainer: {
-    padding: 12,
+    padding: isTablet ? 16 : 12,
   },
   cityName: {
-    fontSize: 17,
     fontWeight: '600',
     textAlign: 'center',
     letterSpacing: -0.3,
     marginBottom: 2,
   },
   attractionCount: {
-    fontSize: 13,
     fontWeight: '400',
     textAlign: 'center',
   },
@@ -432,8 +431,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: isTablet ? 24 : 16,
+    paddingVertical: isTablet ? 16 : 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backButton: {
@@ -441,7 +440,6 @@ const styles = StyleSheet.create({
     width: 40,
   },
   modalTitle: {
-    fontSize: 20,
     fontWeight: '700',
     letterSpacing: -0.5,
   },
@@ -452,77 +450,64 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   citiesContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: isTablet ? 24 : 16,
     paddingBottom: 20,
   },
   citySelectCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 12,
-    gap: 12,
+    padding: isTablet ? 20 : 12,
+    borderRadius: isTablet ? 20 : 16,
+    marginBottom: isTablet ? 16 : 12,
+    gap: isTablet ? 16 : 12,
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
     elevation: 2,
   },
-  citySelectImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-  },
+  citySelectImage: {},
   citySelectInfo: {
     flex: 1,
   },
   citySelectName: {
-    fontSize: 20,
     fontWeight: '700',
     marginBottom: 4,
     letterSpacing: -0.5,
   },
   citySelectProvince: {
-    fontSize: 14,
     fontWeight: '500',
   },
   searchSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: isTablet ? 16 : 12,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: isTablet ? 16 : 12,
     borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 8,
+    paddingHorizontal: isTablet ? 16 : 12,
+    paddingVertical: isTablet ? 14 : 10,
+    gap: isTablet ? 12 : 8,
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
     fontWeight: '400',
   },
   attractionsList: {
     flex: 1,
   },
   attractionsContent: {
-    paddingHorizontal: 16,
     paddingBottom: 20,
   },
   attractionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
-    gap: 12,
+    padding: isTablet ? 20 : 16,
+    borderRadius: isTablet ? 20 : 16,
+    marginBottom: isTablet ? 16 : 12,
+    gap: isTablet ? 16 : 12,
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
     elevation: 2,
   },
   attractionIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -530,28 +515,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   attractionName: {
-    fontSize: 18,
     fontWeight: '600',
     marginBottom: 4,
     letterSpacing: -0.3,
   },
   attractionCategory: {
-    fontSize: 13,
     fontWeight: '500',
     marginBottom: 2,
   },
   attractionDescription: {
-    fontSize: 13,
     fontWeight: '400',
-    lineHeight: 18,
+    lineHeight: isTablet ? 22 : 18,
   },
   noResults: {
-    paddingVertical: 60,
+    paddingVertical: isTablet ? 80 : 60,
     alignItems: 'center',
-    gap: 16,
+    gap: isTablet ? 20 : 16,
   },
   noResultsText: {
-    fontSize: 16,
     fontWeight: '500',
   },
 });

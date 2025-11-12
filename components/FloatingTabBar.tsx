@@ -41,13 +41,14 @@ interface FloatingTabBarProps {
   bottomMargin?: number;
 }
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const isTablet = screenWidth >= 768;
 
 export default function FloatingTabBar({
   tabs,
-  containerWidth = screenWidth - 32,
+  containerWidth = isTablet ? Math.min(screenWidth - 64, 600) : screenWidth - 32,
   borderRadius = 28,
-  bottomMargin = 16,
+  bottomMargin = isTablet ? 24 : 16,
 }: FloatingTabBarProps) {
   const theme = useTheme();
   const { isDark } = useThemeMode();
@@ -137,7 +138,7 @@ export default function FloatingTabBar({
 
   const animatedIndicatorStyle = useAnimatedStyle(() => {
     // Container padding on both sides
-    const containerPadding = 8;
+    const containerPadding = isTablet ? 12 : 8;
     
     // Total available width for tabs
     const availableWidth = containerWidth - (containerPadding * 2);
@@ -146,7 +147,7 @@ export default function FloatingTabBar({
     const tabWidth = availableWidth / tabs.length;
     
     // Padding inside each tab slot for the indicator
-    const indicatorPadding = 4;
+    const indicatorPadding = isTablet ? 6 : 4;
     
     // Actual indicator width (tab width minus padding on both sides)
     const indicatorWidth = tabWidth - (indicatorPadding * 2);
@@ -169,11 +170,11 @@ export default function FloatingTabBar({
         },
       ],
       width: indicatorWidth,
-      opacity: withTiming(1, { duration: 200 }),
+      opacity: 1,
     };
   });
 
-  const tabWidth = (containerWidth - 16) / tabs.length;
+  const tabWidth = (containerWidth - (isTablet ? 24 : 16)) / tabs.length;
 
   return (
     <SafeAreaView
@@ -200,6 +201,8 @@ export default function FloatingTabBar({
             borderColor: isDark 
               ? 'rgba(84, 84, 88, 0.28)' 
               : 'rgba(0, 0, 0, 0.06)',
+            paddingVertical: isTablet ? 12 : 8,
+            paddingHorizontal: isTablet ? 12 : 8,
           },
         ]}
       >
@@ -215,6 +218,8 @@ export default function FloatingTabBar({
               boxShadow: isDark
                 ? '0px 2px 8px rgba(0, 0, 0, 0.4)'
                 : '0px 2px 8px rgba(0, 0, 0, 0.12)',
+              height: isTablet ? '86%' : '84%',
+              top: isTablet ? '7%' : '8%',
             },
           ]}
         />
@@ -323,6 +328,9 @@ const TabButton = React.memo(({
       ? 'rgba(235, 235, 245, 0.55)' 
       : 'rgba(60, 60, 67, 0.55)';
 
+  const iconSize = isTablet ? 28 : 24;
+  const fontSize = isTablet ? 11 : 10;
+
   return (
     <Pressable
       style={[styles.tab, { width: tabWidth }]}
@@ -344,7 +352,7 @@ const TabButton = React.memo(({
         <Animated.View style={[styles.iconContainer, animatedIconStyle]}>
           <IconSymbol
             name={tab.icon as any}
-            size={24}
+            size={iconSize}
             color={iconColor}
           />
         </Animated.View>
@@ -355,6 +363,7 @@ const TabButton = React.memo(({
             {
               color: iconColor,
               fontWeight: isActive ? '600' : '500',
+              fontSize: fontSize,
             },
           ]}
         >
@@ -378,8 +387,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingVertical: 8,
-    paddingHorizontal: 8,
     borderWidth: StyleSheet.hairlineWidth,
     boxShadow: Platform.select({
       ios: '0px 8px 24px rgba(0, 0, 0, 0.12)',
@@ -391,21 +398,19 @@ const styles = StyleSheet.create({
   },
   indicator: {
     position: 'absolute',
-    height: '84%',
     borderRadius: 20,
-    top: '8%',
     elevation: 2,
   },
   tab: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
+    paddingVertical: isTablet ? 10 : 8,
     zIndex: 1,
   },
   tabContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 3,
+    gap: isTablet ? 4 : 3,
   },
   iconContainer: {
     alignItems: 'center',
@@ -413,7 +418,6 @@ const styles = StyleSheet.create({
     marginBottom: 1,
   },
   label: {
-    fontSize: 10,
     letterSpacing: -0.08,
     textAlign: 'center',
   },
