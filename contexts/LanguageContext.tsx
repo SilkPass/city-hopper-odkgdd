@@ -267,7 +267,7 @@ const translations = {
     orderMedicineOnline: 'Заказать лекарства онлайн',
   },
   kk: {
-    welcome: 'Қош келдіңіз',
+    welcome: 'Пекинде / қош келдіңіз',
     searchAttractions: 'Көрікті жерлерді іздеу...',
     selectCity: 'Қаланы таңдау',
     closestToYou: 'Сізге ең жақын',
@@ -349,7 +349,7 @@ const translations = {
     orderMedicineOnline: 'Дәріні онлайн тапсырыс беру',
   },
   uz: {
-    welcome: 'Xush kelibsiz',
+    welcome: 'Pekinda xush / kelibsiz',
     searchAttractions: 'Diqqatga sazovor joylarni qidirish...',
     selectCity: 'Shaharni tanlang',
     closestToYou: 'Sizga eng yaqin',
