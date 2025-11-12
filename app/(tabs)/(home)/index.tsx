@@ -268,7 +268,7 @@ export default function HomeScreen() {
                     </Text>
                     <View style={styles.middleRow}>
                       <Text style={[styles.largeText, { color: currentColors.text }]}>
-                        {selectedCity ? t(selectedCity.nameKey) : 'Хот'}{t(`${selectedCity?.nameKey}Suffix`)}
+                        {selectedCity ? t(`${selectedCity.nameKey}Dative`) : 'Хотод'}
                       </Text>
                       <IconSymbol 
                         name="chevron.down" 
@@ -286,7 +286,7 @@ export default function HomeScreen() {
                   <>
                     <View style={styles.middleRow}>
                       <Text style={[styles.largeText, { color: currentColors.text }]}>
-                        {selectedCity ? t(selectedCity.nameKey) : (language === 'kk' ? 'Қалада' : 'Shaharda')}
+                        {selectedCity ? t(`${selectedCity.nameKey}Dative`) : (language === 'kk' ? 'Қалада' : 'Shaharda')}
                       </Text>
                       <IconSymbol 
                         name="chevron.down" 
