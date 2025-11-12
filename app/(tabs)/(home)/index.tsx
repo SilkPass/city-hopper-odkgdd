@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Stack } from "expo-router";
 import { 
   ScrollView, 
@@ -38,11 +38,11 @@ interface WeatherData {
 
 const CITIES: City[] = [
   { name: "Beijing", nameKey: "beijing", latitude: 39.9042, longitude: 116.4074 },
-  { name: "Hohhot", nameKey: "hohhot", latitude: 40.8414, longitude: 111.7519 },
   { name: "Shanghai", nameKey: "shanghai", latitude: 31.2304, longitude: 121.4737 },
-  { name: "Ordos", nameKey: "ordos", latitude: 39.6086, longitude: 109.7810 },
   { name: "Hong Kong", nameKey: "hongKong", latitude: 22.3193, longitude: 114.1694 },
   { name: "Macau", nameKey: "macau", latitude: 22.1987, longitude: 113.5439 },
+  { name: "Hohhot", nameKey: "hohhot", latitude: 40.8414, longitude: 111.7519 },
+  { name: "Ordos", nameKey: "ordos", latitude: 39.6086, longitude: 109.7810 },
 ];
 
 export default function HomeScreen() {
@@ -58,6 +58,24 @@ export default function HomeScreen() {
   const [showCitySelector, setShowCitySelector] = useState(false);
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
+
+  // Reorder cities based on language
+  const orderedCities = useMemo(() => {
+    if (language === 'mn') {
+      // Mongolian order: Beijing, Hohhot, Ordos, Shanghai, Hong Kong, Macau
+      return [
+        CITIES.find(c => c.nameKey === 'beijing')!,
+        CITIES.find(c => c.nameKey === 'hohhot')!,
+        CITIES.find(c => c.nameKey === 'ordos')!,
+        CITIES.find(c => c.nameKey === 'shanghai')!,
+        CITIES.find(c => c.nameKey === 'hongKong')!,
+        CITIES.find(c => c.nameKey === 'macau')!,
+      ];
+    } else {
+      // Default order: Beijing, Shanghai, Hong Kong, Macau, Hohhot, Ordos
+      return CITIES;
+    }
+  }, [language]);
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371;
@@ -129,7 +147,7 @@ export default function HomeScreen() {
       console.log('User location:', location);
       setUserLocation(location);
       
-      const citiesWithDistance = CITIES.map(city => ({
+      const citiesWithDistance = orderedCities.map(city => ({
         ...city,
         distance: calculateDistance(
           location.coords.latitude,
@@ -146,10 +164,10 @@ export default function HomeScreen() {
     } catch (error) {
       console.error('Error getting location:', error);
       setLoading(false);
-      setSelectedCity(CITIES[0]);
-      fetchWeather(CITIES[0]);
+      setSelectedCity(orderedCities[0]);
+      fetchWeather(orderedCities[0]);
     }
-  }, [fetchWeather]);
+  }, [fetchWeather, orderedCities]);
 
   const requestLocationPermission = useCallback(async () => {
     try {
@@ -163,16 +181,16 @@ export default function HomeScreen() {
       } else {
         console.log('Location permission denied');
         setLoading(false);
-        setSelectedCity(CITIES[0]);
-        fetchWeather(CITIES[0]);
+        setSelectedCity(orderedCities[0]);
+        fetchWeather(orderedCities[0]);
       }
     } catch (error) {
       console.error('Error requesting location permission:', error);
       setLoading(false);
-      setSelectedCity(CITIES[0]);
-      fetchWeather(CITIES[0]);
+      setSelectedCity(orderedCities[0]);
+      fetchWeather(orderedCities[0]);
     }
-  }, [getUserLocation, fetchWeather]);
+  }, [getUserLocation, fetchWeather, orderedCities]);
 
   useEffect(() => {
     requestLocationPermission();
@@ -505,7 +523,7 @@ export default function HomeScreen() {
             contentContainerStyle={styles.citiesContent}
             showsVerticalScrollIndicator={false}
           >
-            {CITIES.map((city) => (
+            {orderedCities.map((city) => (
               <Pressable
                 key={city.name}
                 style={[

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { colors, darkColors } from '@/styles/commonStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@react-navigation/native';
@@ -47,16 +47,6 @@ const CITIES: City[] = [
     ],
   },
   {
-    name: 'Hohhot',
-    nameKey: 'hohhot',
-    imageUrl: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=800&q=80',
-    attractions: [
-      { id: '5', name: 'Dazhao Temple', category: 'Cultural Landmark', description: 'Historic Buddhist temple' },
-      { id: '6', name: 'Inner Mongolia Museum', category: 'Cultural Landmark', description: 'Regional history museum' },
-      { id: '7', name: 'Zhaojun Tomb', category: 'Historical Site', description: 'Ancient burial site' },
-    ],
-  },
-  {
     name: 'Shanghai',
     nameKey: 'shanghai',
     imageUrl: 'https://images.unsplash.com/photo-1474181487882-5abf3f0ba6c2?w=800&q=80',
@@ -64,16 +54,6 @@ const CITIES: City[] = [
       { id: '8', name: 'The Bund', category: 'Scenic Spot', description: 'Waterfront promenade' },
       { id: '9', name: 'Yu Garden', category: 'Cultural Landmark', description: 'Classical Chinese garden' },
       { id: '10', name: 'Oriental Pearl Tower', category: 'Modern Attraction', description: 'Iconic TV tower' },
-    ],
-  },
-  {
-    name: 'Ordos',
-    nameKey: 'ordos',
-    imageUrl: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80',
-    attractions: [
-      { id: '11', name: 'Genghis Khan Mausoleum', category: 'Historical Site', description: 'Memorial complex' },
-      { id: '12', name: 'Resonant Sand Gorge', category: 'Scenic Spot', description: 'Desert landscape' },
-      { id: '13', name: 'Ordos Museum', category: 'Cultural Landmark', description: 'Modern architecture museum' },
     ],
   },
   {
@@ -96,6 +76,26 @@ const CITIES: City[] = [
       { id: '19', name: 'A-Ma Temple', category: 'Cultural Landmark', description: 'Ancient Chinese temple' },
     ],
   },
+  {
+    name: 'Hohhot',
+    nameKey: 'hohhot',
+    imageUrl: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=800&q=80',
+    attractions: [
+      { id: '5', name: 'Dazhao Temple', category: 'Cultural Landmark', description: 'Historic Buddhist temple' },
+      { id: '6', name: 'Inner Mongolia Museum', category: 'Cultural Landmark', description: 'Regional history museum' },
+      { id: '7', name: 'Zhaojun Tomb', category: 'Historical Site', description: 'Ancient burial site' },
+    ],
+  },
+  {
+    name: 'Ordos',
+    nameKey: 'ordos',
+    imageUrl: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80',
+    attractions: [
+      { id: '11', name: 'Genghis Khan Mausoleum', category: 'Historical Site', description: 'Memorial complex' },
+      { id: '12', name: 'Resonant Sand Gorge', category: 'Scenic Spot', description: 'Desert landscape' },
+      { id: '13', name: 'Ordos Museum', category: 'Cultural Landmark', description: 'Modern architecture museum' },
+    ],
+  },
 ];
 
 const { width } = Dimensions.get('window');
@@ -111,6 +111,24 @@ export default function CitiesScreen() {
   const [showCityModal, setShowCityModal] = useState(false);
   const [showCitySelectorModal, setShowCitySelectorModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Reorder cities based on language
+  const orderedCities = useMemo(() => {
+    if (language === 'mn') {
+      // Mongolian order: Beijing, Hohhot, Ordos, Shanghai, Hong Kong, Macau
+      return [
+        CITIES.find(c => c.nameKey === 'beijing')!,
+        CITIES.find(c => c.nameKey === 'hohhot')!,
+        CITIES.find(c => c.nameKey === 'ordos')!,
+        CITIES.find(c => c.nameKey === 'shanghai')!,
+        CITIES.find(c => c.nameKey === 'hongKong')!,
+        CITIES.find(c => c.nameKey === 'macau')!,
+      ];
+    } else {
+      // Default order: Beijing, Shanghai, Hong Kong, Macau, Hohhot, Ordos
+      return CITIES;
+    }
+  }, [language]);
 
   const handleCityPress = (city: City) => {
     console.log('City pressed:', city.name);
@@ -161,7 +179,7 @@ export default function CitiesScreen() {
         </View>
         
         <View style={styles.grid}>
-          {CITIES.map((city) => (
+          {orderedCities.map((city) => (
             <Pressable
               key={city.name}
               style={[styles.cityCard, { width: cardWidth }]}
@@ -213,7 +231,7 @@ export default function CitiesScreen() {
             contentContainerStyle={styles.citiesContent}
             showsVerticalScrollIndicator={false}
           >
-            {CITIES.map((city) => (
+            {orderedCities.map((city) => (
               <Pressable
                 key={city.name}
                 style={[
