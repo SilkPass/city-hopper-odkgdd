@@ -25,6 +25,7 @@ interface City {
   nameKey: string;
   imageUrl: string;
   attractions: Attraction[];
+  provinceKey: string;
 }
 
 interface Attraction {
@@ -38,6 +39,7 @@ const CITIES: City[] = [
   {
     name: 'Beijing',
     nameKey: 'beijing',
+    provinceKey: 'beijingProvince',
     imageUrl: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80',
     attractions: [
       { id: '1', name: 'Forbidden City', category: 'Historical Site', description: 'Imperial palace complex' },
@@ -49,6 +51,7 @@ const CITIES: City[] = [
   {
     name: 'Shanghai',
     nameKey: 'shanghai',
+    provinceKey: 'shanghaiProvince',
     imageUrl: 'https://images.unsplash.com/photo-1474181487882-5abf3f0ba6c2?w=800&q=80',
     attractions: [
       { id: '8', name: 'The Bund', category: 'Scenic Spot', description: 'Waterfront promenade' },
@@ -59,6 +62,7 @@ const CITIES: City[] = [
   {
     name: 'Hong Kong',
     nameKey: 'hongKong',
+    provinceKey: 'hongKongProvince',
     imageUrl: 'https://images.unsplash.com/photo-1536599018102-9f803c140fc1?w=800&q=80',
     attractions: [
       { id: '14', name: 'Victoria Harbour', category: 'Scenic Spot', description: 'Natural harbor' },
@@ -67,8 +71,9 @@ const CITIES: City[] = [
     ],
   },
   {
-    name: 'Macau',
-    nameKey: 'macau',
+    name: 'Macao',
+    nameKey: 'macao',
+    provinceKey: 'macaoProvince',
     imageUrl: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=80',
     attractions: [
       { id: '17', name: 'Ruins of St. Paul', category: 'Historical Site', description: 'Historic church facade' },
@@ -79,6 +84,7 @@ const CITIES: City[] = [
   {
     name: 'Hohhot',
     nameKey: 'hohhot',
+    provinceKey: 'hohhotProvince',
     imageUrl: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=800&q=80',
     attractions: [
       { id: '5', name: 'Dazhao Temple', category: 'Cultural Landmark', description: 'Historic Buddhist temple' },
@@ -89,6 +95,7 @@ const CITIES: City[] = [
   {
     name: 'Ordos',
     nameKey: 'ordos',
+    provinceKey: 'ordosProvince',
     imageUrl: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80',
     attractions: [
       { id: '11', name: 'Genghis Khan Mausoleum', category: 'Historical Site', description: 'Memorial complex' },
@@ -115,17 +122,17 @@ export default function CitiesScreen() {
   // Reorder cities based on language
   const orderedCities = useMemo(() => {
     if (language === 'mn') {
-      // Mongolian order: Beijing, Hohhot, Ordos, Shanghai, Hong Kong, Macau
+      // Mongolian order: Beijing, Hohhot, Ordos, Shanghai, Hong Kong, Macao
       return [
         CITIES.find(c => c.nameKey === 'beijing')!,
         CITIES.find(c => c.nameKey === 'hohhot')!,
         CITIES.find(c => c.nameKey === 'ordos')!,
         CITIES.find(c => c.nameKey === 'shanghai')!,
         CITIES.find(c => c.nameKey === 'hongKong')!,
-        CITIES.find(c => c.nameKey === 'macau')!,
+        CITIES.find(c => c.nameKey === 'macao')!,
       ];
     } else {
-      // Default order: Beijing, Shanghai, Hong Kong, Macau, Hohhot, Ordos
+      // Default order: Beijing, Shanghai, Hong Kong, Macao, Hohhot, Ordos
       return CITIES;
     }
   }, [language]);
@@ -253,8 +260,8 @@ export default function CitiesScreen() {
                   <Text style={[styles.citySelectName, { color: currentColors.text }]}>
                     {t(city.nameKey)}
                   </Text>
-                  <Text style={[styles.citySelectAttractions, { color: currentColors.textSecondary }]}>
-                    {city.attractions.length} {t('attractions')}
+                  <Text style={[styles.citySelectProvince, { color: currentColors.textSecondary }]}>
+                    {t(city.provinceKey)}
                   </Text>
                 </View>
                 {selectedCity.name === city.name && (
@@ -473,7 +480,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     letterSpacing: -0.5,
   },
-  citySelectAttractions: {
+  citySelectProvince: {
     fontSize: 14,
     fontWeight: '500',
   },

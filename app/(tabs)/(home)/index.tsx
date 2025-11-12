@@ -28,6 +28,7 @@ interface City {
   nameKey: string;
   latitude: number;
   longitude: number;
+  provinceKey: string;
 }
 
 interface WeatherData {
@@ -37,12 +38,12 @@ interface WeatherData {
 }
 
 const CITIES: City[] = [
-  { name: "Beijing", nameKey: "beijing", latitude: 39.9042, longitude: 116.4074 },
-  { name: "Shanghai", nameKey: "shanghai", latitude: 31.2304, longitude: 121.4737 },
-  { name: "Hong Kong", nameKey: "hongKong", latitude: 22.3193, longitude: 114.1694 },
-  { name: "Macau", nameKey: "macau", latitude: 22.1987, longitude: 113.5439 },
-  { name: "Hohhot", nameKey: "hohhot", latitude: 40.8414, longitude: 111.7519 },
-  { name: "Ordos", nameKey: "ordos", latitude: 39.6086, longitude: 109.7810 },
+  { name: "Beijing", nameKey: "beijing", latitude: 39.9042, longitude: 116.4074, provinceKey: "beijingProvince" },
+  { name: "Shanghai", nameKey: "shanghai", latitude: 31.2304, longitude: 121.4737, provinceKey: "shanghaiProvince" },
+  { name: "Hong Kong", nameKey: "hongKong", latitude: 22.3193, longitude: 114.1694, provinceKey: "hongKongProvince" },
+  { name: "Macao", nameKey: "macao", latitude: 22.1987, longitude: 113.5439, provinceKey: "macaoProvince" },
+  { name: "Hohhot", nameKey: "hohhot", latitude: 40.8414, longitude: 111.7519, provinceKey: "hohhotProvince" },
+  { name: "Ordos", nameKey: "ordos", latitude: 39.6086, longitude: 109.7810, provinceKey: "ordosProvince" },
 ];
 
 export default function HomeScreen() {
@@ -62,17 +63,17 @@ export default function HomeScreen() {
   // Reorder cities based on language
   const orderedCities = useMemo(() => {
     if (language === 'mn') {
-      // Mongolian order: Beijing, Hohhot, Ordos, Shanghai, Hong Kong, Macau
+      // Mongolian order: Beijing, Hohhot, Ordos, Shanghai, Hong Kong, Macao
       return [
         CITIES.find(c => c.nameKey === 'beijing')!,
         CITIES.find(c => c.nameKey === 'hohhot')!,
         CITIES.find(c => c.nameKey === 'ordos')!,
         CITIES.find(c => c.nameKey === 'shanghai')!,
         CITIES.find(c => c.nameKey === 'hongKong')!,
-        CITIES.find(c => c.nameKey === 'macau')!,
+        CITIES.find(c => c.nameKey === 'macao')!,
       ];
     } else {
-      // Default order: Beijing, Shanghai, Hong Kong, Macau, Hohhot, Ordos
+      // Default order: Beijing, Shanghai, Hong Kong, Macao, Hohhot, Ordos
       return CITIES;
     }
   }, [language]);
@@ -357,7 +358,7 @@ export default function HomeScreen() {
               </Text>
               {selectedCity && (
                 <Text style={[styles.mapPlaceholderSubtext, { color: currentColors.textTertiary }]}>
-                  {selectedCity.latitude.toFixed(4)}, {selectedCity.longitude.toFixed(4)}
+                  {t(selectedCity.provinceKey)}
                 </Text>
               )}
             </View>
@@ -543,8 +544,8 @@ export default function HomeScreen() {
                   <Text style={[styles.citySelectName, { color: currentColors.text }]}>
                     {t(city.nameKey)}
                   </Text>
-                  <Text style={[styles.citySelectCoords, { color: currentColors.textSecondary }]}>
-                    {city.latitude.toFixed(2)}°, {city.longitude.toFixed(2)}°
+                  <Text style={[styles.citySelectProvince, { color: currentColors.textSecondary }]}>
+                    {t(city.provinceKey)}
                   </Text>
                 </View>
                 {selectedCity?.name === city.name && (
@@ -786,7 +787,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     letterSpacing: -0.5,
   },
-  citySelectCoords: {
+  citySelectProvince: {
     fontSize: 14,
     fontWeight: '500',
   },

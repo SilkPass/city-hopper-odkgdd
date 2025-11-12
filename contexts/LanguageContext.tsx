@@ -9,6 +9,10 @@ interface LanguageContextType {
   setLanguage: (lang: SupportedLanguage) => void;
 }
 
+interface LanguageProviderProps {
+  children: ReactNode;
+}
+
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const useLanguage = () => {
@@ -108,6 +112,12 @@ const translations = {
     consultDoctorOnline: 'Consult with doctors online',
     buyMedicine: 'Buy Medicine',
     orderMedicineOnline: 'Order medicine online',
+    beijingProvince: 'Beijing',
+    shanghaiProvince: 'Shanghai',
+    hongKongProvince: 'Hong Kong SAR',
+    macaoProvince: 'Macao SAR',
+    hohhotProvince: 'Inner Mongolia',
+    ordosProvince: 'Inner Mongolia',
   },
   mn: {
     welcome: 'ТА',
@@ -197,6 +207,12 @@ const translations = {
     consultDoctorOnline: 'Эмч нартай онлайнаар зөвлөлдөх',
     buyMedicine: 'Эм худалдаж авах',
     orderMedicineOnline: 'Эмийг онлайнаар захиалах',
+    beijingProvince: 'Бээжин',
+    shanghaiProvince: 'Шанхай',
+    hongKongProvince: 'Хонконг ТЗОА',
+    macaoProvince: 'Макао ТЗОА',
+    hohhotProvince: 'Өвөр Монгол',
+    ordosProvince: 'Өвөр Монгол',
   },
   ru: {
     welcome: 'Добро пожаловать в',
@@ -286,6 +302,12 @@ const translations = {
     consultDoctorOnline: 'Консультация с врачами онлайн',
     buyMedicine: 'Купить лекарства',
     orderMedicineOnline: 'Заказать лекарства онлайн',
+    beijingProvince: 'Пекин',
+    shanghaiProvince: 'Шанхай',
+    hongKongProvince: 'Гонконг САР',
+    macaoProvince: 'Макао САР',
+    hohhotProvince: 'Внутренняя Монголия',
+    ordosProvince: 'Внутренняя Монголия',
   },
   kk: {
     welcome: '',
@@ -347,7 +369,7 @@ const translations = {
     noAttractionsAvailable: 'Көрікті жерлер қолжетімді емес',
     beijing: 'Бейжің',
     shanghai: 'Шанхай',
-    hongKong: 'Гонгконг',
+    hongKong: 'Гонконг',
     hohhot: 'Хух-Хото',
     ordos: 'Ордос',
     macao: 'Макао',
@@ -375,6 +397,12 @@ const translations = {
     consultDoctorOnline: 'Дәрігерлермен онлайн кеңес алу',
     buyMedicine: 'Дәрі сатып алу',
     orderMedicineOnline: 'Дәріні онлайн тапсырыс беру',
+    beijingProvince: 'Бейжің',
+    shanghaiProvince: 'Шанхай',
+    hongKongProvince: 'Гонконг АӘА',
+    macaoProvince: 'Макао АӘА',
+    hohhotProvince: 'Ішкі Моңғолия',
+    ordosProvince: 'Ішкі Моңғолия',
   },
   uz: {
     welcome: '',
@@ -464,12 +492,14 @@ const translations = {
     consultDoctorOnline: 'Shifokorlar bilan onlayn maslahatlashish',
     buyMedicine: 'Dori sotib olish',
     orderMedicineOnline: 'Dorini onlayn buyurtma qilish',
+    beijingProvince: 'Pekin',
+    shanghaiProvince: 'Shanxay',
+    hongKongProvince: 'Gonkong MAH',
+    macaoProvince: 'Makao MAH',
+    hohhotProvince: 'Ichki Moʻgʻuliston',
+    ordosProvince: 'Ichki Moʻgʻuliston',
   },
 };
-
-interface LanguageProviderProps {
-  children: ReactNode;
-}
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
   const [language, setLanguage] = useState<SupportedLanguage>('en');
