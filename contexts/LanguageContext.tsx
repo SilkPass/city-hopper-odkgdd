@@ -1,5 +1,6 @@
 
-import React, { createContext, useContext, ReactNode, useState } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { I18nManager } from 'react-native';
 
 type SupportedLanguage = 'en' | 'mn' | 'ru' | 'kk' | 'uz' | 'uk' | 'fa';
 
@@ -7,6 +8,7 @@ interface LanguageContextType {
   t: (key: string) => string;
   language: SupportedLanguage;
   setLanguage: (lang: SupportedLanguage) => void;
+  isRTL: boolean;
 }
 
 interface LanguageProviderProps {
@@ -756,13 +758,32 @@ const translations = {
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
   const [language, setLanguage] = useState<SupportedLanguage>('en');
+  const [isRTL, setIsRTL] = useState(false);
+
+  useEffect(() => {
+    // Check if the selected language is RTL
+    const rtlLanguages: SupportedLanguage[] = ['fa'];
+    const shouldBeRTL = rtlLanguages.includes(language);
+    
+    // Only update if there's a change to avoid unnecessary re-renders
+    if (shouldBeRTL !== isRTL) {
+      setIsRTL(shouldBeRTL);
+      
+      // Force RTL layout for the entire app
+      if (I18nManager.isRTL !== shouldBeRTL) {
+        I18nManager.forceRTL(shouldBeRTL);
+        // Note: On native platforms, this requires an app restart to take full effect
+        console.log(`RTL mode ${shouldBeRTL ? 'enabled' : 'disabled'} for language: ${language}`);
+      }
+    }
+  }, [language, isRTL]);
 
   const t = (key: string): string => {
     return translations[language][key as keyof typeof translations['en']] || key;
   };
 
   return (
-    <LanguageContext.Provider value={{ t, language, setLanguage }}>
+    <LanguageContext.Provider value={{ t, language, setLanguage, isRTL }}>
       {children}
     </LanguageContext.Provider>
   );
