@@ -237,28 +237,50 @@ export default function HomeScreen() {
         {/* Header with City Selector and Weather */}
         <View style={styles.headerContainer}>
           <View style={styles.headerLeft}>
-            {language === 'mn' ? (
+            {(language === 'mn' || language === 'kk' || language === 'uz') ? (
               <Pressable 
-                style={styles.mongolianTitleContainer}
+                style={styles.multilineTitleContainer}
                 onPress={() => setShowCitySelector(true)}
               >
-                <Text style={[styles.mongolianSmallText, { color: currentColors.textSecondary }]}>
-                  ТА
-                </Text>
-                <View style={styles.mongolianMiddleRow}>
-                  <Text style={[styles.mongolianLargeText, { color: currentColors.text }]}>
-                    {selectedCity ? t(selectedCity.nameKey) : 'Хот'}д
-                  </Text>
-                  <IconSymbol 
-                    name="chevron.down" 
-                    color={currentColors.primary} 
-                    size={24} 
-                    style={styles.arrowIcon}
-                  />
-                </View>
-                <Text style={[styles.mongolianSmallText, { color: currentColors.textSecondary }]}>
-                  ТАВТАЙ МОРИЛНО УУ
-                </Text>
+                {language === 'mn' && (
+                  <>
+                    <Text style={[styles.smallText, { color: currentColors.textSecondary }]}>
+                      {t('welcome')}
+                    </Text>
+                    <View style={styles.middleRow}>
+                      <Text style={[styles.largeText, { color: currentColors.text }]}>
+                        {selectedCity ? t(selectedCity.nameKey) : 'Хот'}{t(`${selectedCity?.nameKey}Suffix`)}
+                      </Text>
+                      <IconSymbol 
+                        name="chevron.down" 
+                        color={currentColors.primary} 
+                        size={24} 
+                        style={styles.arrowIcon}
+                      />
+                    </View>
+                    <Text style={[styles.smallText, { color: currentColors.textSecondary }]}>
+                      {t('welcomeSmall')}
+                    </Text>
+                  </>
+                )}
+                {(language === 'kk' || language === 'uz') && (
+                  <>
+                    <View style={styles.middleRow}>
+                      <Text style={[styles.largeText, { color: currentColors.text }]}>
+                        {selectedCity ? t(selectedCity.nameKey) : (language === 'kk' ? 'Қалада' : 'Shaharda')}
+                      </Text>
+                      <IconSymbol 
+                        name="chevron.down" 
+                        color={currentColors.primary} 
+                        size={24} 
+                        style={styles.arrowIcon}
+                      />
+                    </View>
+                    <Text style={[styles.smallText, { color: currentColors.textSecondary }]}>
+                      {t('welcomeSmall')}
+                    </Text>
+                  </>
+                )}
               </Pressable>
             ) : (
               <>
@@ -556,21 +578,21 @@ const styles = StyleSheet.create({
   chevronIcon: {
     marginTop: 4,
   },
-  mongolianTitleContainer: {
+  multilineTitleContainer: {
     alignItems: 'flex-start',
   },
-  mongolianSmallText: {
+  smallText: {
     fontSize: 16,
     fontWeight: '500',
     letterSpacing: -0.3,
     marginBottom: 2,
   },
-  mongolianMiddleRow: {
+  middleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 2,
   },
-  mongolianLargeText: {
+  largeText: {
     fontSize: 34,
     fontWeight: '700',
     letterSpacing: -0.8,
