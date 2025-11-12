@@ -48,7 +48,7 @@ const CITIES: City[] = [
 export default function HomeScreen() {
   const theme = useTheme();
   const { isDark } = useThemeMode();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const currentColors = isDark ? darkColors : colors;
   
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
@@ -237,23 +237,50 @@ export default function HomeScreen() {
         {/* Header with City Selector and Weather */}
         <View style={styles.headerContainer}>
           <View style={styles.headerLeft}>
-            <Text style={[styles.greeting, { color: currentColors.textSecondary }]}>
-              {t('welcome')}
-            </Text>
-            <Pressable 
-              style={styles.citySelector}
-              onPress={() => setShowCitySelector(true)}
-            >
-              <Text style={[styles.title, { color: currentColors.text }]}>
-                {selectedCity ? t(selectedCity.nameKey) : 'Your City'}
-              </Text>
-              <IconSymbol 
-                name="chevron.down" 
-                color={currentColors.primary} 
-                size={28} 
-                style={styles.chevronIcon}
-              />
-            </Pressable>
+            {language === 'mn' ? (
+              <Pressable 
+                style={styles.mongolianTitleContainer}
+                onPress={() => setShowCitySelector(true)}
+              >
+                <Text style={[styles.mongolianSmallText, { color: currentColors.textSecondary }]}>
+                  ТА
+                </Text>
+                <View style={styles.mongolianMiddleRow}>
+                  <Text style={[styles.mongolianLargeText, { color: currentColors.text }]}>
+                    {selectedCity ? t(selectedCity.nameKey) : 'Хот'}д
+                  </Text>
+                  <IconSymbol 
+                    name="chevron.down" 
+                    color={currentColors.primary} 
+                    size={24} 
+                    style={styles.arrowIcon}
+                  />
+                </View>
+                <Text style={[styles.mongolianSmallText, { color: currentColors.textSecondary }]}>
+                  ТАВТАЙ МОРИЛНО УУ
+                </Text>
+              </Pressable>
+            ) : (
+              <>
+                <Text style={[styles.greeting, { color: currentColors.textSecondary }]}>
+                  {t('welcome')}
+                </Text>
+                <Pressable 
+                  style={styles.citySelector}
+                  onPress={() => setShowCitySelector(true)}
+                >
+                  <Text style={[styles.title, { color: currentColors.text }]}>
+                    {selectedCity ? t(selectedCity.nameKey) : 'Your City'}
+                  </Text>
+                  <IconSymbol 
+                    name="chevron.down" 
+                    color={currentColors.primary} 
+                    size={28} 
+                    style={styles.chevronIcon}
+                  />
+                </Pressable>
+              </>
+            )}
           </View>
 
           {/* Weather Widget */}
@@ -527,6 +554,29 @@ const styles = StyleSheet.create({
     letterSpacing: -1,
   },
   chevronIcon: {
+    marginTop: 4,
+  },
+  mongolianTitleContainer: {
+    alignItems: 'flex-start',
+  },
+  mongolianSmallText: {
+    fontSize: 16,
+    fontWeight: '500',
+    letterSpacing: -0.3,
+    marginBottom: 2,
+  },
+  mongolianMiddleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 2,
+  },
+  mongolianLargeText: {
+    fontSize: 34,
+    fontWeight: '700',
+    letterSpacing: -0.8,
+    marginRight: 8,
+  },
+  arrowIcon: {
     marginTop: 4,
   },
   weatherWidget: {

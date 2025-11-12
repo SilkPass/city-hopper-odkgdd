@@ -145,46 +145,19 @@ export default function CitiesScreen() {
       >
         {/* Header with City Selector */}
         <View style={styles.headerContainer}>
-          {language === 'mn' ? (
-            <Pressable 
-              style={styles.mongolianTitleContainer}
-              onPress={() => setShowCitySelectorModal(true)}
-            >
-              <Text style={[styles.mongolianSmallText, { color: currentColors.textSecondary }]}>
-                ТА
-              </Text>
-              <View style={styles.mongolianMiddleRow}>
-                <Text style={[styles.mongolianLargeText, { color: currentColors.text }]}>
-                  {t(selectedCity.nameKey)}д
-                </Text>
-                <IconSymbol 
-                  name="chevron.down" 
-                  color={currentColors.primary} 
-                  size={24} 
-                  style={styles.arrowIcon}
-                />
-              </View>
-              <Text style={[styles.mongolianSmallText, { color: currentColors.textSecondary }]}>
-                ТАВТАЙ МОРИЛНО УУ
-              </Text>
-            </Pressable>
-          ) : (
-            <>
-              <Text style={[styles.title, { color: currentColors.text }]}>
-                {t(selectedCity.nameKey)}
-              </Text>
-              <Pressable 
-                style={styles.citySelectorButton}
-                onPress={() => setShowCitySelectorModal(true)}
-              >
-                <IconSymbol 
-                  name="chevron.down" 
-                  color={currentColors.primary} 
-                  size={24} 
-                />
-              </Pressable>
-            </>
-          )}
+          <Text style={[styles.title, { color: currentColors.text }]}>
+            {language === 'mn' ? 'Хот' : 'Cities'}
+          </Text>
+          <Pressable 
+            style={styles.citySelectorButton}
+            onPress={() => setShowCitySelectorModal(true)}
+          >
+            <IconSymbol 
+              name="chevron.down" 
+              color={currentColors.primary} 
+              size={24} 
+            />
+          </Pressable>
         </View>
         
         <View style={styles.grid}>
@@ -380,30 +353,6 @@ const styles = StyleSheet.create({
     fontSize: 34,
     fontWeight: '700',
     letterSpacing: -1,
-  },
-  mongolianTitleContainer: {
-    flex: 1,
-    alignItems: 'flex-start',
-  },
-  mongolianSmallText: {
-    fontSize: 16,
-    fontWeight: '500',
-    letterSpacing: -0.3,
-    marginBottom: 2,
-  },
-  mongolianMiddleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 2,
-  },
-  mongolianLargeText: {
-    fontSize: 34,
-    fontWeight: '700',
-    letterSpacing: -0.8,
-    marginRight: 8,
-  },
-  arrowIcon: {
-    marginTop: 4,
   },
   citySelectorButton: {
     padding: 8,
