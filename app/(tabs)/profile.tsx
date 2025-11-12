@@ -9,7 +9,7 @@ import { colors, darkColors } from "@/styles/commonStyles";
 import { useThemeMode } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-type SupportedLanguage = 'en' | 'mn' | 'ru' | 'kk' | 'uz';
+type SupportedLanguage = 'en' | 'mn' | 'ru' | 'kk' | 'uz' | 'uk' | 'fa';
 
 interface LanguageOption {
   code: SupportedLanguage;
@@ -23,6 +23,8 @@ const LANGUAGE_OPTIONS: LanguageOption[] = [
   { code: 'uz', name: 'Uzbek', nativeName: 'Oʻzbekcha' },
   { code: 'kk', name: 'Kazakh', nativeName: 'Қазақша' },
   { code: 'ru', name: 'Russian', nativeName: 'Русский' },
+  { code: 'uk', name: 'Ukrainian', nativeName: 'Українська' },
+  { code: 'fa', name: 'Persian', nativeName: 'فارسی' },
 ];
 
 export default function ProfileScreen() {
