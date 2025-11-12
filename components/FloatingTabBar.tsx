@@ -1,4 +1,4 @@
-加入
+
 import { useRouter, usePathname } from 'expo-router';
 import {
   View,
