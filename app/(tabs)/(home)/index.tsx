@@ -311,7 +311,7 @@ export default function HomeScreen() {
                   onPress={() => setShowCitySelector(true)}
                 >
                   <Text style={[styles.title, { color: currentColors.text }]}>
-                    {selectedCity ? t(selectedCity.nameKey) : 'Your City'}
+                    {selectedCity ? (language === 'uk' ? t(`${selectedCity.nameKey}Dative`) : t(selectedCity.nameKey)) : 'Your City'}
                   </Text>
                   <IconSymbol 
                     name="chevron.down" 
