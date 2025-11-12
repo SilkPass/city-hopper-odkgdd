@@ -107,7 +107,7 @@ const CITIES: City[] = [
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
-const cardWidth = isTablet ? (width - 96) / 3 : (width - 48) / 2;
+const cardWidth = isTablet ? (width - 96) / 5 : (width - 48) / 2;
 
 export default function CitiesScreen() {
   const theme = useTheme();
