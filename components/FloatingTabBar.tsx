@@ -136,20 +136,30 @@ export default function FloatingTabBar({
   };
 
   const animatedIndicatorStyle = useAnimatedStyle(() => {
-    // Calculate the width of each tab
+    // Container padding on both sides
     const containerPadding = 8;
+    
+    // Total available width for tabs
     const availableWidth = containerWidth - (containerPadding * 2);
+    
+    // Width of each tab slot
     const tabWidth = availableWidth / tabs.length;
     
-    // Calculate indicator dimensions - make it a rounded pill with proper padding
-    const indicatorHorizontalPadding = 4;
-    const indicatorWidth = tabWidth - (indicatorHorizontalPadding * 2);
+    // Padding inside each tab slot for the indicator
+    const indicatorPadding = 4;
     
-    // Calculate the position - start from container padding
+    // Actual indicator width (tab width minus padding on both sides)
+    const indicatorWidth = tabWidth - (indicatorPadding * 2);
+    
+    // Calculate translateX for each tab position
+    // Start at containerPadding + indicatorPadding, then add tabWidth for each subsequent tab
     const translateX = interpolate(
       indicatorPosition.value,
       tabs.map((_, i) => i),
-      tabs.map((_, i) => containerPadding + indicatorHorizontalPadding + (tabWidth * i))
+      tabs.map((_, i) => {
+        // For each tab: start position + (tab width * index) + padding
+        return containerPadding + indicatorPadding + (tabWidth * i);
+      })
     );
     
     return {
