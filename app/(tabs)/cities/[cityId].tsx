@@ -923,9 +923,13 @@ export default function CityDetailScreen() {
           <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
             {t('attractions')}
           </Text>
-          <View style={[styles.grid, { gap: gap, paddingHorizontal: horizontalPadding }]}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[styles.horizontalScrollContent, { paddingHorizontal: horizontalPadding }]}
+          >
             {city.attractions.map((item) => renderCard(item))}
-          </View>
+          </ScrollView>
         </View>
 
         {/* Food & Drinks Section */}
@@ -933,9 +937,13 @@ export default function CityDetailScreen() {
           <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
             {t('foodAndDrinks')}
           </Text>
-          <View style={[styles.grid, { gap: gap, paddingHorizontal: horizontalPadding }]}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[styles.horizontalScrollContent, { paddingHorizontal: horizontalPadding }]}
+          >
             {city.foodAndDrinks.map((item) => renderCard(item))}
-          </View>
+          </ScrollView>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -986,16 +994,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     letterSpacing: -0.8,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  horizontalScrollContent: {
+    gap: 16,
   },
   card: {
     borderRadius: 16,
     overflow: 'hidden',
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
     elevation: 3,
-    marginBottom: 20,
   },
   cardImageContainer: {
     width: '100%',
