@@ -132,7 +132,7 @@ const translations = {
     selectCityToViewInfo: 'Select a city to view information',
   },
   mn: {
-    welcome: 'ТА',
+    welcome: '',
     welcomeSmall: 'ТАВТАЙ МОРИЛНО УУ',
     searchAttractions: 'Үзвэрийн газар хайх...',
     selectCity: 'Хот сонгох',

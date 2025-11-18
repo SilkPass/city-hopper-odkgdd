@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Seric",
-    "slug": "Seric",
+    "name": "City Hopper",
+    "slug": "City Hopper",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/natively-dark.png",
@@ -53,5 +53,6 @@
     "extra": {
       "router": {}
     }
-  }
+  },
+  "scheme": "City Hopper"
 }
