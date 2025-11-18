@@ -6,6 +6,7 @@ import { useTheme } from '@react-navigation/native';
 import { useThemeMode } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { IconSymbol } from '@/components/IconSymbol';
+import { useRouter } from 'expo-router';
 import {
   View,
   Text,
@@ -113,6 +114,7 @@ export default function CitiesScreen() {
   const currentColors = isDark ? darkColors : colors;
   const { width } = useWindowDimensions();
   const isTablet = width >= 768;
+  const router = useRouter();
 
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
   const [showCitySelectorModal, setShowCitySelectorModal] = useState(false);
@@ -138,7 +140,14 @@ export default function CitiesScreen() {
 
   const handleCityPress = (city: City) => {
     console.log('City pressed:', city.name);
-    setSelectedCity(city);
+    
+    if (isTablet) {
+      // On tablet, show in sidebar
+      setSelectedCity(city);
+    } else {
+      // On phone, navigate to detail page
+      router.push(`/(tabs)/cities/${city.nameKey}`);
+    }
   };
 
   const handleCitySelect = (city: City) => {
