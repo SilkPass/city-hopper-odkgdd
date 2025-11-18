@@ -14,22 +14,27 @@ import {
   ScrollView,
   Image,
   Pressable,
-  TextInput,
   Platform,
+  Dimensions,
 } from 'react-native';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_WIDTH = SCREEN_WIDTH * 0.7;
+const CARD_SPACING = 16;
 
 interface City {
   name: string;
   nameKey: string;
   imageUrl: string;
-  attractions: Attraction[];
+  attractions: CardItem[];
+  foodAndDrinks: CardItem[];
   provinceKey: string;
 }
 
-interface Attraction {
+interface CardItem {
   id: string;
   name: string;
-  category: string;
+  imageUrl: string;
   description: string;
 }
 
@@ -40,10 +45,44 @@ const CITIES: City[] = [
     provinceKey: 'beijingProvince',
     imageUrl: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80',
     attractions: [
-      { id: '1', name: 'Forbidden City', category: 'Historical Site', description: 'Imperial palace complex' },
-      { id: '2', name: 'Summer Palace', category: 'Historical Site', description: 'Royal garden and palace' },
-      { id: '3', name: 'Great Wall', category: 'Historical Site', description: 'Ancient fortification' },
-      { id: '4', name: 'Temple of Heaven', category: 'Cultural Landmark', description: 'Imperial temple complex' },
+      { 
+        id: '1', 
+        name: 'Forbidden City', 
+        imageUrl: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=600&q=80',
+        description: 'Imperial palace complex from Ming dynasty'
+      },
+      { 
+        id: '2', 
+        name: 'Summer Palace', 
+        imageUrl: 'https://images.unsplash.com/photo-1570797197190-8e003a00c846?w=600&q=80',
+        description: 'Royal garden and palace retreat'
+      },
+      { 
+        id: '3', 
+        name: 'Great Wall', 
+        imageUrl: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=600&q=80',
+        description: 'Ancient fortification wonder'
+      },
+    ],
+    foodAndDrinks: [
+      { 
+        id: 'f1', 
+        name: 'Peking Duck', 
+        imageUrl: 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=600&q=80',
+        description: 'Famous roasted duck dish'
+      },
+      { 
+        id: 'f2', 
+        name: 'Jiaozi Dumplings', 
+        imageUrl: 'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=600&q=80',
+        description: 'Traditional Chinese dumplings'
+      },
+      { 
+        id: 'f3', 
+        name: 'Hot Pot', 
+        imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&q=80',
+        description: 'Spicy communal dining experience'
+      },
     ],
   },
   {
@@ -52,9 +91,44 @@ const CITIES: City[] = [
     provinceKey: 'shanghaiProvince',
     imageUrl: 'https://images.unsplash.com/photo-1474181487882-5abf3f0ba6c2?w=800&q=80',
     attractions: [
-      { id: '8', name: 'The Bund', category: 'Scenic Spot', description: 'Waterfront promenade' },
-      { id: '9', name: 'Yu Garden', category: 'Cultural Landmark', description: 'Classical Chinese garden' },
-      { id: '10', name: 'Oriental Pearl Tower', category: 'Modern Attraction', description: 'Iconic TV tower' },
+      { 
+        id: '8', 
+        name: 'The Bund', 
+        imageUrl: 'https://images.unsplash.com/photo-1474181487882-5abf3f0ba6c2?w=600&q=80',
+        description: 'Waterfront promenade with skyline views'
+      },
+      { 
+        id: '9', 
+        name: 'Yu Garden', 
+        imageUrl: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=600&q=80',
+        description: 'Classical Chinese garden oasis'
+      },
+      { 
+        id: '10', 
+        name: 'Oriental Pearl Tower', 
+        imageUrl: 'https://images.unsplash.com/photo-1537981576259-a1a7d8a97a1f?w=600&q=80',
+        description: 'Iconic futuristic TV tower'
+      },
+    ],
+    foodAndDrinks: [
+      { 
+        id: 'f4', 
+        name: 'Xiaolongbao', 
+        imageUrl: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&q=80',
+        description: 'Soup-filled steamed buns'
+      },
+      { 
+        id: 'f5', 
+        name: 'Shengjianbao', 
+        imageUrl: 'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=600&q=80',
+        description: 'Pan-fried pork buns'
+      },
+      { 
+        id: 'f6', 
+        name: 'Hairy Crab', 
+        imageUrl: 'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&q=80',
+        description: 'Seasonal delicacy from Yangcheng Lake'
+      },
     ],
   },
   {
@@ -63,9 +137,44 @@ const CITIES: City[] = [
     provinceKey: 'hongKongProvince',
     imageUrl: 'https://images.unsplash.com/photo-1536599018102-9f803c140fc1?w=800&q=80',
     attractions: [
-      { id: '14', name: 'Victoria Harbour', category: 'Scenic Spot', description: 'Natural harbor' },
-      { id: '15', name: 'Victoria Peak', category: 'Scenic Spot', description: 'Mountain peak with views' },
-      { id: '16', name: 'Temple Street', category: 'Cultural Landmark', description: 'Night market' },
+      { 
+        id: '14', 
+        name: 'Victoria Harbour', 
+        imageUrl: 'https://images.unsplash.com/photo-1536599018102-9f803c140fc1?w=600&q=80',
+        description: 'Natural harbor with stunning views'
+      },
+      { 
+        id: '15', 
+        name: 'Victoria Peak', 
+        imageUrl: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=600&q=80',
+        description: 'Mountain peak with panoramic views'
+      },
+      { 
+        id: '16', 
+        name: 'Temple Street', 
+        imageUrl: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=600&q=80',
+        description: 'Vibrant night market'
+      },
+    ],
+    foodAndDrinks: [
+      { 
+        id: 'f7', 
+        name: 'Dim Sum', 
+        imageUrl: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&q=80',
+        description: 'Traditional Cantonese small plates'
+      },
+      { 
+        id: 'f8', 
+        name: 'Egg Tarts', 
+        imageUrl: 'https://images.unsplash.com/photo-1587241321921-91a834d82ffc?w=600&q=80',
+        description: 'Portuguese-style custard tarts'
+      },
+      { 
+        id: 'f9', 
+        name: 'Milk Tea', 
+        imageUrl: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=600&q=80',
+        description: 'Signature Hong Kong-style tea'
+      },
     ],
   },
   {
@@ -74,9 +183,44 @@ const CITIES: City[] = [
     provinceKey: 'macaoProvince',
     imageUrl: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=80',
     attractions: [
-      { id: '17', name: 'Ruins of St. Paul', category: 'Historical Site', description: 'Historic church facade' },
-      { id: '18', name: 'Senado Square', category: 'Cultural Landmark', description: 'Historic town square' },
-      { id: '19', name: 'A-Ma Temple', category: 'Cultural Landmark', description: 'Ancient Chinese temple' },
+      { 
+        id: '17', 
+        name: 'Ruins of St. Paul', 
+        imageUrl: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=600&q=80',
+        description: 'Historic church facade'
+      },
+      { 
+        id: '18', 
+        name: 'Senado Square', 
+        imageUrl: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=600&q=80',
+        description: 'Historic Portuguese-style square'
+      },
+      { 
+        id: '19', 
+        name: 'A-Ma Temple', 
+        imageUrl: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=600&q=80',
+        description: 'Ancient Chinese temple'
+      },
+    ],
+    foodAndDrinks: [
+      { 
+        id: 'f10', 
+        name: 'Portuguese Egg Tart', 
+        imageUrl: 'https://images.unsplash.com/photo-1587241321921-91a834d82ffc?w=600&q=80',
+        description: 'Authentic Portuguese pastry'
+      },
+      { 
+        id: 'f11', 
+        name: 'African Chicken', 
+        imageUrl: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=600&q=80',
+        description: 'Spicy Macanese fusion dish'
+      },
+      { 
+        id: 'f12', 
+        name: 'Pork Chop Bun', 
+        imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80',
+        description: 'Crispy pork in fresh bun'
+      },
     ],
   },
   {
@@ -85,9 +229,44 @@ const CITIES: City[] = [
     provinceKey: 'hohhotProvince',
     imageUrl: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=800&q=80',
     attractions: [
-      { id: '5', name: 'Dazhao Temple', category: 'Cultural Landmark', description: 'Historic Buddhist temple' },
-      { id: '6', name: 'Inner Mongolia Museum', category: 'Cultural Landmark', description: 'Regional history museum' },
-      { id: '7', name: 'Zhaojun Tomb', category: 'Historical Site', description: 'Ancient burial site' },
+      { 
+        id: '5', 
+        name: 'Dazhao Temple', 
+        imageUrl: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=600&q=80',
+        description: 'Historic Buddhist temple'
+      },
+      { 
+        id: '6', 
+        name: 'Inner Mongolia Museum', 
+        imageUrl: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=600&q=80',
+        description: 'Regional history and culture'
+      },
+      { 
+        id: '7', 
+        name: 'Zhaojun Tomb', 
+        imageUrl: 'https://images.unsplash.com/photo-1570797197190-8e003a00c846?w=600&q=80',
+        description: 'Ancient burial site'
+      },
+    ],
+    foodAndDrinks: [
+      { 
+        id: 'f13', 
+        name: 'Mongolian Hot Pot', 
+        imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&q=80',
+        description: 'Traditional lamb hot pot'
+      },
+      { 
+        id: 'f14', 
+        name: 'Milk Tea', 
+        imageUrl: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=600&q=80',
+        description: 'Authentic Mongolian milk tea'
+      },
+      { 
+        id: 'f15', 
+        name: 'Roasted Lamb', 
+        imageUrl: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=600&q=80',
+        description: 'Grilled lamb skewers'
+      },
     ],
   },
   {
@@ -96,9 +275,44 @@ const CITIES: City[] = [
     provinceKey: 'ordosProvince',
     imageUrl: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80',
     attractions: [
-      { id: '11', name: 'Genghis Khan Mausoleum', category: 'Historical Site', description: 'Memorial complex' },
-      { id: '12', name: 'Resonant Sand Gorge', category: 'Scenic Spot', description: 'Desert landscape' },
-      { id: '13', name: 'Ordos Museum', category: 'Cultural Landmark', description: 'Modern architecture museum' },
+      { 
+        id: '11', 
+        name: 'Genghis Khan Mausoleum', 
+        imageUrl: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=600&q=80',
+        description: 'Memorial complex for the great khan'
+      },
+      { 
+        id: '12', 
+        name: 'Resonant Sand Gorge', 
+        imageUrl: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600&q=80',
+        description: 'Desert landscape with singing sands'
+      },
+      { 
+        id: '13', 
+        name: 'Ordos Museum', 
+        imageUrl: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=600&q=80',
+        description: 'Modern architecture museum'
+      },
+    ],
+    foodAndDrinks: [
+      { 
+        id: 'f16', 
+        name: 'Hand-Pulled Mutton', 
+        imageUrl: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=600&q=80',
+        description: 'Traditional Mongolian dish'
+      },
+      { 
+        id: 'f17', 
+        name: 'Cheese Curds', 
+        imageUrl: 'https://images.unsplash.com/photo-1452195100486-9cc805987862?w=600&q=80',
+        description: 'Mongolian dairy specialty'
+      },
+      { 
+        id: 'f18', 
+        name: 'Airag', 
+        imageUrl: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=600&q=80',
+        description: 'Fermented mare&apos;s milk'
+      },
     ],
   },
 ];
@@ -111,8 +325,6 @@ export default function CityDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const cityId = params.cityId as string;
-
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Find the city by nameKey
   const city = CITIES.find(c => c.nameKey === cityId);
@@ -141,10 +353,28 @@ export default function CityDetailScreen() {
     );
   }
 
-  const filteredAttractions = city.attractions.filter(attraction =>
-    attraction.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    attraction.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    attraction.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const renderCard = (item: CardItem) => (
+    <Pressable
+      key={item.id}
+      style={[styles.card, { backgroundColor: currentColors.backgroundSecondary }]}
+      onPress={() => console.log('Card pressed:', item.name)}
+    >
+      <View style={styles.cardImageContainer}>
+        <Image
+          source={{ uri: item.imageUrl }}
+          style={styles.cardImage}
+          resizeMode="cover"
+        />
+      </View>
+      <View style={styles.cardContent}>
+        <Text style={[styles.cardTitle, { color: currentColors.text }]} numberOfLines={1}>
+          {item.name}
+        </Text>
+        <Text style={[styles.cardDescription, { color: currentColors.textSecondary }]} numberOfLines={2}>
+          {item.description}
+        </Text>
+      </View>
+    </Pressable>
   );
 
   return (
@@ -167,85 +397,45 @@ export default function CityDetailScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* City Image */}
-        <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: city.imageUrl }}
-            style={styles.cityImage}
-            resizeMode="cover"
-          />
-          <View style={[styles.imageOverlay, { backgroundColor: currentColors.overlayLight }]} />
-        </View>
-
-        {/* City Info */}
-        <View style={styles.infoSection}>
+        {/* City Title */}
+        <View style={styles.titleSection}>
           <Text style={[styles.cityName, { color: currentColors.text }]}>
             {t(city.nameKey)}
           </Text>
-          <Text style={[styles.province, { color: currentColors.textSecondary }]}>
-            {t(city.provinceKey)}
-          </Text>
         </View>
 
-        {/* Search Bar */}
-        <View style={styles.searchSection}>
-          <View style={[styles.searchContainer, { 
-            backgroundColor: currentColors.backgroundSecondary,
-            borderColor: currentColors.border 
-          }]}>
-            <IconSymbol name="magnifyingglass" color={currentColors.textSecondary} size={20} />
-            <TextInput
-              style={[styles.searchInput, { color: currentColors.text }]}
-              placeholder={t('searchAttractions')}
-              placeholderTextColor={currentColors.textSecondary}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            {searchQuery.length > 0 && (
-              <Pressable onPress={() => setSearchQuery('')}>
-                <IconSymbol name="xmark.circle.fill" color={currentColors.textSecondary} size={20} />
-              </Pressable>
-            )}
-          </View>
-        </View>
-
-        {/* Attractions List */}
-        <View style={styles.attractionsSection}>
+        {/* Attractions Section */}
+        <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
-            {t('attractions')} ({filteredAttractions.length})
+            {t('attractions')}
           </Text>
-          
-          {filteredAttractions.length > 0 ? (
-            filteredAttractions.map((attraction) => (
-              <Pressable
-                key={attraction.id}
-                style={[styles.attractionCard, { backgroundColor: currentColors.backgroundSecondary }]}
-                onPress={() => console.log('Attraction pressed:', attraction.name)}
-              >
-                <View style={[styles.attractionIcon, { backgroundColor: currentColors.primary + '15' }]}>
-                  <IconSymbol name="mappin.circle.fill" color={currentColors.primary} size={24} />
-                </View>
-                <View style={styles.attractionInfo}>
-                  <Text style={[styles.attractionName, { color: currentColors.text }]}>
-                    {attraction.name}
-                  </Text>
-                  <Text style={[styles.attractionCategory, { color: currentColors.textSecondary }]}>
-                    {attraction.category}
-                  </Text>
-                  <Text style={[styles.attractionDescription, { color: currentColors.textTertiary }]}>
-                    {attraction.description}
-                  </Text>
-                </View>
-              </Pressable>
-            ))
-          ) : (
-            <View style={styles.noResults}>
-              <IconSymbol name="magnifyingglass" color={currentColors.textTertiary} size={48} />
-              <Text style={[styles.noResultsText, { color: currentColors.textSecondary }]}>
-                {searchQuery ? t('noAttractionsFound') : t('noAttractionsAvailable')}
-              </Text>
-            </View>
-          )}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.horizontalScrollContent}
+            decelerationRate="fast"
+            snapToInterval={CARD_WIDTH + CARD_SPACING}
+            snapToAlignment="start"
+          >
+            {city.attractions.map((item) => renderCard(item))}
+          </ScrollView>
+        </View>
+
+        {/* Food & Drinks Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
+            {t('foodAndDrinks')}
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.horizontalScrollContent}
+            decelerationRate="fast"
+            snapToInterval={CARD_WIDTH + CARD_SPACING}
+            snapToAlignment="start"
+          >
+            {city.foodAndDrinks.map((item) => renderCard(item))}
+          </ScrollView>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -260,113 +450,62 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: Platform.OS === 'android' ? 100 : 20,
+    paddingBottom: Platform.OS === 'android' ? 100 : 120,
   },
-  imageContainer: {
+  titleSection: {
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'android' ? 24 : 16,
+    paddingBottom: 24,
+  },
+  cityName: {
+    fontSize: 40,
+    fontWeight: '700',
+    letterSpacing: -1,
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 16,
+    paddingHorizontal: 20,
+    letterSpacing: -0.8,
+  },
+  horizontalScrollContent: {
+    paddingLeft: 20,
+    paddingRight: 20,
+    gap: CARD_SPACING,
+  },
+  card: {
+    width: CARD_WIDTH,
+    borderRadius: 20,
+    overflow: 'hidden',
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+    elevation: 4,
+  },
+  cardImageContainer: {
     width: '100%',
-    height: 280,
-    position: 'relative',
+    height: CARD_WIDTH * 0.75,
+    backgroundColor: '#E0E0E0',
   },
-  cityImage: {
+  cardImage: {
     width: '100%',
     height: '100%',
   },
-  imageOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  cardContent: {
+    padding: 16,
   },
-  infoSection: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 16,
-  },
-  cityName: {
-    fontSize: 32,
+  cardTitle: {
+    fontSize: 20,
     fontWeight: '700',
     marginBottom: 6,
-    letterSpacing: -0.8,
-  },
-  province: {
-    fontSize: 17,
-    fontWeight: '500',
-  },
-  searchSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '400',
-  },
-  attractionsSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 16,
     letterSpacing: -0.5,
   },
-  attractionCard: {
-    flexDirection: 'row',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
-    gap: 14,
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
-    elevation: 2,
-  },
-  attractionIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexShrink: 0,
-  },
-  attractionInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
-  attractionName: {
-    fontSize: 17,
-    fontWeight: '600',
-    marginBottom: 4,
-    letterSpacing: -0.3,
-  },
-  attractionCategory: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  attractionDescription: {
-    fontSize: 14,
+  cardDescription: {
+    fontSize: 15,
     fontWeight: '400',
-    lineHeight: 18,
-  },
-  noResults: {
-    paddingVertical: 60,
-    alignItems: 'center',
-    gap: 16,
-  },
-  noResultsText: {
-    fontSize: 16,
-    fontWeight: '500',
-    textAlign: 'center',
+    lineHeight: 20,
   },
   errorContainer: {
     flex: 1,
