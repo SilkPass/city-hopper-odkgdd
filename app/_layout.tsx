@@ -19,6 +19,7 @@ import { Button } from "@/components/button";
 import { WidgetProvider } from "@/contexts/WidgetContext";
 import { ThemeProvider as CustomThemeProvider, useThemeMode } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { colors, darkColors } from "@/styles/commonStyles";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -31,16 +32,17 @@ export const unstable_settings = {
 function RootLayoutContent() {
   const systemColorScheme = useColorScheme();
   const { isDark } = useThemeMode();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const networkState = useNetworkState();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
   useEffect(() => {
-    if (loaded) {
+    if (loaded && !authLoading) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, authLoading]);
 
   React.useEffect(() => {
     if (
@@ -54,8 +56,41 @@ function RootLayoutContent() {
     }
   }, [networkState.isConnected, networkState.isInternetReachable]);
 
-  if (!loaded) {
+  if (!loaded || authLoading) {
     return null;
+  }
+
+  // Redirect to welcome screen if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <>
+        <View 
+          style={{ 
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: isDark ? darkColors.background : colors.background,
+            zIndex: -1,
+          }} 
+        />
+        <StatusBar 
+          style={isDark ? "light" : "dark"} 
+          animated 
+          backgroundColor={isDark ? darkColors.background : colors.background}
+          translucent={false}
+        />
+        <ThemeProvider value={isDark ? CustomDarkTheme : CustomDefaultTheme}>
+          <GestureHandlerRootView style={{ flex: 1, backgroundColor: isDark ? darkColors.background : colors.background }}>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="auth/welcome" options={{ headerShown: false }} />
+            </Stack>
+            <SystemBars style={isDark ? "light" : "dark"} />
+          </GestureHandlerRootView>
+        </ThemeProvider>
+      </>
+    );
   }
 
   const CustomDefaultTheme: Theme = {
@@ -154,7 +189,9 @@ export default function RootLayout() {
   return (
     <CustomThemeProvider>
       <LanguageProvider>
-        <RootLayoutContent />
+        <AuthProvider>
+          <RootLayoutContent />
+        </AuthProvider>
       </LanguageProvider>
     </CustomThemeProvider>
   );

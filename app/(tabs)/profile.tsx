@@ -1,5 +1,5 @@
 
-import { View, Text, StyleSheet, ScrollView, Platform, Pressable, Modal, Dimensions } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Platform, Pressable, Modal, Dimensions, Alert } from "react-native";
 import React, { useState } from "react";
 import { GlassView } from "expo-glass-effect";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -8,6 +8,8 @@ import { useTheme } from "@react-navigation/native";
 import { colors, darkColors } from "@/styles/commonStyles";
 import { useThemeMode } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { router } from "expo-router";
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -34,12 +36,34 @@ export default function ProfileScreen() {
   const theme = useTheme();
   const { isDark, themeMode, setThemeMode } = useThemeMode();
   const { t, language, setLanguage } = useLanguage();
+  const { user, isGuest, logout } = useAuth();
   const currentColors = isDark ? darkColors : colors;
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showThemeModal, setShowThemeModal] = useState(false);
 
   const handleMenuPress = (item: string) => {
     console.log('Menu item pressed:', item);
+  };
+
+  const handleSignOut = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            router.replace('/auth/welcome');
+          },
+        },
+      ]
+    );
   };
 
   const handleLanguagePress = () => {
@@ -94,8 +118,17 @@ export default function ProfileScreen() {
               <IconSymbol name="person.fill" size={isTablet ? 72 : 60} color="#FFFFFF" />
             </View>
           </View>
-          <Text style={[styles.username, { color: currentColors.text, fontSize: isTablet ? 28 : 24 }]}>Jerry Chen</Text>
-          <Text style={[styles.email, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 15 }]}>jerry@example.com</Text>
+          {isGuest ? (
+            <>
+              <Text style={[styles.username, { color: currentColors.text, fontSize: isTablet ? 28 : 24 }]}>Guest User</Text>
+              <Text style={[styles.email, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 15 }]}>Browsing as guest</Text>
+            </>
+          ) : (
+            <>
+              <Text style={[styles.username, { color: currentColors.text, fontSize: isTablet ? 28 : 24 }]}>{user?.username || 'User'}</Text>
+              <Text style={[styles.email, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 15 }]}>{user?.email || 'No email'}</Text>
+            </>
+          )}
         </View>
 
         <View style={styles.section}>
@@ -221,7 +254,7 @@ export default function ProfileScreen() {
         </View>
 
         <View style={[styles.section, { paddingBottom: Platform.OS === 'android' ? 100 : 20 }]}>
-          <Pressable onPress={() => handleMenuPress('Sign Out')}>
+          <Pressable onPress={handleSignOut}>
             <GlassView 
               style={[
                 styles.card,
