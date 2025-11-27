@@ -29,6 +29,32 @@ export const unstable_settings = {
   initialRouteName: "(tabs)",
 };
 
+// Define themes at the top level before they are used
+const CustomDefaultTheme: Theme = {
+  ...DefaultTheme,
+  dark: false,
+  colors: {
+    primary: colors.primary,
+    background: colors.background,
+    card: colors.card,
+    text: colors.text,
+    border: colors.border,
+    notification: colors.error,
+  },
+};
+
+const CustomDarkTheme: Theme = {
+  ...DarkTheme,
+  colors: {
+    primary: darkColors.primary,
+    background: darkColors.background,
+    card: darkColors.card,
+    text: darkColors.text,
+    border: darkColors.border,
+    notification: darkColors.error,
+  },
+};
+
 function RootLayoutContent() {
   const systemColorScheme = useColorScheme();
   const { isDark } = useThemeMode();
@@ -92,31 +118,6 @@ function RootLayoutContent() {
       </>
     );
   }
-
-  const CustomDefaultTheme: Theme = {
-    ...DefaultTheme,
-    dark: false,
-    colors: {
-      primary: colors.primary,
-      background: colors.background,
-      card: colors.card,
-      text: colors.text,
-      border: colors.border,
-      notification: colors.error,
-    },
-  };
-
-  const CustomDarkTheme: Theme = {
-    ...DarkTheme,
-    colors: {
-      primary: darkColors.primary,
-      background: darkColors.background,
-      card: darkColors.card,
-      text: darkColors.text,
-      border: darkColors.border,
-      notification: darkColors.error,
-    },
-  };
 
   return (
     <>
