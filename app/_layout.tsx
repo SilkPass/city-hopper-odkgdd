@@ -2,7 +2,7 @@
 import "react-native-reanimated";
 import React, { useEffect } from "react";
 import { useFonts } from "expo-font";
-import { Stack, router } from "expo-router";
+import { Stack, router, useSegments, useRootNavigationState } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { SystemBars } from "react-native-edge-to-edge";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -60,6 +60,9 @@ function RootLayoutContent() {
   const { isDark } = useThemeMode();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const networkState = useNetworkState();
+  const segments = useSegments();
+  const navigationState = useRootNavigationState();
+  
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
@@ -69,6 +72,33 @@ function RootLayoutContent() {
       SplashScreen.hideAsync();
     }
   }, [loaded, authLoading]);
+
+  // Handle authentication-based navigation
+  useEffect(() => {
+    if (!loaded || authLoading || !navigationState?.key) {
+      return;
+    }
+
+    const inAuthGroup = segments[0] === 'auth';
+    const inTabsGroup = segments[0] === '(tabs)';
+
+    console.log('Navigation check:', {
+      isAuthenticated,
+      segments,
+      inAuthGroup,
+      inTabsGroup,
+    });
+
+    if (!isAuthenticated && !inAuthGroup) {
+      // User is not authenticated and not in auth screens, redirect to welcome
+      console.log('Redirecting to welcome screen');
+      router.replace('/auth/welcome');
+    } else if (isAuthenticated && inAuthGroup) {
+      // User is authenticated but in auth screens, redirect to home
+      console.log('Redirecting to home screen');
+      router.replace('/(tabs)/(home)');
+    }
+  }, [isAuthenticated, segments, loaded, authLoading, navigationState?.key]);
 
   React.useEffect(() => {
     if (
@@ -84,39 +114,6 @@ function RootLayoutContent() {
 
   if (!loaded || authLoading) {
     return null;
-  }
-
-  // Redirect to welcome screen if not authenticated
-  if (!isAuthenticated) {
-    return (
-      <>
-        <View 
-          style={{ 
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: isDark ? darkColors.background : colors.background,
-            zIndex: -1,
-          }} 
-        />
-        <StatusBar 
-          style={isDark ? "light" : "dark"} 
-          animated 
-          backgroundColor={isDark ? darkColors.background : colors.background}
-          translucent={false}
-        />
-        <ThemeProvider value={isDark ? CustomDarkTheme : CustomDefaultTheme}>
-          <GestureHandlerRootView style={{ flex: 1, backgroundColor: isDark ? darkColors.background : colors.background }}>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="auth/welcome" options={{ headerShown: false }} />
-            </Stack>
-            <SystemBars style={isDark ? "light" : "dark"} />
-          </GestureHandlerRootView>
-        </ThemeProvider>
-      </>
-    );
   }
 
   return (
@@ -144,11 +141,15 @@ function RootLayoutContent() {
           <GestureHandlerRootView style={{ flex: 1, backgroundColor: isDark ? darkColors.background : colors.background }}>
             <Stack
               screenOptions={{
+                headerShown: false,
                 contentStyle: {
                   backgroundColor: isDark ? darkColors.background : colors.background,
                 },
               }}
             >
+              {/* Auth screens */}
+              <Stack.Screen name="auth" options={{ headerShown: false }} />
+
               {/* Main app with tabs */}
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
