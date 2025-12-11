@@ -304,7 +304,14 @@ export default function HomeScreen() {
       
       <ScrollView 
         style={[styles.container, { backgroundColor: currentColors.background }]}
-        contentContainerStyle={[styles.scrollContent, { paddingHorizontal: horizontalPadding }]}
+        contentContainerStyle={[
+          styles.scrollContent, 
+          { 
+            paddingHorizontal: horizontalPadding,
+            paddingTop: Platform.OS === 'android' ? 48 : 24,
+            paddingBottom: 120,
+          }
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {/* Header with City Selector and Weather */}
@@ -489,7 +496,7 @@ export default function HomeScreen() {
         </View>
 
         {/* Quick Actions */}
-        <View style={[styles.section, { paddingBottom: Platform.OS === 'android' ? 100 : 20 }]}>
+        <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: currentColors.text, fontSize: isTablet ? 26 : 22 }]}>
             {t('quickActions')}
           </Text>
@@ -680,7 +687,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingTop: 16,
+    // paddingTop and paddingBottom are now set dynamically in the component
   },
   headerContainer: {
     flexDirection: 'row',
