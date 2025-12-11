@@ -15,7 +15,7 @@ import { colors, darkColors } from '@/styles/commonStyles';
 import { useTheme } from '@react-navigation/native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useThemeMode } from '@/contexts/ThemeContext';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -160,11 +160,18 @@ export default function ServicesScreen() {
   const theme = useTheme();
   const { isDark } = useThemeMode();
   const { t } = useLanguage();
+  const router = useRouter();
   const currentColors = isDark ? darkColors : colors;
 
   const handleServicePress = (serviceId: string) => {
     console.log('Service pressed:', serviceId);
-    // TODO: Navigate to service detail or perform action
+    
+    if (serviceId === 'emergency') {
+      router.push('/services/emergency');
+    } else {
+      // TODO: Navigate to other service detail pages or perform action
+      console.log('Service not yet implemented:', serviceId);
+    }
   };
 
   const getCategoryTitle = (category: string): string => {
