@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   Pressable,
   Dimensions,
   Platform,
+  Modal,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/IconSymbol';
@@ -26,7 +28,14 @@ interface ServiceModule {
   descriptionKey: string;
   icon: string;
   color: string;
-  span: 1 | 2; // 1 for single column, 2 for full width
+  span: 1 | 2;
+}
+
+interface EmergencyNumber {
+  id: string;
+  number: string;
+  titleKey: string;
+  color: string;
 }
 
 const SERVICE_MODULES: ServiceModule[] = [
@@ -69,6 +78,27 @@ const SERVICE_MODULES: ServiceModule[] = [
     icon: 'pills.fill',
     color: '#26DE81',
     span: 1,
+  },
+];
+
+const EMERGENCY_NUMBERS: EmergencyNumber[] = [
+  {
+    id: 'police',
+    number: '110',
+    titleKey: 'policeEmergency',
+    color: '#3498DB',
+  },
+  {
+    id: 'ambulance',
+    number: '120',
+    titleKey: 'ambulanceEmergency',
+    color: '#E74C3C',
+  },
+  {
+    id: 'fire',
+    number: '119',
+    titleKey: 'fireEmergency',
+    color: '#E67E22',
   },
 ];
 
@@ -162,16 +192,30 @@ export default function ServicesScreen() {
   const { t } = useLanguage();
   const router = useRouter();
   const currentColors = isDark ? darkColors : colors;
+  const [showEmergencyModal, setShowEmergencyModal] = useState(false);
 
   const handleServicePress = (serviceId: string) => {
     console.log('Service pressed:', serviceId);
     
     if (serviceId === 'emergency') {
-      router.push('/services/emergency');
+      setShowEmergencyModal(true);
     } else {
-      // TODO: Navigate to other service detail pages or perform action
       console.log('Service not yet implemented:', serviceId);
     }
+  };
+
+  const handleEmergencyCall = (number: string) => {
+    console.log('Calling emergency number:', number);
+    const phoneUrl = `tel:${number}`;
+    Linking.canOpenURL(phoneUrl)
+      .then((supported) => {
+        if (supported) {
+          return Linking.openURL(phoneUrl);
+        } else {
+          console.log('Phone calls not supported on this device');
+        }
+      })
+      .catch((err) => console.error('Error opening phone dialer:', err));
   };
 
   const getCategoryTitle = (category: string): string => {
@@ -341,6 +385,67 @@ export default function ServicesScreen() {
           </View>
         </ScrollView>
       </SafeAreaView>
+
+      {/* Emergency Modal */}
+      <Modal
+        visible={showEmergencyModal}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setShowEmergencyModal(false)}
+      >
+        <Pressable 
+          style={styles.emergencyModalOverlay}
+          onPress={() => setShowEmergencyModal(false)}
+        >
+          <Pressable 
+            style={[styles.emergencyModalContent, { backgroundColor: currentColors.background }]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <View style={styles.emergencyModalHeader}>
+              <Text style={[styles.emergencyModalTitle, { color: currentColors.text }]}>
+                {t('emergencyNumbers')}
+              </Text>
+              <Pressable 
+                onPress={() => setShowEmergencyModal(false)}
+                style={styles.closeButton}
+              >
+                <IconSymbol name="xmark.circle.fill" color={currentColors.textSecondary} size={28} />
+              </Pressable>
+            </View>
+
+            {/* Emergency Numbers */}
+            <View style={styles.emergencyNumbersContainer}>
+              {EMERGENCY_NUMBERS.map((emergency) => (
+                <Pressable
+                  key={emergency.id}
+                  style={[
+                    styles.emergencyNumberCard,
+                    { 
+                      backgroundColor: currentColors.backgroundSecondary,
+                      borderLeftWidth: 3,
+                      borderLeftColor: emergency.color,
+                    }
+                  ]}
+                  onPress={() => handleEmergencyCall(emergency.number)}
+                >
+                  <View style={styles.emergencyNumberInfo}>
+                    <Text style={[styles.emergencyNumberTitle, { color: currentColors.text }]}>
+                      {t(emergency.titleKey)}
+                    </Text>
+                    <Text style={[styles.emergencyNumberText, { color: emergency.color }]}>
+                      {emergency.number}
+                    </Text>
+                  </View>
+                  <View style={[styles.emergencyCallButton, { backgroundColor: emergency.color }]}>
+                    <IconSymbol name="phone.fill" size={20} color="#FFFFFF" />
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </>
   );
 }
@@ -428,5 +533,65 @@ const styles = StyleSheet.create({
   serviceDescription: {
     lineHeight: isTablet ? 22 : 18,
     fontWeight: '400',
+  },
+  emergencyModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emergencyModalContent: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 20,
+    padding: 20,
+    boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.2)',
+    elevation: 8,
+  },
+  emergencyModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  emergencyModalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  emergencyNumbersContainer: {
+    gap: 12,
+  },
+  emergencyNumberCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 12,
+    gap: 12,
+  },
+  emergencyNumberInfo: {
+    flex: 1,
+  },
+  emergencyNumberTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  emergencyNumberText: {
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: -1,
+  },
+  emergencyCallButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

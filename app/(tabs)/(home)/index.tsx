@@ -11,7 +11,8 @@ import {
   ActivityIndicator,
   Dimensions,
   Alert,
-  Modal
+  Modal,
+  Linking
 } from "react-native";
 import { IconSymbol } from "@/components/IconSymbol";
 import { useTheme } from "@react-navigation/native";
@@ -38,6 +39,13 @@ interface WeatherData {
   icon: string;
 }
 
+interface EmergencyNumber {
+  id: string;
+  number: string;
+  titleKey: string;
+  color: string;
+}
+
 const CITIES: City[] = [
   { name: "Beijing", nameKey: "beijing", latitude: 39.9042, longitude: 116.4074, provinceKey: "beijingProvince" },
   { name: "Shanghai", nameKey: "shanghai", latitude: 31.2304, longitude: 121.4737, provinceKey: "shanghaiProvince" },
@@ -45,6 +53,27 @@ const CITIES: City[] = [
   { name: "Macao", nameKey: "macao", latitude: 22.1987, longitude: 113.5439, provinceKey: "macaoProvince" },
   { name: "Hohhot", nameKey: "hohhot", latitude: 40.8414, longitude: 111.7519, provinceKey: "hohhotProvince" },
   { name: "Ordos", nameKey: "ordos", latitude: 39.6086, longitude: 109.7810, provinceKey: "ordosProvince" },
+];
+
+const EMERGENCY_NUMBERS: EmergencyNumber[] = [
+  {
+    id: 'police',
+    number: '110',
+    titleKey: 'policeEmergency',
+    color: '#3498DB',
+  },
+  {
+    id: 'ambulance',
+    number: '120',
+    titleKey: 'ambulanceEmergency',
+    color: '#E74C3C',
+  },
+  {
+    id: 'fire',
+    number: '119',
+    titleKey: 'fireEmergency',
+    color: '#E67E22',
+  },
 ];
 
 export default function HomeScreen() {
@@ -59,6 +88,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [locationPermission, setLocationPermission] = useState<Location.PermissionStatus | null>(null);
   const [showCitySelector, setShowCitySelector] = useState(false);
+  const [showEmergencyModal, setShowEmergencyModal] = useState(false);
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
 
@@ -203,7 +233,7 @@ export default function HomeScreen() {
     console.log('Service pressed:', service);
     
     if (service === 'Emergency') {
-      router.push('/services/emergency');
+      setShowEmergencyModal(true);
     } else {
       Alert.alert(service, `${service} feature coming soon!`);
     }
@@ -214,6 +244,20 @@ export default function HomeScreen() {
     setSelectedCity(city);
     fetchWeather(city);
     setShowCitySelector(false);
+  };
+
+  const handleEmergencyCall = (number: string) => {
+    console.log('Calling emergency number:', number);
+    const phoneUrl = `tel:${number}`;
+    Linking.canOpenURL(phoneUrl)
+      .then((supported) => {
+        if (supported) {
+          return Linking.openURL(phoneUrl);
+        } else {
+          console.log('Phone calls not supported on this device');
+        }
+      })
+      .catch((err) => console.error('Error opening phone dialer:', err));
   };
 
   if (loading) {
@@ -566,6 +610,67 @@ export default function HomeScreen() {
           </ScrollView>
         </SafeAreaView>
       </Modal>
+
+      {/* Emergency Modal */}
+      <Modal
+        visible={showEmergencyModal}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setShowEmergencyModal(false)}
+      >
+        <Pressable 
+          style={styles.emergencyModalOverlay}
+          onPress={() => setShowEmergencyModal(false)}
+        >
+          <Pressable 
+            style={[styles.emergencyModalContent, { backgroundColor: currentColors.background }]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <View style={styles.emergencyModalHeader}>
+              <Text style={[styles.emergencyModalTitle, { color: currentColors.text }]}>
+                {t('emergencyNumbers')}
+              </Text>
+              <Pressable 
+                onPress={() => setShowEmergencyModal(false)}
+                style={styles.closeButton}
+              >
+                <IconSymbol name="xmark.circle.fill" color={currentColors.textSecondary} size={28} />
+              </Pressable>
+            </View>
+
+            {/* Emergency Numbers */}
+            <View style={styles.emergencyNumbersContainer}>
+              {EMERGENCY_NUMBERS.map((emergency) => (
+                <Pressable
+                  key={emergency.id}
+                  style={[
+                    styles.emergencyNumberCard,
+                    { 
+                      backgroundColor: currentColors.backgroundSecondary,
+                      borderLeftWidth: 3,
+                      borderLeftColor: emergency.color,
+                    }
+                  ]}
+                  onPress={() => handleEmergencyCall(emergency.number)}
+                >
+                  <View style={styles.emergencyNumberInfo}>
+                    <Text style={[styles.emergencyNumberTitle, { color: currentColors.text }]}>
+                      {t(emergency.titleKey)}
+                    </Text>
+                    <Text style={[styles.emergencyNumberText, { color: emergency.color }]}>
+                      {emergency.number}
+                    </Text>
+                  </View>
+                  <View style={[styles.emergencyCallButton, { backgroundColor: emergency.color }]}>
+                    <IconSymbol name="phone.fill" size={20} color="#FFFFFF" />
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </>
   );
 }
@@ -773,5 +878,65 @@ const styles = StyleSheet.create({
   },
   citySelectProvince: {
     fontWeight: '500',
+  },
+  emergencyModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emergencyModalContent: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 20,
+    padding: 20,
+    boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.2)',
+    elevation: 8,
+  },
+  emergencyModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  emergencyModalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  emergencyNumbersContainer: {
+    gap: 12,
+  },
+  emergencyNumberCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 12,
+    gap: 12,
+  },
+  emergencyNumberInfo: {
+    flex: 1,
+  },
+  emergencyNumberTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  emergencyNumberText: {
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: -1,
+  },
+  emergencyCallButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
