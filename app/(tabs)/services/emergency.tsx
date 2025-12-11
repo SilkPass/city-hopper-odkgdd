@@ -24,8 +24,6 @@ interface EmergencyNumber {
   id: string;
   number: string;
   titleKey: string;
-  descriptionKey: string;
-  icon: string;
   color: string;
 }
 
@@ -34,24 +32,18 @@ const EMERGENCY_NUMBERS: EmergencyNumber[] = [
     id: 'police',
     number: '110',
     titleKey: 'policeEmergency',
-    descriptionKey: 'policeEmergencyDesc',
-    icon: 'shield.fill',
     color: '#3498DB',
   },
   {
     id: 'ambulance',
     number: '120',
     titleKey: 'ambulanceEmergency',
-    descriptionKey: 'ambulanceEmergencyDesc',
-    icon: 'cross.case.fill',
     color: '#E74C3C',
   },
   {
     id: 'fire',
     number: '119',
     titleKey: 'fireEmergency',
-    descriptionKey: 'fireEmergencyDesc',
-    icon: 'flame.fill',
     color: '#E67E22',
   },
 ];
@@ -135,41 +127,32 @@ export default function EmergencyScreen() {
             </Text>
           </View>
 
-          {/* Emergency Numbers */}
+          {/* Emergency Numbers - Flattened Cards */}
           <View style={styles.numbersSection}>
             {EMERGENCY_NUMBERS.map((emergency, index) => (
               <React.Fragment key={emergency.id}>
                 <Pressable
                   style={[
                     styles.emergencyCard,
-                    { backgroundColor: currentColors.backgroundSecondary }
+                    { 
+                      backgroundColor: currentColors.backgroundSecondary,
+                      borderLeftWidth: 4,
+                      borderLeftColor: emergency.color,
+                    }
                   ]}
                   onPress={() => handleCall(emergency.number)}
                 >
                   <View style={styles.emergencyCardContent}>
-                    <View style={[
-                      styles.iconContainer,
-                      { backgroundColor: emergency.color + '15', width: isTablet ? 88 : 72, height: isTablet ? 88 : 72, borderRadius: isTablet ? 44 : 36 }
-                    ]}>
-                      <IconSymbol
-                        name={emergency.icon}
-                        size={isTablet ? 48 : 40}
-                        color={emergency.color}
-                      />
-                    </View>
                     <View style={styles.emergencyInfo}>
-                      <Text style={[styles.emergencyNumber, { color: emergency.color, fontSize: isTablet ? 56 : 48 }]}>
-                        {emergency.number}
-                      </Text>
-                      <Text style={[styles.emergencyTitle, { color: currentColors.text, fontSize: isTablet ? 26 : 22 }]}>
+                      <Text style={[styles.emergencyTitle, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
                         {t(emergency.titleKey)}
                       </Text>
-                      <Text style={[styles.emergencyDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 15 }]}>
-                        {t(emergency.descriptionKey)}
+                      <Text style={[styles.emergencyNumber, { color: emergency.color, fontSize: isTablet ? 48 : 40 }]}>
+                        {emergency.number}
                       </Text>
                     </View>
                     <View style={[styles.callButton, { backgroundColor: emergency.color }]}>
-                      <IconSymbol name="phone.fill" size={isTablet ? 32 : 28} color="#FFFFFF" />
+                      <IconSymbol name="phone.fill" size={isTablet ? 28 : 24} color="#FFFFFF" />
                     </View>
                   </View>
                 </Pressable>
@@ -257,45 +240,37 @@ const styles = StyleSheet.create({
     lineHeight: isTablet ? 26 : 22,
   },
   numbersSection: {
-    gap: isTablet ? 20 : 16,
+    gap: isTablet ? 16 : 12,
     marginBottom: isTablet ? 32 : 24,
   },
   emergencyCard: {
-    borderRadius: isTablet ? 24 : 20,
-    padding: isTablet ? 32 : 24,
-    boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.1)',
-    elevation: 4,
+    borderRadius: isTablet ? 20 : 16,
+    padding: isTablet ? 24 : 20,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.08)',
+    elevation: 3,
   },
   emergencyCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: isTablet ? 24 : 20,
-  },
-  iconContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: isTablet ? 20 : 16,
   },
   emergencyInfo: {
     flex: 1,
   },
+  emergencyTitle: {
+    fontWeight: '600',
+    marginBottom: isTablet ? 8 : 6,
+    letterSpacing: -0.3,
+  },
   emergencyNumber: {
     fontWeight: '800',
-    letterSpacing: -2,
-    marginBottom: isTablet ? 12 : 8,
-  },
-  emergencyTitle: {
-    fontWeight: '700',
-    marginBottom: isTablet ? 8 : 6,
-    letterSpacing: -0.5,
-  },
-  emergencyDescription: {
-    lineHeight: isTablet ? 24 : 20,
-    fontWeight: '400',
+    letterSpacing: -1.5,
   },
   callButton: {
-    width: isTablet ? 72 : 64,
-    height: isTablet ? 72 : 64,
-    borderRadius: isTablet ? 36 : 32,
+    width: isTablet ? 64 : 56,
+    height: isTablet ? 64 : 56,
+    borderRadius: isTablet ? 32 : 28,
     justifyContent: 'center',
     alignItems: 'center',
     boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',

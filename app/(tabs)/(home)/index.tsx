@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { 
   ScrollView, 
   Pressable, 
@@ -51,6 +51,7 @@ export default function HomeScreen() {
   const theme = useTheme();
   const { isDark } = useThemeMode();
   const { t, language } = useLanguage();
+  const router = useRouter();
   const currentColors = isDark ? darkColors : colors;
   
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
@@ -200,7 +201,12 @@ export default function HomeScreen() {
 
   const handleServicePress = (service: string) => {
     console.log('Service pressed:', service);
-    Alert.alert(service, `${service} feature coming soon!`);
+    
+    if (service === 'Emergency') {
+      router.push('/services/emergency');
+    } else {
+      Alert.alert(service, `${service} feature coming soon!`);
+    }
   };
 
   const handleCitySelect = (city: City) => {
