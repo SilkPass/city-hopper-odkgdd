@@ -241,7 +241,7 @@ const translations = {
     beijingDative: 'Бээжинд',
     shanghaiDative: 'Шанхайд',
     hongKongDative: 'Хонконгт',
-    hohhotDative: 'Хөххотт',
+    hohhotDative: 'Хөххотод',
     ordosDative: 'Ордост',
     macaoDative: 'Макаод',
     servicesDescription: 'Таны аялалд зайлшгүй шаардлагатай үйлчилгээнд хандах',
