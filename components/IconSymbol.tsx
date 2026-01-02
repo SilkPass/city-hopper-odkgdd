@@ -125,6 +125,12 @@ const MAPPING = {
   "bag.fill": "shopping-bag",
   "bag": "shopping-bag",
 
+  // Shipping & Delivery
+  "shippingbox.fill": "local-shipping",
+  "shippingbox": "local-shipping",
+  "box.truck.fill": "local-shipping",
+  "box.truck": "local-shipping",
+
   // Location & Maps
   "location.fill": "location-on",
   "location": "location-on",
