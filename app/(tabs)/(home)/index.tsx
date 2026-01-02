@@ -426,13 +426,13 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        {/* Services Grid - No title, Reordered: eSIM, Payment on line 1; Guide, Emergency on line 2 */}
+        {/* Services Grid - No title, Reordered: Get eSIM, Send a Package on line 1; Guide, Emergency on line 2 */}
         <View style={styles.section}>
           <View style={styles.servicesGrid}>
-            {/* eSIM Service - Line 1 */}
+            {/* Get eSIM Service - Line 1 */}
             <Pressable 
               style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary, width: cardWidth }]}
-              onPress={() => handleServicePress('eSIM')}
+              onPress={() => handleServicePress('Get eSIM')}
             >
               <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.accent + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
                 <IconSymbol name="antenna.radiowaves.left.and.right" color={currentColors.accent} size={isTablet ? 40 : 32} />
@@ -445,19 +445,19 @@ export default function HomeScreen() {
               </Text>
             </Pressable>
 
-            {/* Payment Service - Line 1 */}
+            {/* Send a Package Service - Line 1 */}
             <Pressable 
               style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary, width: cardWidth }]}
-              onPress={() => handleServicePress('Payment')}
+              onPress={() => handleServicePress('Send a Package')}
             >
               <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.secondary + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
-                <IconSymbol name="creditcard.fill" color={currentColors.secondary} size={isTablet ? 40 : 32} />
+                <IconSymbol name="shippingbox.fill" color={currentColors.secondary} size={isTablet ? 40 : 32} />
               </View>
               <Text style={[styles.serviceTitle, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
-                {t('payment')}
+                {t('sendPackage')}
               </Text>
               <Text style={[styles.serviceDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
-                {t('securePayment')}
+                {t('sendPackageDesc')}
               </Text>
             </Pressable>
 
