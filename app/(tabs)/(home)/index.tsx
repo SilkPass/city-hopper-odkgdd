@@ -324,9 +324,6 @@ export default function HomeScreen() {
               >
                 {language === 'mn' && (
                   <>
-                    <Text style={[styles.smallText, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 16 }]}>
-                      {t('welcome')}
-                    </Text>
                     <View style={styles.middleRow}>
                       <Text style={[styles.largeText, { color: currentColors.text, fontSize: isTablet ? 42 : 34 }]}>
                         {selectedCity ? t(`${selectedCity.nameKey}Dative`) : 'Хотод'}
