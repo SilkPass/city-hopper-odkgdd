@@ -1,8 +1,7 @@
-
 {
   "expo": {
     "name": "Seric",
-    "slug": "seric",
+    "slug": "Seric",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/540cb872-3bd0-4f2d-b856-4a78124475c0.jpeg",
@@ -44,5 +43,6 @@
     "extra": {
       "router": {}
     }
-  }
+  },
+  "scheme": "Seric"
 }

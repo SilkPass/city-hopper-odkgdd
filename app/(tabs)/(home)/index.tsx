@@ -234,6 +234,8 @@ export default function HomeScreen() {
     
     if (service === 'Emergency') {
       setShowEmergencyModal(true);
+    } else if (service === 'Get eSIM') {
+      router.push('/esim');
     } else {
       Alert.alert(service, `${service} feature coming soon!`);
     }
