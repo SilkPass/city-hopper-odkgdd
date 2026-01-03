@@ -1,5 +1,12 @@
 
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Stack, useRouter } from 'expo-router';
+import { IconSymbol } from '@/components/IconSymbol';
+import { colors, darkColors } from '@/styles/commonStyles';
+import { useTheme } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
+import { useThemeMode } from '@/contexts/ThemeContext';
 import {
   View,
   Text,
@@ -10,16 +17,6 @@ import {
   Alert,
   Dimensions,
 } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { IconSymbol } from '@/components/IconSymbol';
-import { colors, darkColors } from '@/styles/commonStyles';
-import { useTheme } from '@react-navigation/native';
-import { useThemeMode } from '@/contexts/ThemeContext';
-import { useLanguage } from '@/contexts/LanguageContext';
-
-const { width } = Dimensions.get('window');
-const isTablet = width >= 768;
 
 interface DataPlan {
   id: string;
@@ -35,33 +32,22 @@ const DATA_PLANS: DataPlan[] = [
   { id: '4', days: 30, data: 17, price: 199 },
 ];
 
+const { width } = Dimensions.get('window');
+
 export default function ESimScreen() {
-  const router = useRouter();
+  const { t } = useLanguage();
   const theme = useTheme();
   const { isDark } = useThemeMode();
-  const { t } = useLanguage();
+  const router = useRouter();
   const currentColors = isDark ? darkColors : colors;
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
   const handlePurchase = (plan: DataPlan) => {
-    console.log('Purchase button pressed for plan:', plan);
-    // TODO: Backend Integration - Call the payment API endpoint here to process the eSIM purchase
     Alert.alert(
-      t('confirmPurchase') || '确认购买',
-      `${plan.days} ${t('days') || '日'} ${plan.data} GB - ¥${plan.price}`,
+      t('purchaseConfirm'),
+      `${plan.days}${t('days')} ${plan.data}GB - ¥${plan.price}`,
       [
-        { text: t('cancel') || '取消', style: 'cancel' },
-        { 
-          text: t('purchase') || '购买', 
-          onPress: () => {
-            console.log('Purchase confirmed:', plan);
-            Alert.alert(
-              t('success') || '成功',
-              t('purchaseSuccess') || '购买成功！',
-              [{ text: t('ok') || '好的' }]
-            );
-          }
-        },
+        { text: t('cancel'), style: 'cancel' },
+        { text: t('confirm'), onPress: () => console.log('Purchase:', plan) }
       ]
     );
   };
@@ -70,120 +56,67 @@ export default function ESimScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: currentColors.background }]} edges={['bottom']}>
       <Stack.Screen
         options={{
-          title: 'Get eSIM',
-          headerBackTitle: t('back') || '返回',
+          headerShown: true,
+          title: t('getESim'),
           headerStyle: {
             backgroundColor: currentColors.background,
           },
           headerTintColor: currentColors.text,
           headerShadowVisible: false,
+          headerLeft: () => (
+            <Pressable
+              onPress={() => router.back()}
+              style={styles.backButton}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <IconSymbol
+                ios_icon_name="chevron.left"
+                android_material_icon_name="arrow-back"
+                size={24}
+                color={currentColors.text}
+              />
+            </Pressable>
+          ),
         }}
       />
-      <ScrollView 
-        style={styles.scrollView} 
-        contentContainerStyle={[
-          styles.content,
-          { paddingBottom: 100 }
-        ]}
+      
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <IconSymbol 
-            name="antenna.radiowaves.left.and.right" 
-            color={currentColors.primary} 
-            size={isTablet ? 72 : 56} 
-          />
-          <Text style={[styles.title, { color: currentColors.text }]}>
-            {t('chinaMainlandMacau') || '中国内地及澳门'}
-          </Text>
-          <Text style={[styles.subtitle, { color: currentColors.textSecondary }]}>
-            {t('selectDataPlan') || '选择您的数据套餐'}
-          </Text>
-        </View>
+        <Text style={[styles.subtitle, { color: currentColors.textSecondary }]}>
+          {t('chinaMainlandMacau')}
+        </Text>
 
         {DATA_PLANS.map((plan) => (
-          <Pressable
+          <View
             key={plan.id}
             style={[
               styles.planCard,
-              { 
-                backgroundColor: currentColors.backgroundSecondary,
-                borderColor: selectedPlan === plan.id ? currentColors.primary : currentColors.border,
-              }
+              {
+                backgroundColor: currentColors.cardBackground,
+                borderColor: currentColors.border,
+              },
             ]}
-            onPress={() => {
-              console.log('Plan selected:', plan);
-              setSelectedPlan(plan.id);
-            }}
           >
-            <View style={styles.planHeader}>
-              <View style={[styles.iconContainer, { backgroundColor: currentColors.primary + '15' }]}>
-                <IconSymbol 
-                  ios_icon_name="wifi" 
-                  android_material_icon_name="wifi" 
-                  size={isTablet ? 32 : 24} 
-                  color={currentColors.primary} 
-                />
-              </View>
-              <View style={styles.planInfo}>
-                <Text style={[styles.planTitle, { color: currentColors.text }]}>
-                  {plan.days} {t('days') || '日'} {plan.data} GB
-                </Text>
-                <Text style={[styles.planSubtitle, { color: currentColors.textSecondary }]}>
-                  {t('dataValidity') || '数据有效期'}
-                </Text>
-              </View>
+            <View style={styles.planInfo}>
+              <Text style={[styles.planTitle, { color: currentColors.text }]}>
+                {plan.days} {t('days')} {plan.data} GB
+              </Text>
+              <Text style={[styles.planPrice, { color: currentColors.primary }]}>
+                ¥{plan.price}
+              </Text>
             </View>
             
-            <View style={styles.planPricing}>
-              <View style={styles.priceContainer}>
-                <Text style={[styles.currency, { color: currentColors.textSecondary }]}>¥</Text>
-                <Text style={[styles.planPrice, { color: currentColors.primary }]}>{plan.price}</Text>
-              </View>
-              
-              <Pressable
-                style={[
-                  styles.purchaseButton,
-                  { backgroundColor: currentColors.primary }
-                ]}
-                onPress={() => handlePurchase(plan)}
-              >
-                <Text style={styles.purchaseButtonText}>
-                  {t('purchase') || '购买'}
-                </Text>
-                <IconSymbol 
-                  ios_icon_name="arrow.right" 
-                  android_material_icon_name="arrow-forward" 
-                  size={18} 
-                  color="#FFFFFF" 
-                />
-              </Pressable>
-            </View>
-
-            {selectedPlan === plan.id && (
-              <View style={[styles.selectedBadge, { backgroundColor: currentColors.primary }]}>
-                <IconSymbol 
-                  ios_icon_name="checkmark" 
-                  android_material_icon_name="check" 
-                  size={16} 
-                  color="#FFFFFF" 
-                />
-              </View>
-            )}
-          </Pressable>
+            <Pressable
+              style={[styles.purchaseButton, { backgroundColor: currentColors.primary }]}
+              onPress={() => handlePurchase(plan)}
+            >
+              <Text style={styles.purchaseButtonText}>{t('purchase')}</Text>
+            </Pressable>
+          </View>
         ))}
-
-        <View style={[styles.infoCard, { backgroundColor: currentColors.cardSecondary }]}>
-          <IconSymbol 
-            ios_icon_name="info.circle.fill" 
-            android_material_icon_name="info" 
-            size={24} 
-            color={currentColors.info} 
-          />
-          <Text style={[styles.infoText, { color: currentColors.textSecondary }]}>
-            {t('esimInfo') || 'eSIM 将在购买后立即激活。请确保您的设备支持 eSIM 功能。'}
-          </Text>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -193,119 +126,58 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  backButton: {
+    padding: 8,
+    marginLeft: Platform.OS === 'ios' ? 0 : 8,
+  },
   scrollView: {
     flex: 1,
   },
-  content: {
-    padding: isTablet ? 32 : 20,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: isTablet ? 40 : 32,
-  },
-  title: {
-    fontSize: isTablet ? 32 : 28,
-    fontWeight: '700',
-    marginTop: isTablet ? 20 : 16,
-    marginBottom: 8,
-    letterSpacing: -0.5,
-    textAlign: 'center',
+  scrollContent: {
+    padding: 20,
   },
   subtitle: {
-    fontSize: isTablet ? 18 : 16,
+    fontSize: 16,
+    marginBottom: 20,
     fontWeight: '500',
-    textAlign: 'center',
   },
   planCard: {
-    borderRadius: isTablet ? 20 : 16,
-    padding: isTablet ? 24 : 20,
-    marginBottom: isTablet ? 20 : 16,
-    borderWidth: 2,
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
-    elevation: 2,
-    position: 'relative',
-  },
-  planHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: isTablet ? 20 : 16,
-    gap: isTablet ? 16 : 12,
-  },
-  iconContainer: {
-    width: isTablet ? 56 : 48,
-    height: isTablet ? 56 : 48,
-    borderRadius: isTablet ? 28 : 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   planInfo: {
-    flex: 1,
+    marginBottom: 16,
   },
   planTitle: {
-    fontSize: isTablet ? 24 : 20,
-    fontWeight: '700',
-    marginBottom: 4,
-    letterSpacing: -0.3,
-  },
-  planSubtitle: {
-    fontSize: isTablet ? 15 : 13,
-    fontWeight: '500',
-  },
-  planPricing: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 4,
-  },
-  currency: {
-    fontSize: isTablet ? 24 : 20,
+    fontSize: 20,
     fontWeight: '600',
+    marginBottom: 8,
   },
   planPrice: {
-    fontSize: isTablet ? 40 : 36,
-    fontWeight: '800',
-    letterSpacing: -1,
+    fontSize: 28,
+    fontWeight: 'bold',
   },
   purchaseButton: {
-    flexDirection: 'row',
+    borderRadius: 12,
+    paddingVertical: 14,
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: isTablet ? 16 : 14,
-    paddingHorizontal: isTablet ? 28 : 24,
-    borderRadius: isTablet ? 14 : 12,
   },
   purchaseButtonText: {
     color: '#FFFFFF',
-    fontSize: isTablet ? 18 : 16,
-    fontWeight: '700',
-    letterSpacing: -0.3,
-  },
-  selectedBadge: {
-    position: 'absolute',
-    top: isTablet ? 16 : 12,
-    right: isTablet ? 16 : 12,
-    width: isTablet ? 32 : 28,
-    height: isTablet ? 32 : 28,
-    borderRadius: isTablet ? 16 : 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  infoCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: isTablet ? 16 : 12,
-    padding: isTablet ? 20 : 16,
-    borderRadius: isTablet ? 16 : 12,
-    marginTop: isTablet ? 12 : 8,
-  },
-  infoText: {
-    flex: 1,
-    fontSize: isTablet ? 15 : 14,
-    lineHeight: isTablet ? 22 : 20,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
