@@ -1,40 +1,61 @@
+
 {
   "expo": {
     "name": "Seric",
     "slug": "Seric",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/540cb872-3bd0-4f2d-b856-4a78124475c0.jpeg",
+    "icon": "./assets/images/natively-dark.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/540cb872-3bd0-4f2d-b856-4a78124475c0.jpeg",
+      "image": "./assets/images/natively-dark.png",
       "resizeMode": "contain",
-      "backgroundColor": "#C94B6F"
+      "backgroundColor": "#000000"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.seric.app",
+      "bundleIdentifier": "com.anonymous.Seric",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "We need your location to show nearby cities and services.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "We need your location to show nearby cities and services."
+      },
+      "config": {
+        "googleMapsApiKey": "YOUR_GOOGLE_MAPS_API_KEY"
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/540cb872-3bd0-4f2d-b856-4a78124475c0.jpeg",
-        "backgroundColor": "#C94B6F"
+        "foregroundImage": "./assets/images/natively-dark.png",
+        "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.seric.app"
+      "package": "com.anonymous.Seric",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+        }
+      }
     },
     "web": {
-      "favicon": "./assets/images/540cb872-3bd0-4f2d-b856-4a78124475c0.jpeg",
+      "favicon": "./assets/images/final_quest_240x240.png",
       "bundler": "metro"
     },
     "plugins": [
       "expo-font",
       "expo-router",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Seric to use your location to show nearby cities and services."
+        }
+      ]
     ],
     "scheme": "seric",
     "experiments": {
@@ -43,6 +64,5 @@
     "extra": {
       "router": {}
     }
-  },
-  "scheme": "Seric"
+  }
 }

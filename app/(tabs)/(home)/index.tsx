@@ -1,6 +1,11 @@
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import * as Location from 'expo-location';
 import { Stack, useRouter } from "expo-router";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { colors, darkColors } from "@/styles/commonStyles";
+import { SafeAreaView } from "react-native-safe-area-context";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useTheme } from "@react-navigation/native";
 import { 
   ScrollView, 
   Pressable, 
@@ -12,18 +17,11 @@ import {
   Dimensions,
   Alert,
   Modal,
-  Linking
+  Linking,
+  ImageBackground
 } from "react-native";
-import { IconSymbol } from "@/components/IconSymbol";
-import { useTheme } from "@react-navigation/native";
-import * as Location from 'expo-location';
-import { colors, darkColors } from "@/styles/commonStyles";
 import { useThemeMode } from "@/contexts/ThemeContext";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { SafeAreaView } from "react-native-safe-area-context";
-
-const { width, height } = Dimensions.get('window');
-const isTablet = width >= 768;
+import { IconSymbol } from "@/components/IconSymbol";
 
 interface City {
   name: string;
@@ -47,637 +45,358 @@ interface EmergencyNumber {
 }
 
 const CITIES: City[] = [
-  { name: "Beijing", nameKey: "beijing", latitude: 39.9042, longitude: 116.4074, provinceKey: "beijingProvince" },
-  { name: "Shanghai", nameKey: "shanghai", latitude: 31.2304, longitude: 121.4737, provinceKey: "shanghaiProvince" },
-  { name: "Hong Kong", nameKey: "hongKong", latitude: 22.3193, longitude: 114.1694, provinceKey: "hongKongProvince" },
-  { name: "Macao", nameKey: "macao", latitude: 22.1987, longitude: 113.5439, provinceKey: "macaoProvince" },
-  { name: "Hohhot", nameKey: "hohhot", latitude: 40.8414, longitude: 111.7519, provinceKey: "hohhotProvince" },
-  { name: "Ordos", nameKey: "ordos", latitude: 39.6086, longitude: 109.7810, provinceKey: "ordosProvince" },
+  { name: 'Beijing', nameKey: 'city_beijing', latitude: 39.9042, longitude: 116.4074, provinceKey: 'province_beijing' },
+  { name: 'Shanghai', nameKey: 'city_shanghai', latitude: 31.2304, longitude: 121.4737, provinceKey: 'province_shanghai' },
+  { name: 'Hong Kong', nameKey: 'city_hongkong', latitude: 22.3193, longitude: 114.1694, provinceKey: 'province_hongkong' },
 ];
 
 const EMERGENCY_NUMBERS: EmergencyNumber[] = [
-  {
-    id: 'police',
-    number: '110',
-    titleKey: 'policeEmergency',
-    color: '#3498DB',
-  },
-  {
-    id: 'ambulance',
-    number: '120',
-    titleKey: 'ambulanceEmergency',
-    color: '#E74C3C',
-  },
-  {
-    id: 'fire',
-    number: '119',
-    titleKey: 'fireEmergency',
-    color: '#E67E22',
-  },
+  { id: '1', number: '110', titleKey: 'emergency_police', color: '#3B82F6' },
+  { id: '2', number: '120', titleKey: 'emergency_ambulance', color: '#EF4444' },
+  { id: '3', number: '119', titleKey: 'emergency_fire', color: '#F59E0B' },
 ];
 
 export default function HomeScreen() {
-  const theme = useTheme();
+  const { t } = useLanguage();
   const { isDark } = useThemeMode();
-  const { t, language } = useLanguage();
+  const theme = useTheme();
   const router = useRouter();
-  const currentColors = isDark ? darkColors : colors;
+  const currentColors = useMemo(() => isDark ? darkColors : colors, [isDark]);
   
-  const [selectedCity, setSelectedCity] = useState<City | null>(null);
-  const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [locationPermission, setLocationPermission] = useState<Location.PermissionStatus | null>(null);
-  const [showCitySelector, setShowCitySelector] = useState(false);
-  const [showEmergencyModal, setShowEmergencyModal] = useState(false);
+  const [selectedCity, setSelectedCity] = useState<City>(CITIES[0]);
   const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [weatherLoading, setWeatherLoading] = useState(false);
-
-  // Reorder cities based on language
-  const orderedCities = useMemo(() => {
-    if (language === 'mn') {
-      // Mongolian order: Beijing, Hohhot, Ordos, Shanghai, Hong Kong, Macao
-      return [
-        CITIES.find(c => c.nameKey === 'beijing')!,
-        CITIES.find(c => c.nameKey === 'hohhot')!,
-        CITIES.find(c => c.nameKey === 'ordos')!,
-        CITIES.find(c => c.nameKey === 'shanghai')!,
-        CITIES.find(c => c.nameKey === 'hongKong')!,
-        CITIES.find(c => c.nameKey === 'macao')!,
-      ];
-    } else {
-      // Default order: Beijing, Shanghai, Hong Kong, Macao, Hohhot, Ordos
-      return CITIES;
-    }
-  }, [language]);
-
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-    return distance;
-  };
-
-  const fetchWeather = useCallback(async (city: City) => {
-    setWeatherLoading(true);
-    try {
-      console.log('Fetching weather for:', city.name);
-      // Using Open-Meteo API (free, no API key required)
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${city.latitude}&longitude=${city.longitude}&current=temperature_2m,weather_code&temperature_unit=celsius`
-      );
-      const data = await response.json();
-      console.log('Weather data:', data);
-      
-      if (data.current) {
-        const weatherCode = data.current.weather_code;
-        const condition = getWeatherCondition(weatherCode);
-        const icon = getWeatherIcon(weatherCode);
-        
-        setWeather({
-          temperature: Math.round(data.current.temperature_2m),
-          condition,
-          icon,
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching weather:', error);
-      setWeather(null);
-    } finally {
-      setWeatherLoading(false);
-    }
-  }, []);
-
-  const getWeatherCondition = (code: number): string => {
-    if (code === 0) return 'Clear';
-    if (code <= 3) return 'Cloudy';
-    if (code <= 67) return 'Rainy';
-    if (code <= 77) return 'Snowy';
-    if (code <= 99) return 'Stormy';
-    return 'Unknown';
-  };
-
-  const getWeatherIcon = (code: number): string => {
-    if (code === 0) return 'sun.max.fill';
-    if (code <= 3) return 'cloud.fill';
-    if (code <= 67) return 'cloud.rain.fill';
-    if (code <= 77) return 'cloud.snow.fill';
-    if (code <= 99) return 'cloud.bolt.fill';
-    return 'cloud.fill';
-  };
-
-  const getUserLocation = useCallback(async () => {
-    try {
-      console.log('Getting user location...');
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-      console.log('User location:', location);
-      setUserLocation(location);
-      
-      const citiesWithDistance = orderedCities.map(city => ({
-        ...city,
-        distance: calculateDistance(
-          location.coords.latitude,
-          location.coords.longitude,
-          city.latitude,
-          city.longitude
-        )
-      }));
-      
-      citiesWithDistance.sort((a, b) => a.distance - b.distance);
-      setSelectedCity(citiesWithDistance[0]);
-      fetchWeather(citiesWithDistance[0]);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error getting location:', error);
-      setLoading(false);
-      setSelectedCity(orderedCities[0]);
-      fetchWeather(orderedCities[0]);
-    }
-  }, [fetchWeather, orderedCities]);
+  const [loading, setLoading] = useState(true);
+  const [showCityPicker, setShowCityPicker] = useState(false);
+  const [showEmergencyModal, setShowEmergencyModal] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   const requestLocationPermission = useCallback(async () => {
     try {
-      console.log('Requesting location permission...');
       const { status } = await Location.requestForegroundPermissionsAsync();
-      console.log('Permission status:', status);
-      setLocationPermission(status);
-      
       if (status === 'granted') {
-        getUserLocation();
-      } else {
-        console.log('Location permission denied');
-        setLoading(false);
-        setSelectedCity(orderedCities[0]);
-        fetchWeather(orderedCities[0]);
+        const location = await Location.getCurrentPositionAsync({});
+        setUserLocation({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+        
+        // Find nearest city
+        const distances = CITIES.map(city => ({
+          city,
+          distance: calculateDistance(
+            location.coords.latitude,
+            location.coords.longitude,
+            city.latitude,
+            city.longitude
+          ),
+        }));
+        const nearest = distances.sort((a, b) => a.distance - b.distance)[0];
+        setSelectedCity(nearest.city);
       }
     } catch (error) {
-      console.error('Error requesting location permission:', error);
+      console.error('Location error:', error);
+    } finally {
       setLoading(false);
-      setSelectedCity(orderedCities[0]);
-      fetchWeather(orderedCities[0]);
     }
-  }, [getUserLocation, fetchWeather, orderedCities]);
+  }, []);
 
   useEffect(() => {
     requestLocationPermission();
   }, [requestLocationPermission]);
 
+  useEffect(() => {
+    if (selectedCity) {
+      fetchWeather();
+    }
+  }, [selectedCity]);
+
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  const fetchWeather = async () => {
+    try {
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${selectedCity.latitude}&longitude=${selectedCity.longitude}&current=temperature_2m,weather_code&timezone=auto`
+      );
+      const data = await response.json();
+      setWeather({
+        temperature: Math.round(data.current.temperature_2m),
+        condition: getWeatherCondition(data.current.weather_code),
+        icon: getWeatherIcon(data.current.weather_code),
+      });
+    } catch (error) {
+      console.error('Weather fetch error:', error);
+    }
+  };
+
+  const getWeatherCondition = (code: number): string => {
+    if (code === 0) return 'weather_clear';
+    if (code <= 3) return 'weather_cloudy';
+    if (code <= 67) return 'weather_rainy';
+    if (code <= 77) return 'weather_snowy';
+    return 'weather_stormy';
+  };
+
+  const getWeatherIcon = (code: number): string => {
+    if (code === 0) return 'wb-sunny';
+    if (code <= 3) return 'cloud';
+    if (code <= 67) return 'opacity';
+    if (code <= 77) return 'ac-unit';
+    return 'flash-on';
+  };
+
   const handleServicePress = (service: string) => {
     console.log('Service pressed:', service);
-    
-    if (service === 'Emergency') {
-      setShowEmergencyModal(true);
-    } else if (service === 'Get eSIM') {
+    if (service === 'esim') {
       router.push('/esim');
-    } else {
-      Alert.alert(service, `${service} feature coming soon!`);
+    } else if (service === 'emergency') {
+      setShowEmergencyModal(true);
     }
   };
 
   const handleCitySelect = (city: City) => {
     console.log('City selected:', city.name);
     setSelectedCity(city);
-    fetchWeather(city);
-    setShowCitySelector(false);
+    setShowCityPicker(false);
   };
 
   const handleEmergencyCall = (number: string) => {
-    console.log('Calling emergency number:', number);
-    const phoneUrl = `tel:${number}`;
-    Linking.canOpenURL(phoneUrl)
-      .then((supported) => {
-        if (supported) {
-          return Linking.openURL(phoneUrl);
-        } else {
-          console.log('Phone calls not supported on this device');
-        }
-      })
-      .catch((err) => console.error('Error opening phone dialer:', err));
+    console.log('Emergency call requested:', number);
+    Alert.alert(
+      t('emergency_call_title'),
+      t('emergency_call_confirm').replace('{number}', number),
+      [
+        { text: t('cancel'), style: 'cancel' },
+        { text: t('call'), onPress: () => Linking.openURL(`tel:${number}`) },
+      ]
+    );
+  };
+
+  const getStaticMapUrl = (city: City) => {
+    // Using a static map image from OpenStreetMap
+    const zoom = 12;
+    const width = 600;
+    const height = 400;
+    return `https://maps.geoapify.com/v1/staticmap?style=osm-bright&width=${width}&height=${height}&center=lonlat:${city.longitude},${city.latitude}&zoom=${zoom}&marker=lonlat:${city.longitude},${city.latitude};color:%23ff0000;size:medium&apiKey=demo`;
   };
 
   if (loading) {
     return (
-      <>
-        {Platform.OS === 'ios' && (
-          <Stack.Screen
-            options={{
-              title: "",
-              headerTransparent: false,
-              headerStyle: {
-                backgroundColor: currentColors.backgroundSecondary,
-              },
-            }}
-          />
-        )}
-        <View style={[styles.container, { backgroundColor: currentColors.background }]}>
-          <ActivityIndicator size="large" color={currentColors.primary} />
-          <Text style={[styles.loadingText, { color: currentColors.textSecondary }]}>
-            {t('gettingYourLocation')}
-          </Text>
-        </View>
-      </>
+      <View style={[styles.container, { backgroundColor: currentColors.background }]}>
+        <ActivityIndicator size="large" color={currentColors.primary} />
+      </View>
     );
   }
 
-  const cardWidth = isTablet ? (width - 80) / 2 : (width - 52) / 2;
-  const horizontalPadding = isTablet ? 40 : 20;
-
   return (
-    <>
-      {Platform.OS === 'ios' && (
-        <Stack.Screen
-          options={{
-            title: "",
-            headerTransparent: false,
-            headerStyle: {
-              backgroundColor: currentColors.backgroundSecondary,
-            },
-            headerShadowVisible: false,
-          }}
-        />
-      )}
+    <SafeAreaView style={[styles.container, { backgroundColor: currentColors.background }]} edges={['top']}>
+      <Stack.Screen options={{ headerShown: false }} />
       
-      <ScrollView 
-        style={[styles.container, { backgroundColor: currentColors.background }]}
-        contentContainerStyle={[
-          styles.scrollContent, 
-          { 
-            paddingHorizontal: horizontalPadding,
-            paddingTop: Platform.OS === 'android' ? 48 : 24,
-            paddingBottom: 120,
-          }
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header with City Selector and Weather */}
-        <View style={styles.headerContainer}>
-          <View style={styles.headerLeft}>
-            {(language === 'mn' || language === 'kk' || language === 'uz') ? (
-              <Pressable 
-                style={styles.multilineTitleContainer}
-                onPress={() => setShowCitySelector(true)}
-              >
-                {language === 'mn' && (
-                  <>
-                    <View style={styles.middleRow}>
-                      <Text style={[styles.largeText, { color: currentColors.text, fontSize: isTablet ? 42 : 34 }]}>
-                        {selectedCity ? t(`${selectedCity.nameKey}Dative`) : 'Хотод'}
-                      </Text>
-                      <IconSymbol 
-                        name="chevron.down" 
-                        color={currentColors.primary} 
-                        size={isTablet ? 32 : 24} 
-                        style={styles.arrowIcon}
-                      />
-                    </View>
-                    <Text style={[styles.smallText, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 16 }]}>
-                      {t('welcomeSmall')}
-                    </Text>
-                  </>
-                )}
-                {(language === 'kk' || language === 'uz') && (
-                  <>
-                    <View style={styles.middleRow}>
-                      <Text style={[styles.largeText, { color: currentColors.text, fontSize: isTablet ? 42 : 34 }]}>
-                        {selectedCity ? t(`${selectedCity.nameKey}Dative`) : (language === 'kk' ? 'Қалада' : 'Shaharda')}
-                      </Text>
-                      <IconSymbol 
-                        name="chevron.down" 
-                        color={currentColors.primary} 
-                        size={isTablet ? 32 : 24} 
-                        style={styles.arrowIcon}
-                      />
-                    </View>
-                    <Text style={[styles.smallText, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 16 }]}>
-                      {t('welcomeSmall')}
-                    </Text>
-                  </>
-                )}
-              </Pressable>
-            ) : (
-              <>
-                <Text style={[styles.greeting, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 15 }]}>
-                  {t('welcome')}
-                </Text>
-                <Pressable 
-                  style={styles.citySelector}
-                  onPress={() => setShowCitySelector(true)}
-                >
-                  <Text style={[styles.title, { color: currentColors.text, fontSize: isTablet ? 42 : 34 }]}>
-                    {selectedCity ? (language === 'uk' ? t(`${selectedCity.nameKey}Dative`) : t(selectedCity.nameKey)) : 'Your City'}
-                  </Text>
-                  <IconSymbol 
-                    name="chevron.down" 
-                    color={currentColors.primary} 
-                    size={isTablet ? 36 : 28} 
-                    style={styles.chevronIcon}
-                  />
-                </Pressable>
-              </>
-            )}
-          </View>
-
-          {/* Weather Widget */}
-          {weather && (
-            <View style={styles.weatherWidget}>
-              {weatherLoading ? (
-                <ActivityIndicator size="small" color={currentColors.primary} />
-              ) : (
-                <>
-                  <IconSymbol 
-                    name={weather.icon} 
-                    color={currentColors.primary} 
-                    size={isTablet ? 40 : 32} 
-                  />
-                  <Text style={[styles.temperature, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
-                    {weather.temperature}°
-                  </Text>
-                </>
-              )}
-            </View>
-          )}
-        </View>
-
-        {/* Map Card - No title, 1:1 aspect ratio */}
-        <View style={styles.section}>
-          <Pressable 
-            style={[styles.mapCard, { backgroundColor: currentColors.cardSecondary }]}
-            onPress={() => handleServicePress('Map')}
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Map Section - Using static map image */}
+        <View style={styles.mapContainer}>
+          <ImageBackground
+            source={{ uri: getStaticMapUrl(selectedCity) }}
+            style={styles.map}
+            resizeMode="cover"
           >
-            <View style={styles.mapPlaceholder}>
-              <IconSymbol name="map.fill" color={currentColors.primary} size={isTablet ? 72 : 56} />
-              <Text style={[styles.mapPlaceholderText, { color: currentColors.textSecondary, fontSize: isTablet ? 18 : 15 }]}>
-                {t('mapsNotSupported')}
-              </Text>
-              {selectedCity && (
-                <Text style={[styles.mapPlaceholderSubtext, { color: currentColors.textTertiary, fontSize: isTablet ? 16 : 13 }]}>
+            {Platform.OS === 'web' && (
+              <View style={[styles.webMapNotice, { backgroundColor: 'rgba(0,0,0,0.7)' }]}>
+                <IconSymbol 
+                  ios_icon_name="info.circle" 
+                  android_material_icon_name="info" 
+                  size={20} 
+                  color="#FFFFFF" 
+                />
+                <Text style={styles.webMapNoticeText}>
+                  Interactive maps are not available on web. Showing static map view.
+                </Text>
+              </View>
+            )}
+          </ImageBackground>
+          
+          {/* City Selector Overlay */}
+          <Pressable
+            style={[styles.citySelector, { backgroundColor: currentColors.card }]}
+            onPress={() => setShowCityPicker(true)}
+          >
+            <View style={styles.citySelectorContent}>
+              <View>
+                <Text style={[styles.cityName, { color: currentColors.text }]}>
+                  {t(selectedCity.nameKey)}
+                </Text>
+                <Text style={[styles.provinceName, { color: currentColors.textSecondary }]}>
                   {t(selectedCity.provinceKey)}
                 </Text>
-              )}
+              </View>
+              <IconSymbol 
+                ios_icon_name="chevron.down" 
+                android_material_icon_name="arrow-drop-down" 
+                size={24} 
+                color={currentColors.text} 
+              />
             </View>
+            
+            {weather && (
+              <View style={styles.weatherInfo}>
+                <IconSymbol 
+                  ios_icon_name="sun.max.fill" 
+                  android_material_icon_name={weather.icon} 
+                  size={32} 
+                  color={currentColors.primary} 
+                />
+                <Text style={[styles.temperature, { color: currentColors.text }]}>
+                  {weather.temperature}°C
+                </Text>
+                <Text style={[styles.condition, { color: currentColors.textSecondary }]}>
+                  {t(weather.condition)}
+                </Text>
+              </View>
+            )}
           </Pressable>
         </View>
 
-        {/* Services Grid - No title, Reordered: Get eSIM, Send a Package on line 1; Guide, Emergency on line 2 */}
-        <View style={styles.section}>
+        {/* Services Section */}
+        <View style={styles.servicesContainer}>
+          <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
+            {t('services')}
+          </Text>
+          
           <View style={styles.servicesGrid}>
-            {/* Get eSIM Service - Line 1 */}
-            <Pressable 
-              style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary, width: cardWidth }]}
-              onPress={() => handleServicePress('Get eSIM')}
+            <Pressable
+              style={[styles.serviceCard, { backgroundColor: currentColors.card }]}
+              onPress={() => handleServicePress('esim')}
             >
-              <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.accent + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
-                <IconSymbol name="antenna.radiowaves.left.and.right" color={currentColors.accent} size={isTablet ? 40 : 32} />
-              </View>
-              <Text style={[styles.serviceTitle, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
-                {t('eSIM')}
+              <IconSymbol 
+                ios_icon_name="antenna.radiowaves.left.and.right" 
+                android_material_icon_name="signal-cellular-alt" 
+                size={32} 
+                color="#3B82F6" 
+              />
+              <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
+                {t('service_esim')}
               </Text>
-              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
-                {t('stayConnected')}
+              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
+                {t('service_esim_desc')}
               </Text>
             </Pressable>
 
-            {/* Send a Package Service - Line 1 */}
-            <Pressable 
-              style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary, width: cardWidth }]}
-              onPress={() => handleServicePress('Send a Package')}
+            <Pressable
+              style={[styles.serviceCard, { backgroundColor: currentColors.card }]}
+              onPress={() => handleServicePress('package')}
             >
-              <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.secondary + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
-                <IconSymbol name="shippingbox.fill" color={currentColors.secondary} size={isTablet ? 40 : 32} />
-              </View>
-              <Text style={[styles.serviceTitle, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
-                {t('sendPackage')}
+              <IconSymbol 
+                ios_icon_name="shippingbox.fill" 
+                android_material_icon_name="local-shipping" 
+                size={32} 
+                color="#10B981" 
+              />
+              <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
+                {t('service_package')}
               </Text>
-              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
-                {t('sendPackageDesc')}
+              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
+                {t('service_package_desc')}
               </Text>
             </Pressable>
 
-            {/* Guide Service - Line 2 */}
-            <Pressable 
-              style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary, width: cardWidth }]}
-              onPress={() => handleServicePress('Travel Guide')}
+            <Pressable
+              style={[styles.serviceCard, { backgroundColor: currentColors.card }]}
+              onPress={() => handleServicePress('emergency')}
             >
-              <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.primary + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
-                <IconSymbol name="book.fill" color={currentColors.primary} size={isTablet ? 40 : 32} />
-              </View>
-              <Text style={[styles.serviceTitle, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
-                {t('guide')}
+              <IconSymbol 
+                ios_icon_name="phone.fill" 
+                android_material_icon_name="phone" 
+                size={32} 
+                color="#EF4444" 
+              />
+              <Text style={[styles.serviceTitle, { color: currentColors.text }]}>
+                {t('service_emergency')}
               </Text>
-              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
-                {t('exploreLocal')}
-              </Text>
-            </Pressable>
-
-            {/* Emergency Service - Line 2 */}
-            <Pressable 
-              style={[styles.serviceCard, { backgroundColor: currentColors.backgroundSecondary, width: cardWidth }]}
-              onPress={() => handleServicePress('Emergency')}
-            >
-              <View style={[styles.serviceIconContainer, { backgroundColor: currentColors.error + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
-                <IconSymbol name="phone.fill" color={currentColors.error} size={isTablet ? 40 : 32} />
-              </View>
-              <Text style={[styles.serviceTitle, { color: currentColors.text, fontSize: isTablet ? 22 : 18 }]}>
-                {t('emergency')}
-              </Text>
-              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
-                {t('quickEmergency')}
+              <Text style={[styles.serviceDescription, { color: currentColors.textSecondary }]}>
+                {t('service_emergency_desc')}
               </Text>
             </Pressable>
           </View>
-        </View>
-
-        {/* Quick Actions */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: currentColors.text, fontSize: isTablet ? 26 : 22 }]}>
-            {t('quickActions')}
-          </Text>
-          
-          <Pressable 
-            style={[styles.actionCard, { backgroundColor: currentColors.backgroundSecondary }]}
-            onPress={() => handleServicePress('Weather')}
-          >
-            <View style={[styles.actionIcon, { backgroundColor: currentColors.info + '15', width: isTablet ? 60 : 48, height: isTablet ? 60 : 48, borderRadius: isTablet ? 30 : 24 }]}>
-              <IconSymbol name="cloud.sun.fill" color={currentColors.info} size={isTablet ? 30 : 24} />
-            </View>
-            <View style={styles.actionContent}>
-              <Text style={[styles.actionTitle, { color: currentColors.text, fontSize: isTablet ? 20 : 17 }]}>
-                {t('weatherForecast')}
-              </Text>
-              <Text style={[styles.actionSubtitle, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
-                {t('checkLocalWeather')}
-              </Text>
-            </View>
-            <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={isTablet ? 24 : 20} />
-          </Pressable>
-
-          <Pressable 
-            style={[styles.actionCard, { backgroundColor: currentColors.backgroundSecondary }]}
-            onPress={() => handleServicePress('Transportation')}
-          >
-            <View style={[styles.actionIcon, { backgroundColor: currentColors.success + '15', width: isTablet ? 60 : 48, height: isTablet ? 60 : 48, borderRadius: isTablet ? 30 : 24 }]}>
-              <IconSymbol name="car.fill" color={currentColors.success} size={isTablet ? 30 : 24} />
-            </View>
-            <View style={styles.actionContent}>
-              <Text style={[styles.actionTitle, { color: currentColors.text, fontSize: isTablet ? 20 : 17 }]}>
-                {t('transportation')}
-              </Text>
-              <Text style={[styles.actionSubtitle, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
-                {t('findNearbyTransit')}
-              </Text>
-            </View>
-            <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={isTablet ? 24 : 20} />
-          </Pressable>
-
-          <Pressable 
-            style={[styles.actionCard, { backgroundColor: currentColors.backgroundSecondary }]}
-            onPress={() => handleServicePress('Language')}
-          >
-            <View style={[styles.actionIcon, { backgroundColor: currentColors.warning + '15', width: isTablet ? 60 : 48, height: isTablet ? 60 : 48, borderRadius: isTablet ? 30 : 24 }]}>
-              <IconSymbol name="globe" color={currentColors.warning} size={isTablet ? 30 : 24} />
-            </View>
-            <View style={styles.actionContent}>
-              <Text style={[styles.actionTitle, { color: currentColors.text, fontSize: isTablet ? 20 : 17 }]}>
-                {t('languageAssistant')}
-              </Text>
-              <Text style={[styles.actionSubtitle, { color: currentColors.textSecondary, fontSize: isTablet ? 16 : 13 }]}>
-                {t('translateEasily')}
-              </Text>
-            </View>
-            <IconSymbol name="chevron.right" color={currentColors.textTertiary} size={isTablet ? 24 : 20} />
-          </Pressable>
         </View>
       </ScrollView>
 
-      {/* City Selector Modal */}
+      {/* City Picker Modal */}
       <Modal
-        visible={showCitySelector}
+        visible={showCityPicker}
+        transparent
         animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowCitySelector(false)}
+        onRequestClose={() => setShowCityPicker(false)}
       >
-        <SafeAreaView 
-          style={[styles.modalContainer, { backgroundColor: currentColors.background }]} 
-          edges={['top', 'bottom']}
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowCityPicker(false)}
         >
-          {/* Modal Header */}
-          <View style={[styles.modalHeader, { borderBottomColor: currentColors.separator }]}>
-            <Pressable onPress={() => setShowCitySelector(false)} style={styles.backButton}>
-              <IconSymbol name="xmark" color={currentColors.textSecondary} size={isTablet ? 28 : 24} />
-            </Pressable>
-            <Text style={[styles.modalTitle, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
-              {t('selectCity')}
+          <View style={[styles.modalContent, { backgroundColor: currentColors.card }]}>
+            <Text style={[styles.modalTitle, { color: currentColors.text }]}>
+              {t('select_city')}
             </Text>
-            <View style={styles.placeholder} />
-          </View>
-
-          {/* Cities List */}
-          <ScrollView 
-            style={styles.citiesList}
-            contentContainerStyle={[styles.citiesContent, { paddingHorizontal: isTablet ? 40 : 16 }]}
-            showsVerticalScrollIndicator={false}
-          >
-            {orderedCities.map((city) => (
-              <Pressable
-                key={city.name}
-                style={[
-                  styles.citySelectCard, 
-                  { 
-                    backgroundColor: currentColors.backgroundSecondary,
-                    borderColor: selectedCity?.name === city.name ? currentColors.primary : 'transparent',
-                    borderWidth: selectedCity?.name === city.name ? 2 : 0,
-                  }
-                ]}
-                onPress={() => handleCitySelect(city)}
-              >
-                <View style={[styles.cityIconContainer, { backgroundColor: currentColors.primary + '15', width: isTablet ? 80 : 64, height: isTablet ? 80 : 64, borderRadius: isTablet ? 40 : 32 }]}>
-                  <IconSymbol name="building.2.fill" color={currentColors.primary} size={isTablet ? 40 : 32} />
-                </View>
-                <View style={styles.citySelectInfo}>
-                  <Text style={[styles.citySelectName, { color: currentColors.text, fontSize: isTablet ? 24 : 20 }]}>
+            {CITIES.map((city, index) => (
+              <React.Fragment key={city.name}>
+                <Pressable
+                  style={styles.cityOption}
+                  onPress={() => handleCitySelect(city)}
+                >
+                  <Text style={[styles.cityOptionText, { color: currentColors.text }]}>
                     {t(city.nameKey)}
                   </Text>
-                  <Text style={[styles.citySelectProvince, { color: currentColors.textSecondary, fontSize: isTablet ? 17 : 14 }]}>
-                    {t(city.provinceKey)}
-                  </Text>
-                </View>
-                {selectedCity?.name === city.name && (
-                  <IconSymbol name="checkmark.circle.fill" color={currentColors.primary} size={isTablet ? 36 : 28} />
-                )}
-              </Pressable>
+                  {selectedCity.name === city.name && (
+                    <IconSymbol 
+                      ios_icon_name="checkmark" 
+                      android_material_icon_name="check" 
+                      size={20} 
+                      color={currentColors.primary} 
+                    />
+                  )}
+                </Pressable>
+              </React.Fragment>
             ))}
-          </ScrollView>
-        </SafeAreaView>
+          </View>
+        </Pressable>
       </Modal>
 
       {/* Emergency Modal */}
       <Modal
         visible={showEmergencyModal}
-        animationType="fade"
-        transparent={true}
+        transparent
+        animationType="slide"
         onRequestClose={() => setShowEmergencyModal(false)}
       >
-        <Pressable 
-          style={styles.emergencyModalOverlay}
+        <Pressable
+          style={styles.modalOverlay}
           onPress={() => setShowEmergencyModal(false)}
         >
-          <Pressable 
-            style={[styles.emergencyModalContent, { backgroundColor: currentColors.background }]}
-            onPress={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <View style={styles.emergencyModalHeader}>
-              <Text style={[styles.emergencyModalTitle, { color: currentColors.text }]}>
-                {t('emergencyNumbers')}
-              </Text>
-              <Pressable 
-                onPress={() => setShowEmergencyModal(false)}
-                style={styles.closeButton}
-              >
-                <IconSymbol name="xmark.circle.fill" color={currentColors.textSecondary} size={28} />
-              </Pressable>
-            </View>
-
-            {/* Emergency Numbers */}
-            <View style={styles.emergencyNumbersContainer}>
-              {EMERGENCY_NUMBERS.map((emergency) => (
+          <View style={[styles.modalContent, { backgroundColor: currentColors.card }]}>
+            <Text style={[styles.modalTitle, { color: currentColors.text }]}>
+              {t('emergency_numbers')}
+            </Text>
+            {EMERGENCY_NUMBERS.map((item, index) => (
+              <React.Fragment key={item.id}>
                 <Pressable
-                  key={emergency.id}
-                  style={[
-                    styles.emergencyNumberCard,
-                    { 
-                      backgroundColor: currentColors.backgroundSecondary,
-                      borderLeftWidth: 3,
-                      borderLeftColor: emergency.color,
-                    }
-                  ]}
-                  onPress={() => handleEmergencyCall(emergency.number)}
+                  style={[styles.emergencyButton, { backgroundColor: item.color }]}
+                  onPress={() => handleEmergencyCall(item.number)}
                 >
-                  <View style={styles.emergencyNumberInfo}>
-                    <Text style={[styles.emergencyNumberTitle, { color: currentColors.text }]}>
-                      {t(emergency.titleKey)}
-                    </Text>
-                    <Text style={[styles.emergencyNumberText, { color: emergency.color }]}>
-                      {emergency.number}
-                    </Text>
-                  </View>
-                  <View style={[styles.emergencyCallButton, { backgroundColor: emergency.color }]}>
-                    <IconSymbol name="phone.fill" size={20} color="#FFFFFF" />
-                  </View>
+                  <Text style={styles.emergencyNumber}>{item.number}</Text>
+                  <Text style={styles.emergencyTitle}>{t(item.titleKey)}</Text>
                 </Pressable>
-              ))}
-            </View>
-          </Pressable>
+              </React.Fragment>
+            ))}
+          </View>
         </Pressable>
       </Modal>
-    </>
+    </SafeAreaView>
   );
 }
 
@@ -685,264 +404,156 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollContent: {
-    // paddingTop and paddingBottom are now set dynamically in the component
+  mapContainer: {
+    height: 300,
+    position: 'relative',
   },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: isTablet ? 32 : 24,
+  map: {
+    ...StyleSheet.absoluteFillObject,
   },
-  headerLeft: {
-    flex: 1,
-  },
-  greeting: {
-    fontWeight: '500',
-    marginBottom: 4,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  citySelector: {
+  webMapNotice: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    right: 8,
+    padding: 12,
+    borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  title: {
-    fontWeight: '700',
-    letterSpacing: -1,
+  webMapNoticeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    flex: 1,
   },
-  chevronIcon: {
-    marginTop: 4,
+  citySelector: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    right: 16,
+    borderRadius: 16,
+    padding: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      },
+    }),
   },
-  multilineTitleContainer: {
-    alignItems: 'flex-start',
+  citySelectorContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  smallText: {
-    fontWeight: '500',
-    letterSpacing: -0.3,
-    marginBottom: 2,
+  cityName: {
+    fontSize: 20,
+    fontWeight: '600',
   },
-  middleRow: {
+  provinceName: {
+    fontSize: 14,
+    marginTop: 2,
+  },
+  weatherInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 2,
-  },
-  largeText: {
-    fontWeight: '700',
-    letterSpacing: -0.8,
-    marginRight: 8,
-  },
-  arrowIcon: {
-    marginTop: 4,
-  },
-  weatherWidget: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 8,
-    gap: 4,
+    gap: 8,
   },
   temperature: {
+    fontSize: 24,
     fontWeight: '700',
-    letterSpacing: -0.5,
   },
-  section: {
-    marginBottom: isTablet ? 40 : 32,
+  condition: {
+    fontSize: 14,
+  },
+  servicesContainer: {
+    padding: 16,
   },
   sectionTitle: {
+    fontSize: 24,
     fontWeight: '700',
-    marginBottom: isTablet ? 20 : 16,
-    letterSpacing: -0.5,
-  },
-  mapCard: {
-    width: '100%',
-    aspectRatio: 1,
-    borderRadius: isTablet ? 24 : 16,
-    overflow: 'hidden',
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
-    elevation: 2,
-  },
-  mapPlaceholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: isTablet ? 32 : 20,
-  },
-  mapPlaceholderText: {
-    marginTop: 12,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  mapPlaceholderSubtext: {
-    marginTop: 6,
-    textAlign: 'center',
+    marginBottom: 16,
   },
   servicesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: isTablet ? 16 : 12,
+    gap: 12,
   },
   serviceCard: {
-    borderRadius: isTablet ? 20 : 16,
-    padding: isTablet ? 28 : 20,
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
-    elevation: 2,
-  },
-  serviceIconContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: isTablet ? 20 : 16,
+    padding: 20,
+    borderRadius: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      },
+    }),
   },
   serviceTitle: {
-    fontWeight: '700',
-    marginBottom: 6,
-    letterSpacing: -0.3,
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 12,
   },
   serviceDescription: {
-    lineHeight: isTablet ? 22 : 18,
-    fontWeight: '400',
+    fontSize: 14,
+    marginTop: 4,
   },
-  actionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: isTablet ? 20 : 16,
-    borderRadius: isTablet ? 20 : 16,
-    marginBottom: isTablet ? 16 : 12,
-    gap: isTablet ? 16 : 12,
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
-    elevation: 2,
-  },
-  actionIcon: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionContent: {
-    flex: 1,
-  },
-  actionTitle: {
-    fontWeight: '600',
-    marginBottom: 2,
-    letterSpacing: -0.3,
-  },
-  actionSubtitle: {
-    fontWeight: '400',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: isTablet ? 20 : 17,
-  },
-  modalContainer: {
-    flex: 1,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: isTablet ? 24 : 16,
-    paddingVertical: isTablet ? 16 : 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  backButton: {
-    padding: 4,
-    width: 40,
-  },
-  modalTitle: {
-    fontWeight: '700',
-    letterSpacing: -0.5,
-  },
-  placeholder: {
-    width: 40,
-  },
-  citiesList: {
-    flex: 1,
-  },
-  citiesContent: {
-    paddingVertical: isTablet ? 24 : 16,
-    paddingBottom: 20,
-  },
-  citySelectCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: isTablet ? 20 : 16,
-    borderRadius: isTablet ? 20 : 16,
-    marginBottom: isTablet ? 16 : 12,
-    gap: isTablet ? 16 : 12,
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.06)',
-    elevation: 2,
-  },
-  cityIconContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  citySelectInfo: {
-    flex: 1,
-  },
-  citySelectName: {
-    fontWeight: '700',
-    marginBottom: 4,
-    letterSpacing: -0.5,
-  },
-  citySelectProvince: {
-    fontWeight: '500',
-  },
-  emergencyModalOverlay: {
+  modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    justifyContent: 'flex-end',
   },
-  emergencyModalContent: {
-    width: '100%',
-    maxWidth: 400,
-    borderRadius: 20,
-    padding: 20,
-    boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.2)',
-    elevation: 8,
+  modalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
   },
-  emergencyModalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
     marginBottom: 20,
   },
-  emergencyModalTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    letterSpacing: -0.5,
-  },
-  closeButton: {
-    padding: 4,
-  },
-  emergencyNumbersContainer: {
-    gap: 12,
-  },
-  emergencyNumberCard: {
+  cityOption: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    borderRadius: 12,
-    gap: 12,
-  },
-  emergencyNumberInfo: {
-    flex: 1,
-  },
-  emergencyNumberTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  emergencyNumberText: {
-    fontSize: 28,
-    fontWeight: '800',
-    letterSpacing: -1,
-  },
-  emergencyCallButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  cityOptionText: {
+    fontSize: 16,
+  },
+  emergencyButton: {
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  emergencyNumber: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  emergencyTitle: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginTop: 4,
   },
 });
